@@ -13,6 +13,14 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "validate": "node --import tsx/esm src/validate-cli.ts"
+  },
+  "dependencies": {
+    "@abhyas/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.5",
+    "tsx": "4.19.3"
   }
 }

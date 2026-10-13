@@ -1,0 +1,192 @@
+[
+  {
+    "id": "q-tech-dsa-001",
+    "text": "Explain how you would determine whether a linked list contains a cycle, and what the time and space complexity of your approach would be.",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "communication"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "How would you find the exact node where the cycle begins?",
+      "Can this be done without modifying the node structure?"
+    ],
+    "rubricHints": [
+      "Floyd's Tortoise and Hare algorithm",
+      "O(n) time and O(1) auxiliary space",
+      "Hash table alternative trade-off"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-tech-dsa-002",
+    "text": "Given a stream of integers arriving continuously, how would you efficiently maintain and retrieve the median at any point in time?",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "language_specific"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "What if integers arrive with timestamps and we only want the median of the last 1 hour?",
+      "How would you handle concurrent writes to the stream?"
+    ],
+    "rubricHints": [
+      "Two heaps (max-heap for lower half, min-heap for upper half)",
+      "O(log n) insertion and O(1) median retrieval",
+      "Sliding window quantile trade-offs"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-tech-fe-001",
+    "text": "When a web page experiences poor Interaction to Next Paint (INP) during heavy user interactions, how do you diagnose and resolve the bottleneck in the browser rendering pipeline?",
+    "type": "technical",
+    "skillTags": ["frontend", "clarity"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "How does requestAnimationFrame differ from requestIdleCallback in scheduling work?",
+      "How would web workers help prevent main-thread blocking?"
+    ],
+    "rubricHints": [
+      "Long tasks breaking up via scheduler.yield() or setTimeout",
+      "Minimizing forced synchronous layout (reflow)",
+      "React concurrent features or virtual DOM reconciliation profiling"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-tech-be-001",
+    "text": "How do you design a payment processing API endpoint to guarantee strict idempotency even if clients retry requests during network timeouts?",
+    "type": "technical",
+    "skillTags": ["backend_apis", "databases"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "What happens if two concurrent requests arrive with the exact same idempotency key at the same millisecond?",
+      "How long should idempotency records be stored and how are expired keys purged?"
+    ],
+    "rubricHints": [
+      "Unique idempotency keys stored in an ACID database with unique constraints",
+      "Atomic conditional write (INSERT ON CONFLICT or Redis SET NX with TTL)",
+      "Returning cached response payloads for previously completed operations"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sys-001",
+    "text": "Design a globally distributed URL shortening service (like Bitly) handling 100 million new URLs created per month and 10 billion redirects per month.",
+    "type": "system_design",
+    "skillTags": ["system_design", "databases", "backend_apis"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "How do you generate short keys without collision across multiple distributed application nodes?",
+      "What is your caching strategy for hot redirects (80/20 rule)?"
+    ],
+    "rubricHints": [
+      "Base62 encoding of 64-bit auto-increment IDs using a coordinated counter (e.g. range allocation in ZooKeeper/Redis)",
+      "Distributed cache (Redis/Memcached) with LRU eviction for top 20% URLs",
+      "Read-heavy database replication with CDN edge caching for 301 vs 302 redirects"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sys-002",
+    "text": "Design a real-time collaborative document editing service (similar to Google Docs or Figma) supporting concurrent edits across users on high-latency networks.",
+    "type": "system_design",
+    "skillTags": ["system_design", "cloud_devops"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "Compare Conflict-free Replicated Data Types (CRDTs) with Operational Transformation (OT) for this use case.",
+      "How do you maintain document history snapshots and handle disconnected offline editing?"
+    ],
+    "rubricHints": [
+      "WebSocket connections with central gateway or P2P WebRTC fallback",
+      "CRDT (e.g., Yjs, Automerge) vs central OT server trade-offs",
+      "Periodic compacting snapshots in durable blob storage"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-beh-own-001",
+    "text": "Tell me about a time when a critical production bug occurred in an area you were responsible for. How did you handle the immediate triage, communication, and long-term resolution?",
+    "type": "behavioral",
+    "skillTags": ["ownership", "communication"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "What steps did you take to prevent similar regressions across the team?",
+      "How did you communicate the issue to non-technical stakeholders during the incident?"
+    ],
+    "rubricHints": [
+      "Clear STAR structure with personal accountability rather than blaming others",
+      "Immediate mitigation (rollback/feature flag) before deep root cause investigation",
+      "Blameless post-mortem with automated regression test added to CI"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-beh-conf-001",
+    "text": "Describe a situation where you had a strong technical disagreement with a team lead or architect regarding system design. How did you navigate the conversation and what was the outcome?",
+    "type": "behavioral",
+    "skillTags": ["conflict", "communication", "leadership"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "If the decision went against your recommendation, how did you maintain team momentum and commitment?",
+      "What data or proof-of-concept did you bring to the discussion?"
+    ],
+    "rubricHints": [
+      "Constructive, principled disagreement focusing on user impact and objective data",
+      "Commitment to the 'disagree and commit' philosophy once a final decision was reached",
+      "Preserving healthy peer relationships without passive aggression"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-beh-lead-001",
+    "text": "Describe a multi-quarter engineering initiative where you had to drive alignment across several cross-functional teams with conflicting roadmaps and technical priorities.",
+    "type": "behavioral",
+    "skillTags": ["leadership", "ownership", "communication"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "How did you measure and report progress to executive leadership?",
+      "How did you unblock teams when dependencies stalled?"
+    ],
+    "rubricHints": [
+      "Establishing shared success metrics and clear RFC/ADR governance",
+      "De-risking early through small incremental delivery slices",
+      "Empathetic stakeholder management balancing short-term deadlines against architectural durability"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-strat-001",
+    "text": "Your organization is evaluating migrating a critical legacy monolith to microservices or modern modular architecture. How would you formulate the multi-year strategy, evaluate the ROI, and choose the migration path?",
+    "type": "technical",
+    "skillTags": ["system_design", "leadership", "cloud_devops"],
+    "level": "staff_plus",
+    "difficulty": 5,
+    "followUps": [
+      "How do you prevent the team from falling into the 'second-system effect' trap?",
+      "What organizational Conway's Law shifts are required alongside the technical changes?"
+    ],
+    "rubricHints": [
+      "Strangler Fig pattern over big-bang rewrites",
+      "Domain-Driven Design (bounded contexts) mapping to team ownership",
+      "Rigorous business ROI analysis considering operational complexity, latency overhead, and cloud costs"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  }
+]

@@ -10,7 +10,7 @@
       "project": ["src/**/*.{ts,tsx}"]
     },
     "packages/content": {
-      "entry": ["src/index.ts!"],
+      "entry": ["src/index.ts!", "src/validate-cli.ts!"],
       "project": ["src/**/*.{ts,tsx}"]
     },
     "apps/web": {

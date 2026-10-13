@@ -1,0 +1,58 @@
+{
+  "level": "senior",
+  "description": "Senior engineer level (5 to 8 years professional experience). Evaluates distributed system architecture at scale, fault tolerance, operational excellence, risk mitigation, developer velocity, technical mentorship, and driving consensus across teams.",
+  "axes": {
+    "depth": "Mastery of distributed consensus, CAP/PACELC trade-offs, network partitions, multi-region replication, observability, and cost-performance boundaries.",
+    "ambiguity": "High ambiguity; prompts often present ill-defined business problems where the candidate must define scope, constraints, and success metrics.",
+    "expectedScope": "Multi-system or cross-service domain, core platform components, long-term tech debt strategy, and company-wide standards.",
+    "followUpPressure": "Deep stress-testing on extreme traffic spikes, cascade failures, data corruption recovery, blast radius containment, and cost efficiency.",
+    "behavioralExpectations": "Exemplary technical leadership, navigating cross-team politics constructively, fostering psychological safety, and driving blameless post-mortems."
+  },
+  "criteria": {
+    "relevance": {
+      "name": "Relevance & Directness",
+      "description": "Grounds high-level architecture in organizational constraints, team topology, ROI, and reliability goals.",
+      "anchors": {
+        "1": "Over-engineers needlessly, introducing trendy technologies without considering maintenance burden, team skills, or cost.",
+        "3": "Focuses on pragmatic architecture; balances scalability needs against delivery timelines, maintenance cost, and complexity.",
+        "5": "Strategically precise: frames architecture around business outcomes, risk boundaries, organizational bandwidth, and evolutionary design."
+      }
+    },
+    "structure": {
+      "name": "Structural Framing",
+      "description": "Flawlessly frames complex distributed architectures from executive summary to deep technical failure analysis.",
+      "anchors": {
+        "1": "Scattered coverage that fails to define boundaries, data models, or SLAs before jumping into specific tooling.",
+        "3": "Methodical framework: defines SLAs/SLOs, maps component topologies, evaluates data flow, and establishes failure domains.",
+        "5": "Executive-grade delivery: structures complex multi-system solutions into clear milestones, risk registers, and architectural principles."
+      }
+    },
+    "depth": {
+      "name": "Technical & Conceptual Depth",
+      "description": "Deep distributed systems expertise: replication topologies, consensus protocols, split-brain handling, and backpressure.",
+      "anchors": {
+        "1": "Superficial hand-waving on critical topics like data consistency, idempotency keys, partition tolerance, or graceful degradation.",
+        "3": "Deep technical grasp: details Raft/Paxos implications, event-driven architectures, circuit breakers, and database sharding.",
+        "5": "Authoritative mastery: analyzes tail-latency amplification, distributed transaction trade-offs (2PC vs Saga), and disaster recovery runbooks."
+      }
+    },
+    "clarity": {
+      "name": "Clarity & Articulation",
+      "description": "Communicates with high emotional intelligence, commanding executive presence, and crisp precision.",
+      "anchors": {
+        "1": "Combative or excessively dogmatic delivery; defensive when questioned or unable to articulate alternative points of view.",
+        "3": "Clear, persuasive, and open-minded communication; welcomes pushback and defends decisions with objective data.",
+        "5": "Inspiring, crystal-clear delivery; translates complex technical nuances into accessible analogies while maintaining rigorous precision."
+      }
+    },
+    "levelFit": {
+      "name": "Level Alignment",
+      "description": "Calibrated against senior engineer expectations of technical leadership, blast-radius containment, and strategic foresight.",
+      "anchors": {
+        "1": "Operates as a mid-level task executor who lacks systemic foresight, risk awareness, or cross-team leadership.",
+        "3": "Strong senior engineer: leads architectural design, anticipates operational hurdles, and elevates team members.",
+        "5": "Operates at staff caliber: connects low-level system details to multi-quarter business strategy and organizational capability."
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "level": "staff_plus",
+  "description": "Staff+ engineer level (Principal, Staff, Distinguished, 8+ years experience). Evaluates org-wide technical strategy, multi-year architecture roadmaps, build vs. buy evaluations, organizational Conway's law alignment, and executive influence.",
+  "axes": {
+    "depth": "Holistic domain mastery: distributed systems economics, global platform governance, compliance, enterprise resilience, and organizational dynamics.",
+    "ambiguity": "Extreme ambiguity; problems involve vague, conflicting company priorities, emerging technologies, or multi-year structural transformations.",
+    "expectedScope": "Organization-wide or multi-team platforms, cross-company technical strategy, foundational architecture bets, and engineering culture.",
+    "followUpPressure": "Strategic pushback on long-term maintainability, talent constraints, opportunity cost, vendor lock-in, and organizational headwinds.",
+    "behavioralExpectations": "Unifying technical vision, navigating organizational politics gracefully, sponsoring underrepresented talent, and driving cultural change."
+  },
+  "criteria": {
+    "relevance": {
+      "name": "Relevance & Directness",
+      "description": "Aligns engineering strategy with overarching business viability, financial runway, and organizational leverage.",
+      "anchors": {
+        "1": "Advocates for ivory-tower architecture disconnected from business reality, budget constraints, or team capabilities.",
+        "3": "Directly links architectural strategy to business ROI, engineering leverage, and organizational sustainability.",
+        "5": "Masterful strategic synthesis: re-frames the problem around competitive advantages, capital efficiency, and sustainable velocity."
+      }
+    },
+    "structure": {
+      "name": "Structural Framing",
+      "description": "Employs macro-level architectural frameworks: business capabilities -> domain boundaries -> platform primitives -> migration vectors.",
+      "anchors": {
+        "1": "Lacks cohesive strategic vision; jumps between disparate micro-level tactics without establishing guiding principles.",
+        "3": "Comprehensive strategic framework: clearly sets guiding principles, domain boundaries, phased migration phases, and governance.",
+        "5": "Visionary structure: articulates clear decision matrices, risk mitigation milestones, and cultural change roadmaps effortlessly."
+      }
+    },
+    "depth": {
+      "name": "Technical & Conceptual Depth",
+      "description": "Evaluates foundational tech choices across decades: data sovereignty, zero-trust security, multi-cloud economics, and legacy modernization.",
+      "anchors": {
+        "1": "Out-of-touch with modern technical realities or relies on dogmatic patterns that no longer match industry state of the art.",
+        "3": "Deep and broad mastery: understands cross-platform primitives, cost modeling, data mesh concepts, and resilience patterns.",
+        "5": "Profound insight: evaluates ecosystem trends, hardware/cloud cost curves, kernel/compiler evolutions, and org-level leverage points."
+      }
+    },
+    "clarity": {
+      "name": "Clarity & Articulation",
+      "description": "Communicates seamlessly with VP/C-suite executives, cross-functional leads, and junior engineers alike.",
+      "anchors": {
+        "1": "Overly condescending, impenetrable jargon-heavy monologue, or inability to tailor communication to different audiences.",
+        "3": "Speaks with empathy, clarity, and authority; builds consensus through compelling arguments and rigorous active listening.",
+        "5": "Inspirational communicator: simplifies profound complexities into irresistible narratives that drive swift organizational alignment."
+      }
+    },
+    "levelFit": {
+      "name": "Level Alignment",
+      "description": "Calibrated against Staff/Principal engineer expectations of company-wide leverage, culture building, and multiplying others.",
+      "anchors": {
+        "1": "Functions merely as a senior individual contributor solving isolated tickets without company-wide leverage or impact.",
+        "3": "Authentic Staff engineer: multiplies whole engineering teams, sets architectural standards, and leads high-risk strategic initiatives.",
+        "5": "Distinguished caliber: reshapes company-wide engineering culture, foresees multi-year industry disruptions, and builds durable platforms."
+      }
+    }
+  }
+}

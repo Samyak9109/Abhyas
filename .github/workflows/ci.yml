@@ -57,6 +57,9 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
+      - name: Validate content schemas & records
+        run: pnpm run validate:content
+
       - name: Dead-code & unused dependencies check (Knip)
         run: pnpm run knip
 

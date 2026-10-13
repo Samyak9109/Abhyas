@@ -1,0 +1,58 @@
+{
+  "level": "mid",
+  "description": "Mid-level engineer (3 to 5 years professional experience). Evaluates autonomous delivery, trade-off reasoning, subsystem architecture, observability, fault tolerance, and cross-functional collaboration without requiring constant supervision.",
+  "axes": {
+    "depth": "Thorough understanding of distributed patterns, database indexing, caching strategies, asynchronous processing, and system failure modes.",
+    "ambiguity": "Substantial ambiguity; candidate is expected to ask clarifying questions, establish boundary constraints, and justify non-functional trade-offs.",
+    "expectedScope": "Multi-component or service-level architecture, data pipeline, performance bottleneck resolution, and feature lifecycle from design to release.",
+    "followUpPressure": "Rigorous follow-ups examining edge cases under load, data inconsistency, migration strategies, and degradation policies.",
+    "behavioralExpectations": "Demonstrates strong ownership, ability to resolve moderate conflict with peers, mentoring junior developers, and delivering on commitments."
+  },
+  "criteria": {
+    "relevance": {
+      "name": "Relevance & Directness",
+      "description": "Frames solutions around operational realities, SLA constraints, and tangible business/engineering requirements.",
+      "anchors": {
+        "1": "Gives purely academic definitions rather than evaluating real engineering trade-offs suitable for production systems.",
+        "3": "Focuses directly on engineering trade-offs, service requirements, and concrete implementation choices.",
+        "5": "Pinpoints the core architectural tension immediately; addresses latency, throughput, consistency, and operational complexity directly."
+      }
+    },
+    "structure": {
+      "name": "Structural Framing",
+      "description": "Applies a structured architectural and behavioral methodology (e.g., Requirements -> Data Flow -> Trade-offs -> Bottlenecks).",
+      "anchors": {
+        "1": "Ad-hoc design that changes direction repeatedly without a clear guiding architecture or structured STAR story.",
+        "3": "Well-organized presentation: outlines requirements, proposes a primary architecture, and discusses operational trade-offs.",
+        "5": "Masterful presentation: systematically addresses functional and non-functional requirements, evaluates alternative designs, and synthesizes choices."
+      }
+    },
+    "depth": {
+      "name": "Technical & Conceptual Depth",
+      "description": "Deep understanding of operational failure modes, concurrency, database indices, and system metrics.",
+      "anchors": {
+        "1": "Superficial knowledge; cannot explain how indexes work under the hood, how caches invalidate, or how connection pools behave.",
+        "3": "Solid technical depth: explains cache invalidation, database isolation levels, message queues, and backpressure mechanisms.",
+        "5": "Impressive technical depth: discusses p99 latency spikes, lock contention, write-amplification, and zero-downtime schema migrations."
+      }
+    },
+    "clarity": {
+      "name": "Clarity & Articulation",
+      "description": "Balances technical depth with clear, succinct summaries that keep the interviewer engaged.",
+      "anchors": {
+        "1": "Verbose, rambling answers that get lost in low-level trivia while missing high-level architectural clarity.",
+        "3": "Speaks with clarity, confidence, and appropriate pacing; transitions cleanly between architectural concepts.",
+        "5": "Highly articulate and engaging; uses vivid mental models, summarizes key trade-offs compactly, and invites active dialogue."
+      }
+    },
+    "levelFit": {
+      "name": "Level Alignment",
+      "description": "Calibrated against autonomous 3-5 year engineer expectations for trade-off evaluation and system resilience.",
+      "anchors": {
+        "1": "Requires continuous hand-holding on standard design trade-offs or shows passive, reactive ownership.",
+        "3": "Quintessential mid-level engineer: works autonomously, makes sound technical decisions, and understands production ramifications.",
+        "5": "Exhibits senior-level instincts: proactively identifies hidden systemic risks, cost implications, and operational overhead."
+      }
+    }
+  }
+}

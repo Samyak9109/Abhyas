@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
+    "validate:content": "pnpm --filter @abhyas/content run validate",
     "knip": "knip",
     "format:check": "prettier --check .",
     "format": "prettier --write ."

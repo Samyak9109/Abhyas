@@ -310,8 +310,8 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | M0.1 Repo and tooling | Done | 2026-10-13 | Scaffolding, strict TS, ESLint boundaries, Vitest, Knip, Prettier, CI |
 | M0.2 Tokens, fonts and base components | Done | 2026-10-13 | Tokens, 4 self-hosted fonts, 14 base components, axe tests |
 | M0.3 Core contracts | Done | 2026-10-13 | ProviderAdapter, MockProviderAdapter, Zod schemas, Dexie schema v1, MigrationHarness |
-| M0.4 Content scaffolding | In progress | 2026-10-13 | Skill taxonomy v1, rubric level anchors, question schema + CI |
-| M0.5 Compliance skeleton | Not started | 2026-10-12 | |
+| M0.4 Content scaffolding | Done | 2026-10-13 | Skill taxonomy v1, 5 level rubrics, question schema, content validator, CI hook |
+| M0.5 Compliance skeleton | In progress | 2026-10-13 | LICENSE, TRADEMARK.md, privacy audit, CSP, network allowlist test, license check |
 | M1.1 to M1.9 (P1) | Not started | 2026-10-13 | Track each milestone on its own row when P1 begins; M1.9 is the public site |
 | G1 validation | Not started | 2026-10-12 | Record outcome and decision here |
 | P2 to P7 | Not started | 2026-10-12 | Expand rows when the phase begins |
@@ -348,3 +348,4 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | 2026-10-13 | 0.2.2 | Completed M0.1 repo and tooling: pnpm monorepo scaffolding, strict TypeScript, ESLint boundary enforcement, Vitest runner, Knip dead-code checking, Prettier, and CI workflow |
 | 2026-10-13 | 0.2.3 | Completed M0.2 tokens, fonts and base components: design tokens (Ink and Paper), 4 self-hosted typefaces (62.7 KB gzipped above-the-fold, well under NFR-025 150 KB budget), 14 accessible UI components, automated axe testing |
 | 2026-10-13 | 0.2.4 | Completed M0.3 core contracts: ProviderAdapter contract suite, MockProviderAdapter, Zod schemas (profile, evaluation, pack), Dexie schema v1 with 12 typed stores, and migration harness with quarantine logic (NFR-023, ADR-004, ADR-006) |
+| 2026-10-13 | 0.2.5 | Completed M0.4 content scaffolding: Skill taxonomy v1 (15 skills across 3 categories), rubric level anchors across all 5 experience levels with 5 criteria and calibration axes, Question schema, sample question bank, content validation engine and CI validation command (FR-006, FR-007, FR-014, FR-017, ADR-006) |

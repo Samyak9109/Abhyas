@@ -1,0 +1,58 @@
+{
+  "level": "intern_fresher",
+  "description": "Foundational level for interns, new graduates, and developers with under 1 year of professional experience. Evaluates core concepts, learning aptitude, and structured thinking rather than enterprise production experience.",
+  "axes": {
+    "depth": "Foundational understanding of core principles, basic CS fundamentals, standard libraries, and common algorithms.",
+    "ambiguity": "Low ambiguity expected; questions provide clear inputs, outputs, and constraints with immediate clarification available.",
+    "expectedScope": "Single function, module, or standard pattern scope; academic coursework or small project implementation.",
+    "followUpPressure": "Gentle, supportive probing to explore reasoning and verify that the candidate understands their chosen approach.",
+    "behavioralExpectations": "Demonstrates curiosity, humility, receptiveness to feedback, active learning, and structured communication of school or personal projects."
+  },
+  "criteria": {
+    "relevance": {
+      "name": "Relevance & Directness",
+      "description": "Answers the fundamental question asked without dodging or reciting unrelated memorized definitions.",
+      "anchors": {
+        "1": "Misses the question prompt completely or recites unrelated textbook definitions without addressing what was asked.",
+        "3": "Directly addresses the primary question with relevant concepts, though may miss minor edge cases or nuance.",
+        "5": "Directly and concisely answers the question, explains why the approach was chosen, and immediately identifies basic constraints."
+      }
+    },
+    "structure": {
+      "name": "Structural Framing",
+      "description": "Organizes thoughts logically, using STAR for behavioral questions and step-by-step reasoning for technical problems.",
+      "anchors": {
+        "1": "Disorganized stream of consciousness with no clear beginning, reasoning chain, or conclusion.",
+        "3": "Follows a recognizable logical sequence (problem, attempt, resolution) with understandable progression.",
+        "5": "Exemplary structured narrative: states assumptions upfront, steps through logic methodically, and summarizes the conclusion clearly."
+      }
+    },
+    "depth": {
+      "name": "Technical & Conceptual Depth",
+      "description": "Demonstrates genuine understanding of underlying mechanics rather than shallow surface-level keywords.",
+      "anchors": {
+        "1": "Uses buzzwords without understanding; unable to explain basic mechanics or why a simple algorithm works.",
+        "3": "Understands fundamental mechanics, Big-O complexity for basic operations, and how standard components interact.",
+        "5": "Solid grasp of foundational internals, discusses trade-offs between two basic approaches, and correctly reasons about edge cases."
+      }
+    },
+    "clarity": {
+      "name": "Clarity & Articulation",
+      "description": "Explains ideas clearly with accessible vocabulary, low rambling, and audible conviction.",
+      "anchors": {
+        "1": "Highly fragmented speech, frequent false starts, excessive verbal fillers, or extreme hesitation that obscures meaning.",
+        "3": "Communicates ideas clearly with understandable vocabulary and pacing, occasionally pausing to gather thoughts.",
+        "5": "Crisp, concise, and engaging delivery; articulates complex thoughts simply and checks for understanding naturally."
+      }
+    },
+    "levelFit": {
+      "name": "Level Alignment",
+      "description": "Calibrated against intern/new-grad expectations of curiosity, coachability, and solid fundamental knowledge.",
+      "anchors": {
+        "1": "Struggles with basic first-year computer science fundamentals or shows resistance to hints and guidance.",
+        "3": "Comfortably meets junior/intern expectations: solves standard basic problems and responds constructively to hints.",
+        "5": "Shows maturity well beyond typical new-grad level: anticipates edge cases, writes clean mental logic, and shows high proactive curiosity."
+      }
+    }
+  }
+}

@@ -11,3 +11,5 @@ export function getContentInfo(): { name: string; version: string } {
     version: ABHYAS_CONTENT_VERSION,
   };
 }
+
+export * from "./validator.js";

@@ -346,3 +346,4 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | 2026-10-13 | 0.2.0 | Added section 6A (page inventory, build schedule, design delivery order), M1.9 public site and docs, expanded M0.2 for tokens and self-hosted fonts, page lists per phase, FR-033 mapping |
 | 2026-10-13 | 0.2.1 | M0.1 now includes `AGENTS.md` and dead-code checks; Definition of Done gains no-dead-code and scope checks |
 | 2026-10-13 | 0.2.2 | Completed M0.1 repo and tooling: pnpm monorepo scaffolding, strict TypeScript, ESLint boundary enforcement, Vitest runner, Knip dead-code checking, Prettier, and CI workflow |
+| 2026-10-13 | 0.2.3 | Completed M0.2 tokens, fonts and base components: design tokens (Ink and Paper), 4 self-hosted typefaces (62.7 KB gzipped above-the-fold, well under NFR-025 150 KB budget), 14 accessible UI components, automated axe testing |

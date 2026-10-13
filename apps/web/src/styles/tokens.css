@@ -1,0 +1,100 @@
+/* FR-N/A, NFR-011, ADR-021: Design tokens for Ink (default dark) and Paper (light) themes */
+@import "./fonts.css";
+
+:root {
+  /* Fonts */
+  --font-display: "Pixelify Sans", ui-monospace, monospace;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-hand: "Caveat", cursive;
+
+  /* Spacing (base 4px) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  /* Motion */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-standard: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Shadows & Shapes */
+  --shadow-hard: 4px 4px 0 #121110;
+  --shadow-device: 0 18px 40px rgba(18, 17, 16, 0.35);
+  --radius-square: 0px;
+  --backdrop: rgba(18, 17, 16, 0.7);
+
+  /* Public-page fixed paper band tokens */
+  --paper-band-bg: #efe9dc;
+  --paper-band-text: #121110;
+  --paper-band-muted: #5a5348;
+  --paper-band-accent-text: #a83409;
+}
+
+/* Default Theme: Dark "Ink" */
+:root,
+[data-theme="ink"] {
+  --bg: #121110;
+  --surface: #1c1a17;
+  --surface-2: #26231f;
+  --line: #3a352f;
+  --line-strong: #7d7468;
+  --text: #efe9dc;
+  --text-muted: #a9a296;
+  --accent: #ff6a2b;
+  --accent-text: #ff6a2b;
+  --on-accent: #121110;
+  --focus: #ff6a2b;
+  --success: #7bd88f;
+  --warning: #f2b33d;
+  --danger: #ff7a6b;
+  --info: #6db7ff;
+  --cat-technical: #ff6a2b;
+  --cat-behavioral: #5ec8b6;
+  --cat-delivery: #f5d547;
+}
+
+/* Light "Paper" Theme */
+[data-theme="paper"] {
+  --bg: #efe9dc;
+  --surface: #f7f3ea;
+  --surface-2: #e6dfcf;
+  --line: #cfc6b4;
+  --line-strong: #7a7266;
+  --text: #121110;
+  --text-muted: #5a5348;
+  --accent: #ff6a2b;
+  --accent-text: #a83409;
+  --on-accent: #121110;
+  --focus: #a83409;
+  --success: #1f6b33;
+  --warning: #8a5300;
+  --danger: #a4160a;
+  --info: #0b5fa5;
+  --cat-technical: #a83409;
+  --cat-behavioral: #0f6b5c;
+  --cat-delivery: #7a5a00;
+}
+
+/* Base resets & focus outlines */
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}

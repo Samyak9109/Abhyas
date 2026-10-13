@@ -2,8 +2,8 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     ".": {
-      "entry": ["vitest.config.ts"],
-      "project": ["*.{js,mjs,ts}"]
+      "entry": ["vitest.config.ts", "tests/setup.ts"],
+      "project": ["*.{js,mjs,ts}", "tests/**/*.ts"]
     },
     "packages/core": {
       "entry": ["src/index.ts!"],
@@ -14,7 +14,7 @@
       "project": ["src/**/*.{ts,tsx}"]
     },
     "apps/web": {
-      "entry": ["src/main.tsx!", "index.html!", "vite.config.ts"],
+      "entry": ["src/main.tsx!", "src/components/index.ts!", "index.html!", "vite.config.ts"],
       "project": ["src/**/*.{ts,tsx}"]
     }
   }

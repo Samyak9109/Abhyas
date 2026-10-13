@@ -131,5 +131,17 @@ export default tseslint.config(
         ...globals.browser,
       },
     },
+  },
+  // scripts rules
+  {
+    files: ["scripts/**/*.{js,mjs}"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-console": "off",
+    },
   }
 );

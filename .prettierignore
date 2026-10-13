@@ -11,3 +11,4 @@ Assets/
 pnpm-lock.yaml
 .planning/
 *.md
+graphify-out/

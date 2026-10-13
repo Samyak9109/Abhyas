@@ -87,3 +87,6 @@ $RECYCLE.BIN/
 *.sqlite
 *.sqlite3
 *.db
+
+# Tool caches
+graphify-out/

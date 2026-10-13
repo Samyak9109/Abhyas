@@ -1,0 +1,24 @@
+{
+  "source_path": "phases.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Phases — Abhyas",
+  "summary": "Project roadmap and execution plan detailing Phases P0 through P7, milestones M0.1 onwards, acceptance criteria, exit gates (including user validation gate G1), and Definition of Done.",
+  "scope": [
+    "phases P0-P7",
+    "milestones M0.1-M1.9",
+    "acceptance criteria",
+    "exit gates",
+    "definition of done",
+    "validation gates"
+  ],
+  "cross_refs": [
+    "PRD.md",
+    "architecture.md",
+    "design.md"
+  ],
+  "locked": true,
+  "precedence": 4,
+  "notes": "Authority level 4 of 4: PRD > architecture > design > phases."
+}

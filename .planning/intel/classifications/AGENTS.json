@@ -1,0 +1,24 @@
+{
+  "source_path": "AGENTS.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "AGENTS.md: Abhyas",
+  "summary": "Agent operating rules, document precedence hierarchy (PRD.md > architecture.md > design.md > phases.md > code), token economy, non-negotiables (privacy, locked fonts, design tokens, schemas, fallbacks), and definition of done.",
+  "scope": [
+    "agent rules",
+    "precedence",
+    "token economy",
+    "non-negotiables",
+    "definition of done"
+  ],
+  "cross_refs": [
+    "PRD.md",
+    "architecture.md",
+    "design.md",
+    "phases.md"
+  ],
+  "locked": true,
+  "precedence": 5,
+  "notes": "Companion governance document for AI agents and human contributors."
+}

@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Codebase & Tooling
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.11.2
+          run_install: false
+
+      - name: Verify AGENTS.md document map
+        run: |
+          node -e "
+            const fs = require('fs');
+            const content = fs.readFileSync('AGENTS.md', 'utf8');
+            const required = ['PRD.md', 'architecture.md', 'design.md', 'phases.md'];
+            for (const doc of required) {
+              if (!content.includes(doc)) {
+                console.error('Missing document pointer in AGENTS.md:', doc);
+                process.exit(1);
+              }
+            }
+            console.log('AGENTS.md document map verified.');
+          "
+
+      - name: Install dependencies (pinned lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint and boundary check
+        run: pnpm run lint
+
+      - name: Type check (strict TypeScript)
+        run: pnpm run typecheck
+
+      - name: Unit tests
+        run: pnpm run test
+
+      - name: Dead-code & unused dependencies check (Knip)
+        run: pnpm run knip
+
+      - name: Format check (Prettier)
+        run: pnpm run format:check

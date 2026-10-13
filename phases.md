@@ -1,0 +1,348 @@
+# Phases — Abhyas
+
+| Field | Value |
+| --- | --- |
+| Document | `phases.md` (authority level 4 of 4) |
+| Version | 0.2.1 |
+| Last updated | 2026-10-13 |
+| Governs | Order of work, milestones, acceptance criteria, validation gates |
+| Governed by | `PRD.md`, `architecture.md`, `design.md` (they win on conflict) |
+
+Status labels follow `PRD.md` section 0.3. Time estimates are planning assumptions for one developer, not commitments; revise them with measured progress and record the change in the change log.
+
+---
+
+## 1. Purpose and rules of engagement
+
+This document says **what to build, in what order, and how to know it is done.** It does not override requirements, architecture or design.
+
+Rules for humans and AI coding agents:
+1. Work on **one phase at a time**, in order. Do not build features from later phases early, even if they seem small.
+2. Every task must trace to an `FR-###`, `NFR-###` or milestone `M#.#`. If it does not, stop and ask the owner.
+3. A milestone is done only when all its acceptance criteria pass, CI is green, and the documents are updated (see Definition of Done, section 5).
+4. A phase is complete only after its **exit gate** is passed and the owner signs off. Validation gates (G1 and later) may change the plan; follow the owner's decision.
+5. New ideas go to the Parking Lot in `PRD.md` section 12, not into the current phase.
+6. If an estimate is clearly wrong, report it and propose a re-plan rather than cutting quality (accessibility, privacy, tests, error states).
+
+---
+
+## 2. Phase overview
+
+| Phase | Name | Main FRs | Planning estimate (solo) | Exit gate |
+| --- | --- | --- | --- | --- |
+| P0 | Foundations | Infrastructure, NFR-015, NFR-022, NFR-023 | 3 to 5 days | CI green, tokens, contracts, migration test |
+| P1 | MVP core loop and public site | FR-001 to 013, 020 (export, delete), 021, 030, 032, 033 | 3 to 4 weeks full time (6 to 8 part time) | Full voice and text session works; **G1 validation** |
+| P2 | Skills and calibration | FR-014 to 019, 020 (import), 031, 033 (PG-07) | 2 to 3 weeks | Reproducible statistics, dashboard, drills |
+| P3 | Local text mode | FR-022, 023 (curated), 024, 005 (Ollama), 033 (PG-06) | 2 to 3 weeks | Offline text session on supported PC |
+| P4 | Company packs (static) | FR-025 | 1 to 2 weeks plus content time | Vetted seed packs, injection-safe |
+| P5 | Research service | FR-026, 029 | 3 to 4 weeks | Budget-bounded pipeline live, security reviewed |
+| P6 | Calendar and review | FR-027, 028 | 1 to 2 weeks | `.ics` plan works; OAuth if feasible |
+| P7 | Advanced (owner-approved items only) | FR-023 (custom), FR-005 (Claude, Hugging Face), on-device speech | Per item | Per item |
+
+Parallel content track (owner): question bank, rubric anchors and seed packs. See section 4.
+
+---
+
+## 3. Phases in detail
+
+### P0 — Foundations
+
+**Goal:** a clean, safe base so later phases move fast.
+**In scope:** NFR-015, NFR-006 (CSP skeleton), NFR-022, NFR-023, ADR-016, ADR-003.
+**Out of scope:** any user-facing feature.
+
+| Milestone | Deliverables | Acceptance criteria |
+| --- | --- | --- |
+| M0.1 Repo and tooling | pnpm monorepo (`apps/web`, `packages/core`, `packages/content`); strict TypeScript; lint and format; unit test runner; CI pipeline; import-boundary lint (core has no DOM or React); short `AGENTS.md` entry file with the agent rules and a document map; dead-code and unused-dependency checks | CI runs on PRs; boundary violation fails lint; pinned lockfile; dead-code check fails on an unused export, file or dependency; `AGENTS.md` exists and points to the four documents |
+| M0.2 Tokens, fonts and base components | Design tokens from `design.md` 4.2 for Ink and Paper themes in one tokens file; the four approved typefaces self-hosted as Latin-subset woff2 with license files and `fonts.css`; Button (primary, secondary, ghost, danger), Input, Secret input, Switch, Radio card, Stepper, Callout, Dialog, Toast, Banner, Progress, Skeleton, Tabs, Disclosure; automated axe checks | All components render all states in both themes; axe passes; no raw colors, font families or spacing outside the token and font files (lint rule); font payload measured against NFR-025 and recorded; no request to any font CDN (network test); contrast values re-verified against `design.md` 4.2 |
+| M0.3 Core contracts | `ProviderAdapter` interface, mock provider, Zod schemas (profile, evaluation, pack), storage interface, Dexie schema v1, migration harness | Mock provider passes the shared contract test suite; migration test from fixture v1 passes |
+| M0.4 Content scaffolding | Skill taxonomy v1, rubric file format with level anchors (5 levels), question schema plus CI validation | Invalid content fails CI; sample records validate |
+| M0.5 Compliance skeleton | `LICENSE` (MIT), `TRADEMARK.md`, `THIRD_PARTY_LICENSES`, `docs/privacy-audit.md`, CSP baseline (including `font-src 'self'`), network-allowlist end-to-end test skeleton, README skeleton | Allowlist test fails on an unlisted domain; license check blocks GPL and AGPL dependencies |
+
+**Exit gate:** CI green on a deployed empty shell; every milestone's criteria met.
+
+---
+
+### P1 — MVP core loop
+
+**Goal:** test the central hypothesis: people can set up quickly, practice by voice or text, and find the feedback useful.
+**In scope:** FR-001 to FR-013, FR-020 (export and delete), FR-021, FR-030, FR-032, FR-033; NFR-001 to 003, 005, 009, 011, 013, 014, 017.
+**Pages:** public PG-01 to PG-05 and PG-08; app PG-09 to PG-14 (PG-14 minimal) and PG-18.
+**Out of scope:** statistics dashboard, drills, streaks, local models, company packs, calendar, import, install prompts.
+
+| Milestone | Deliverables | Acceptance criteria |
+| --- | --- | --- |
+| M1.1 Storage, settings, data tools | Persistent store, settings screen, theme, export, delete-all with typed confirmation (FR-001, 020, 030) | Reload keeps data; in-memory fallback banner works; export file validates against schema |
+| M1.2 AI setup | Gemini and OpenAI-compatible adapters, key storage with optional passphrase encryption, Test connection with classified errors, model picker from provider list, free-key guide, privacy notices, cost estimator and caps (FR-005, 021, 032) | Test passes for both adapters against recorded fixtures and a manual live check; keys never appear outside the provider origin (automated test); runaway loop stops at cap |
+| M1.3 Profile | Resume and job description ingestion in a worker, editable extraction, level and role, structured profile extraction with cache (FR-002 to 004) | Sample PDF and DOCX parse; no network request during parsing; unchanged inputs do not re-call the AI; condensed profile within token budget |
+| M1.4 Session setup and question engine | Setup screen; bank-based selection with seeded randomness; AI personalization with core-ask check (FR-006, 007) | At least 90% of questions in a 10-question session trace to bank ids or are flagged; difficulty distribution differs by level in unit tests |
+| M1.5 Interview engine (text) | State machine, follow-ups, pause, skip, repeat, hint, end; text-only session end to end (FR-008, 011) | Every transition and failure path covered by tests; session survives a provider failure through the recovery state |
+| M1.6 Voice | Push-to-talk, editable transcript, speech output, subtitles, disclosure, fallbacks (FR-009, 010) | Works on current Chrome and Edge desktop and Chrome Android; text fallback elsewhere; subtitles match spoken text |
+| M1.7 Evaluation and results | Rubric evaluator with schema validation, retry and `unscored` handling; delivery metrics; results screen with top fixes and grounded rewrites; simple recent-sessions list on Home (FR-012, 013) | Golden set v0 (at least 20 labeled transcripts) built; two temperature-0 runs differ by 0.5 mean absolute score or less; no rewrite contains claims absent from the profile (fixtures) |
+| M1.8 Hardening and release | All required states per screen, accessibility pass, performance budgets, end-to-end suite, README and contributor docs, deploy | Lighthouse and bundle budgets met; axe clean in both themes; manual keyboard and screen reader pass on the interview flow; network allowlist test green |
+| M1.9 Public site and docs | Prerendered static pages from the same codebase (ADR-019): PG-01 Landing built to the approved canvas, PG-02 Privacy, PG-03 Open source and license, PG-04 Key guide, PG-05 Troubleshooting and compatibility, PG-08 Not-found, unsupported-browser and offline pages; titles, descriptions, social tags, sitemap; link checker (FR-033) | Pages build as static HTML; no third-party request on any public page (network test); axe clean in both themes; landing structure, fonts, colors and copy rules match `design.md` (owner visual review); privacy page matches `docs/privacy-audit.md`; key guide shows a last-checked date; no invented statistics, testimonials or model names |
+
+**Content needed:** initial question bank (planning target: about 80 questions across HR and behavioral and core technical topics for at least two level bands) `[OPEN: owner to confirm size and authoring plan]`.
+
+**Exit gate G1 — validation with real users (owner decides afterwards).** Prerequisite: M1.8 and M1.9 are done.
+- Recruit 10 to 20 testers (for example classmates and placement groups) including some with no API key.
+- Planning targets: at least 70% of testers with a key reach their first question in under 3 minutes; at least half complete two or more sessions; at least 70% rate the feedback "useful" or better; list the top five friction points.
+- Outcome options: proceed to P2; adjust setup or feedback and retest; stop or pivot. Record the decision here.
+
+---
+
+### P2 — Skills and calibration
+
+**Goal:** deliver the differentiators: honest skill statistics, level-calibrated difficulty, and a reason to return.
+**In scope:** FR-014 (statistics), 015, 016, 017, 018, 019, 020 (import), 031, 033 (PG-07, Could).
+**Pages:** PG-14 (full), PG-15, PG-16, PG-17, PG-07 (Could).
+
+| Milestone | Deliverables | Acceptance criteria |
+| --- | --- | --- |
+| M2.1 Skill statistics | Taxonomy applied to every turn, recency-weighted scores, confidence, trend, deterministic recompute worker (FR-014) | Recompute from `turns` reproduces stored statistics exactly; confidence thresholds covered by tests |
+| M2.2 Calibration | Level bands, rubric anchors for all levels, adaptive difficulty within a band, bank growth to target, resume-versus-level note (FR-017) | Difficulty distributions differ measurably by level; fixture shows one answer scoring differently at two levels |
+| M2.3 Skills dashboard | Skill chart, weakest and strongest, confidence markers, trends, stale skills, table alternative, empty states (FR-015) | Renders for zero, one and many sessions; accessible table alternative present; axe clean |
+| M2.4 Skill practice | Skill picker, quick-fire and deep-dive drills, "Fix my weakest" (FR-016) | Drill updates only targeted skills; handles missing bank questions gracefully |
+| M2.5 History and import | Filters, detail, per-session delete, import with validation report (FR-019, 020) | 200 sessions list and open within 300 ms on a mid-range laptop; export then import round trip passes |
+| M2.6 Daily habit | Daily drill, streak with rest days and freezes, Home updates (FR-018) | Streak logic passes tests across time zone shifts and rest days |
+| M2.7 Installable shell | App manifest and offline shell (FR-031) | Shell loads offline after first visit; update flow handles stale caches |
+
+**Content needed:** bank growth (planning target: about 250 questions with accurate tags) `[OPEN]`.
+**Exit gate:** after three or more sessions the dashboard shows a believable weakest skill with confidence; statistics reproducible; owner review of dashboard copy.
+
+---
+
+### P3 — Local text mode
+
+**Goal:** a free, key-less path for people with capable PCs.
+**In scope:** FR-022, FR-023 (curated list), FR-024, FR-005 (Ollama and OpenAI-compatible local servers), FR-033 (PG-06); ADR-013.
+**Pages:** PG-19, PG-06, local-model option of PG-09, expanded PG-05.
+
+| Milestone | Deliverables | Acceptance criteria |
+| --- | --- | --- |
+| M3.1 Capability checks | WebGPU detection, speed test, tier recommendation (FR-024) | Recommendation changes with measured speed in tests using a mocked runtime |
+| M3.2 In-browser engine | Engine adapter running in a worker; cache, progress, pause and resume, storage meter, delete, persistent storage request (FR-022, 023) | Model downloads, loads and answers offline on a supported PC; cancel works; unload frees memory |
+| M3.3 Curated models | Versioned `models.json` with 3 to 5 models, measured speeds and notes | Each listed model passes the sanity test on at least one reference device |
+| M3.4 Small-model behavior | Condensed context, rolling summary, constrained or prompted JSON with validation, "basic feedback" path labeled as basic (FR-012, AI-014) | A full session completes with a small model; invalid JSON never crashes; basic label visible |
+| M3.5 Device rules | Local mode blocked on phones with explanation; text-only enforced; no speech services constructed | On a phone, local mode cannot be selected and the message appears; on PC, no microphone prompt appears |
+| M3.6 Local servers | Ollama and OpenAI-compatible local adapters with a setup and CORS troubleshooting guide | Contract tests pass; guide verified on one real setup |
+
+**Exit gate:** a full offline text session on a reference PC; owner review of honesty labels ("basic feedback").
+
+---
+
+### P4 — Company packs (static)
+
+**Goal:** prove company tailoring adds value before building any backend.
+**In scope:** FR-025; ADR-008.
+**Pages:** PG-20, company choice in PG-11, interim issue-link variant of PG-21.
+
+| Milestone | Deliverables | Acceptance criteria |
+| --- | --- | --- |
+| M4.1 Pack contract | Pack schema, validator, CI check requiring evidence and dates | Packs without evidence fail CI |
+| M4.2 Seed packs | 10 to 20 hand-reviewed packs for popular employers, built from official and openly published sources | Every field has sources; `unknown` used instead of guessing; owner signs off each pack |
+| M4.3 Picker and panel | Pack index, autocomplete with status, "Company context used" panel with sources and dates | Works offline from cache after first load; stale badge appears after TTL |
+| M4.4 Tailoring | Pack-aware prompts, values-based behavioral questions, stack-weighted technical questions, "no verified data" instruction when absent | With a pack, some questions reference pack fields; without one, no company facts are stated (tests) |
+| M4.5 Safety | Injection fixtures (malicious pack text), report via prefilled issue link | Malicious fixture does not alter interviewer behavior in tests |
+
+**Exit gate G2:** owner and a few testers confirm tailored sessions feel meaningfully better than general ones; decide whether to build P5.
+
+---
+
+### P5 — Company research service
+
+**Goal:** scale pack creation within a strict budget. Build only if G2 says yes.
+**In scope:** FR-026, FR-029; ADR-009, ADR-010, ADR-011.
+**Pages:** PG-21 (request and report dialogs backed by the service).
+
+| Milestone | Deliverables | Acceptance criteria |
+| --- | --- | --- |
+| M5.1 Backend skeleton | API, database, health check, rate limits, challenge verification, deploy, secrets handling | Endpoints match the contract; no endpoint accepts free-form prompts; secrets only in server environment |
+| M5.2 Research pipeline | Bounded graph: normalize, cache check, budget guard, discover, fetch and clean, extract, validate, injection scan, coverage score, owner-review interrupt for seeds, persist | Produces schema-valid packs with evidence for every field on recorded fixtures; a restarted job resumes without re-spending |
+| M5.3 Gating and budget | Seeded list, demand counting (hashed IP with daily salt, local client token), queue, daily and monthly caps, per-job limits, kill switch | Budget guard stops jobs at the cap in tests; duplicate requests collapse to one job; counts store no personal data |
+| M5.4 Client integration and mirror | Request flow and statuses in the picker, nightly static export, fallback to mirror and general session | App works with the API disabled; "Requested ✓" shown without counts |
+| M5.5 Operations | Admin review and rollback, reports queue, logs, cost dashboard, alerts at 50, 80, 100% of budget | Alert fires in a drill; rollback restores the previous pack version |
+| M5.6 Security and legal | SSRF test suite, injection suite, abuse simulation, review of scraping policy, privacy statement and pack data license | All suites pass; legal review recorded; open question on data license resolved |
+
+**Exit gate:** measured cost per pack recorded; thresholds and caps set from data and written into `PRD.md` open questions; owner approves public launch of the service.
+
+---
+
+### P6 — Calendar and review
+
+**Goal:** tie practice to real interview dates and revisit weak questions.
+**In scope:** FR-027, FR-028; ADR-012.
+**Pages:** PG-22, PG-23.
+
+| Milestone | Deliverables | Acceptance criteria |
+| --- | --- | --- |
+| M6.1 Prep plan and `.ics` | Date and cadence form, ramping plan, `.ics` export | File imports correctly into Google, Apple and Outlook calendars |
+| M6.2 Spaced repetition | Review queue and daily review set | Interval logic passes unit tests; daily cap respected |
+| M6.3 Google Calendar (conditional) | Client-side OAuth with the narrowest workable scope, event creation, free-slot suggestions | Works in a test account; denial falls back to `.ics`. If app verification blocks release, defer and keep `.ics` only |
+
+**Exit gate:** `.ics` flow verified on three calendar apps.
+
+---
+
+### P7 — Advanced (only items the owner approves)
+
+Candidates from the Parking Lot and deferred FRs; each becomes its own mini-phase with a written scope, acceptance criteria and gate added here before work begins:
+- Custom local models and the full sanity-test harness (FR-023, ADR-017)
+- Claude and Hugging Face adapters (FR-005)
+- On-device speech recognition and automatic end-of-speech detection (ADR-014)
+- Other Parking Lot items in `PRD.md` section 12
+
+An agent must not start a P7 item without a written entry here approved by the owner.
+
+---
+
+## 4. Parallel tracks
+
+### 4.1 Content (owner-led)
+- Question bank with accurate skill tags, level and difficulty, sources and licensing.
+- Rubric anchors per level and criterion.
+- Seed company packs with evidence.
+- Key guide and troubleshooting documentation.
+Quality of this content is a main driver of product quality; schedule time for it explicitly.
+
+### 4.2 Quality and evaluation
+- Golden scoring set, injection set, inappropriate-question set, question-quality checklist (AI-025). Results recorded in `docs/evals/` before each release that changes prompts, rubrics or models.
+
+### 4.3 Documentation
+- Keep `README.md`, `docs/privacy-audit.md`, `docs/key-guide.md` and `docs/troubleshooting.md` current with every release.
+
+---
+
+## 5. Definition of Done (applies to every milestone)
+
+- [ ] All acceptance criteria for the milestone pass
+- [ ] Requirements referenced by `FR-###` or `NFR-###` in code, tests and pull requests
+- [ ] CI green: lint, types, unit, integration, end-to-end, accessibility, bundle size, license, network allowlist
+- [ ] All applicable states implemented (default, loading, empty, error, offline, permission)
+- [ ] Both themes and mobile and desktop layouts checked
+- [ ] No new outbound destinations (or CSP and privacy audit updated)
+- [ ] `PRD.md`, `architecture.md`, `design.md` and this file updated where behavior or decisions changed, with change log entries
+- [ ] No secrets or personal data in code, logs, fixtures or screenshots
+- [ ] No dead code: nothing unused, commented out, speculative or left over from the change (`architecture.md` 24.6)
+- [ ] Only the current milestone's scope was built; documents were read selectively (`architecture.md` 24.7)
+
+---
+
+## 6. Requirement-to-phase map
+
+| FR | Phase | FR | Phase |
+| --- | --- | --- | --- |
+| FR-001 | P1 | FR-017 | P2 |
+| FR-002 | P1 | FR-018 | P2 |
+| FR-003 | P1 | FR-019 | P2 (simple recent list in P1) |
+| FR-004 | P1 | FR-020 | P1 (export, delete) and P2 (import) |
+| FR-005 | P1 (Gemini, OpenAI-compatible), P3 (Ollama), P7 (Claude, Hugging Face) | FR-021 | P1 |
+| FR-006 | P1 | FR-022 | P3 |
+| FR-007 | P1 | FR-023 | P3 (curated), P7 (custom) |
+| FR-008 | P1 | FR-024 | P3 |
+| FR-009 | P1 | FR-025 | P4 |
+| FR-010 | P1 | FR-026 | P5 |
+| FR-011 | P1 | FR-027 | P6 |
+| FR-012 | P1 | FR-028 | P6 |
+| FR-013 | P1 | FR-029 | P5 (an interim prefilled issue link may ship in P4) |
+| FR-014 | P1 (tags), P2 (statistics) | FR-030 | P1 |
+| FR-015 | P2 | FR-031 | P2 |
+| FR-016 | P2 | FR-032 | P1 |
+| FR-033 | P1 (PG-01 to PG-05, PG-08), P2 (PG-07), P3 (PG-06) | | |
+
+---
+
+## 6A. Page inventory and build schedule
+
+Canonical page list: `PRD.md` section 3A. Visual specifications: `design.md` section 8. This section says **when each page is built and when its design must be ready.** Agents update the Build status column in the pull request that changes it.
+
+Design status values: **Designed** (approved in the design canvas), **Needs design** (build only after a design exists, or build strictly from `design.md` rules and flag for design review before release). Never invent a new visual pattern while building.
+
+| ID | Page | Build in | Design status | Design needed before | Build status |
+| --- | --- | --- | --- | --- | --- |
+| PG-09 | AI setup | M1.2 (local option M3.2) | Designed (canvas v1) | M1.2 | Not started |
+| PG-10 | Profile and documents | M1.3 | Needs design | M1.3 | Not started |
+| PG-11 | Session setup with company choice | M1.4 (company choice M4.3) | Needs design | M1.4 | Not started |
+| PG-12 | Live interview (voice, text, drill) | M1.5 (text), M1.6 (voice), M2.4 (drill) | Needs design | M1.5 | Not started |
+| PG-13 | Results | M1.7 | Needs design | M1.7 | Not started |
+| PG-14 | Home | M1.7 (minimal), M2.6 (full) | Needs design | M1.7 | Not started |
+| PG-18 | Settings | M1.1 (data, theme), M1.2 (providers), M1.6 (voice) | Needs design | M1.1 | Not started |
+| PG-01 | Landing | M1.9 | Designed (canvas v1) | M1.9 | Not started |
+| PG-02 | Privacy | M1.9 | Needs design | M1.9 | Not started |
+| PG-03 | Open source and license | M1.9 | Needs design | M1.9 | Not started |
+| PG-04 | Key guide | M1.9 | Needs design | M1.9 | Not started |
+| PG-05 | Troubleshooting and compatibility | M1.9 (expanded M3.6) | Needs design | M1.9 | Not started |
+| PG-08 | Not-found, unsupported-browser and offline pages | M1.9 | Needs design | M1.9 | Not started |
+| PG-15 | Skills dashboard | M2.3 | Needs design | M2.3 | Not started |
+| PG-16 | Skill practice | M2.4 | Needs design | M2.4 | Not started |
+| PG-17 | History and session detail | M2.5 | Needs design | M2.5 | Not started |
+| PG-07 | Roadmap and changelog (Could) | After M2.7, if time allows | Needs design | When scheduled | Not started |
+| PG-19 | Model manager | M3.2 | Needs design | M3.2 | Not started |
+| PG-06 | Local models guide | M3.6 | Needs design | M3.6 | Not started |
+| PG-20 | Company directory and detail | M4.3 | Needs design | M4.3 | Not started |
+| PG-21 | Report and request dialogs | M4.5 (issue link), M5.4 (service) | Needs design | M4.5 | Not started |
+| PG-22 | Schedule | M6.1 | Needs design | M6.1 | Not started |
+| PG-23 | Review queue | M6.2 | Needs design | M6.2 | Not started |
+
+### Design delivery order (for the designer)
+1. **Batch 1, before P1 app build:** PG-10, PG-11, PG-12 (voice, text-only and phone versions), PG-13, PG-14 (minimal), PG-18. PG-09 is done.
+2. **Batch 2, before M1.9:** PG-02, PG-03, PG-04, PG-05, PG-08. PG-01 is done.
+3. **Batch 3, before P2:** PG-15, PG-16, PG-17, PG-14 (full).
+4. **Batch 4, before P3:** PG-19, PG-06.
+5. **Batch 5, before P4:** PG-20 and the company states of PG-11.
+6. **Batch 6, before P5:** PG-21.
+7. **Batch 7, before P6:** PG-22, PG-23.
+For every page: phone layout, Paper (light) theme where the page appears in the app, and all states in `design.md` 7.4.
+
+Rules:
+- Build order inside a phase follows the milestone table; pages appear in the milestone that needs them.
+- A page is **done** only when it meets `design.md`, passes accessibility checks in both themes, and has every state.
+- Public pages (PG-01 to PG-08) must pass the no-third-party-request network test.
+
+---
+
+## 7. Status tracker (agents update this table in the same pull request)
+
+Status values: Not started, In progress, Blocked, Done. Add a date and a short note when changing.
+
+| Milestone | Status | Updated | Notes |
+| --- | --- | --- | --- |
+| M0.1 Repo and tooling | Not started | 2026-10-12 | |
+| M0.2 Tokens, fonts and base components | Not started | 2026-10-13 | |
+| M0.3 Core contracts | Not started | 2026-10-12 | |
+| M0.4 Content scaffolding | Not started | 2026-10-12 | |
+| M0.5 Compliance skeleton | Not started | 2026-10-12 | |
+| M1.1 to M1.9 (P1) | Not started | 2026-10-13 | Track each milestone on its own row when P1 begins; M1.9 is the public site |
+| G1 validation | Not started | 2026-10-12 | Record outcome and decision here |
+| P2 to P7 | Not started | 2026-10-12 | Expand rows when the phase begins |
+| Page build tracker | See section 6A | 2026-10-13 | Update the Build status column there |
+
+---
+
+## 8. Risks to schedule and mitigations
+
+| Risk | Mitigation |
+| --- | --- |
+| Voice quirks consume time | Time-box M1.6; text mode ships first (M1.5) so the loop is testable without voice |
+| Scoring quality needs iteration | Golden set early (M1.7); keep prompts versioned; budget extra time before G1 |
+| Content authoring is slow | Start the question bank during P0; accept a smaller bank at G1 |
+| Scope creep from the long idea list | Parking Lot rule; phase gates; owner approval for P7 |
+| Provider browser access differences | Adapter tests early in M1.2; troubleshooting doc |
+| Backend cost or legal uncertainty | P5 only after G2; budget caps first; legal review before public launch |
+| Solo capacity | Small milestones; keep each PR reviewable; resist parallel phases |
+
+---
+
+## 9. Change control
+
+- Changes to phase scope, order or gates need the owner's approval and a change log entry here.
+- Moving a requirement between phases also updates the phase tags in `PRD.md` in the same change.
+- Estimates may be revised freely with a note; acceptance criteria may only be weakened with explicit owner approval.
+
+## 10. Change Log
+| Date | Version | Change |
+| --- | --- | --- |
+| 2026-10-12 | 0.1.0 | Initial phases, milestones, gates and requirement map |
+| 2026-10-13 | 0.2.0 | Added section 6A (page inventory, build schedule, design delivery order), M1.9 public site and docs, expanded M0.2 for tokens and self-hosted fonts, page lists per phase, FR-033 mapping |
+| 2026-10-13 | 0.2.1 | M0.1 now includes `AGENTS.md` and dead-code checks; Definition of Done gains no-dead-code and scope checks |
+| 2026-10-13 | 0.2.2 | Completed M0.1 repo and tooling: pnpm monorepo scaffolding, strict TypeScript, ESLint boundary enforcement, Vitest runner, Knip dead-code checking, Prettier, and CI workflow |

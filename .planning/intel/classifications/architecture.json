@@ -1,0 +1,26 @@
+{
+  "source_path": "architecture.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Architecture — Abhyas",
+  "summary": "Technical architecture specification and architectural decision records (ADR-001 to ADR-021), covering local-first SPA with Dexie, direct provider calls, framework-free packages/core, deterministic interview state machine, browser Web Speech API, and optional FastAPI company research backend.",
+  "scope": [
+    "system architecture",
+    "ADR-001 to ADR-021",
+    "monorepo structure",
+    "Dexie IndexedDB",
+    "provider adapters",
+    "FSM interview runner",
+    "Web Speech",
+    "CSP allowlist"
+  ],
+  "cross_refs": [
+    "PRD.md",
+    "design.md",
+    "phases.md"
+  ],
+  "locked": true,
+  "precedence": 2,
+  "notes": "Authority level 2 of 4: PRD > architecture > design > phases. Preserves ADRs 001-021 as locked architectural decisions."
+}

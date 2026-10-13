@@ -1,0 +1,8 @@
+{
+  "project_name": "Abhyas",
+  "mode": "standard",
+  "granularity": "standard",
+  "phase_id_convention": "sequential",
+  "model_profile": "quality",
+  "commit_docs": true
+}

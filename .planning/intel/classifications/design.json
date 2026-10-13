@@ -1,0 +1,24 @@
+{
+  "source_path": "design.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Design — Abhyas",
+  "summary": "Design system specification, including retro-pixel visual aesthetic (Ink & Paper themes), design tokens, locked self-hosted typography (Pixelify Sans, Instrument Sans, JetBrains Mono, Caveat), UI component contracts, and WCAG 2.2 AA accessibility rules.",
+  "scope": [
+    "design tokens",
+    "theming",
+    "self-hosted fonts",
+    "base components",
+    "accessibility WCAG 2.2 AA",
+    "screen specifications"
+  ],
+  "cross_refs": [
+    "PRD.md",
+    "architecture.md",
+    "phases.md"
+  ],
+  "locked": true,
+  "precedence": 3,
+  "notes": "Authority level 3 of 4: PRD > architecture > design > phases."
+}

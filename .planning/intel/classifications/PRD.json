@@ -1,0 +1,25 @@
+{
+  "source_path": "PRD.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "PRD — Abhyas",
+  "summary": "Product Requirements Document for Abhyas, defining core vision, target users, functional requirements (FR-001 to FR-033), non-functional requirements (NFR-001 to NFR-025), AI requirements (AI-001 to AI-020), user personas, journeys, and privacy invariants.",
+  "scope": [
+    "mock interview",
+    "voice practice",
+    "local-first privacy",
+    "skill statistics",
+    "direct provider API",
+    "question personalization",
+    "rubric evaluation"
+  ],
+  "cross_refs": [
+    "architecture.md",
+    "design.md",
+    "phases.md"
+  ],
+  "locked": true,
+  "precedence": 1,
+  "notes": "Highest authority document in the precedence hierarchy: PRD > architecture > design > phases."
+}

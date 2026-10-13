@@ -1,7 +1,7 @@
 // FR-014, FR-017, ADR-006: CLI runner for CI content validation.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateContentDirectory } from "./validator.js";
+import { validateContentDirectory } from "./validate-directory.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

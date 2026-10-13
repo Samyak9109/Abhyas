@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "validate:content": "pnpm --filter @abhyas/content run validate",
+    "check:licenses": "node scripts/check-licenses.mjs",
     "knip": "knip",
     "format:check": "prettier --check .",
     "format": "prettier --write ."

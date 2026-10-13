@@ -5,9 +5,9 @@ import {
   validateTaxonomy,
   validateRubric,
   validateQuestionBank,
-  validateContentDirectory,
   REQUIRED_EXPERIENCE_LEVELS,
 } from "./validator.js";
+import { validateContentDirectory } from "./validate-directory.js";
 
 const CONTENT_DIR = path.resolve(__dirname, "..");
 

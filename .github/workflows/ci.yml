@@ -60,6 +60,9 @@ jobs:
       - name: Validate content schemas & records
         run: pnpm run validate:content
 
+      - name: License check (no GPL/AGPL dependencies)
+        run: pnpm run check:licenses
+
       - name: Dead-code & unused dependencies check (Knip)
         run: pnpm run knip
 

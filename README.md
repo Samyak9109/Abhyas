@@ -1,13 +1,10 @@
 <div align="center">
 
-```
- █████╗ ██████╗ ██╗  ██╗██╗   ██╗ █████╗ ███████╗
-██╔══██╗██╔══██╗██║  ██║╚██╗ ██╔╝██╔══██╗██╔════╝
-███████║██████╔╝███████║ ╚████╔╝ ███████║███████╗
-██╔══██║██╔══██╗██╔══██║  ╚██╔╝  ██╔══██║╚════██║
-██║  ██║██████╔╝██║  ██║   ██║   ██║  ██║███████║
-╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="Assets/svg/abhyas-lockup-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="Assets/svg/abhyas-lockup.svg">
+  <img alt="Abhyas" src="Assets/svg/abhyas-lockup.svg" width="380">
+</picture>
 
 ### 🎤 Practice interviews out loud. Fail here, not there.
 

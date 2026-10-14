@@ -264,18 +264,18 @@ flowchart TB
         Mirror[("Static Pack Mirror<br/>(Curated CDN)")]
     end
 
-    UI -->|Upload Resume / Job Description| Worker
-    Worker -->|Structured Text (Zero Network)| DB
-    UI -->|Session Interaction| FSM
-    UI -->|Push-to-Talk Speech| Speech
-    Speech -->|Editable Transcript| FSM
-    FSM -->|Persist Turns & Scores| DB
-    FSM -->|Direct Prompts with User Key| Gemini
-    FSM -->|Direct Prompts with User Key| OpenAI
-    FSM -->|Local Inference| WebLLM
-    FSM -->|Localhost HTTP| Ollama
-    UI -.->|Company Demand Signals Only| FastAPI
-    UI -.->|Fetch Static Company Packs| Mirror
+    UI -->|"Upload Resume / Job Description"| Worker
+    Worker -->|"Structured Text (Zero Network)"| DB
+    UI -->|"Session Interaction"| FSM
+    UI -->|"Push-to-Talk Speech"| Speech
+    Speech -->|"Editable Transcript"| FSM
+    FSM -->|"Persist Turns and Scores"| DB
+    FSM -->|"Direct Prompts with User Key"| Gemini
+    FSM -->|"Direct Prompts with User Key"| OpenAI
+    FSM -->|"Local Inference"| WebLLM
+    FSM -->|"Localhost HTTP"| Ollama
+    UI -.->|"Company Demand Signals Only"| FastAPI
+    UI -.->|"Fetch Static Company Packs"| Mirror
 ```
 
 ### Key Design Decisions
@@ -367,34 +367,6 @@ Abhyas uses a **retro-pixel** visual aesthetic: near-black "Ink" ground with war
 
 > 🔤 *These four fonts are locked (ADR-020). No font CDNs are queried. Full design tokens live in [`design.md`](./design.md).*
 
----
-
-## 🛣️ Roadmap
-
-Phases and milestones follow [phases.md](./phases.md):
-
-- [x] **Phase P0: Foundations** *(In Progress)*
-  - [x] **M0.1 Repo and tooling:** pnpm workspaces (`apps/web`, `packages/core`, `packages/content`), strict TS, ESLint, Knip
-  - [x] **M0.2 Tokens, fonts and base components:** Ink and Paper design tokens, 4 self-hosted fonts, 14 accessible components, axe tests
-  - [x] **M0.3 Core contracts:** `ProviderAdapter`, mock provider, Zod schemas, Dexie schema v1, migration harness
-  - [x] **M0.4 Content scaffolding:** Skill taxonomy v1, rubric anchor files, question bank schema, CI validation CLI
-  - [ ] **M0.5 Compliance skeleton:** `LICENSE`, `TRADEMARK.md`, `THIRD_PARTY_LICENSES`, CSP allowlist, network test skeleton
-- [ ] **Phase P1: MVP Core Loop and Public Site** *(Target: Gate G1 user validation)*
-  - [ ] M1.1 Storage, settings, export, delete-all
-  - [ ] M1.2 AI setup (Gemini & OpenAI adapters, key testing)
-  - [ ] M1.3 Profile & document worker ingestion
-  - [ ] M1.4 Session setup & question engine
-  - [ ] M1.5 Interview engine (text state machine)
-  - [ ] M1.6 Voice (push-to-talk, speech synthesis, subtitles)
-  - [ ] M1.7 Rubric evaluator & grounded rewrites
-  - [ ] M1.8 Hardening, bundle budgets, accessibility pass
-  - [ ] M1.9 Prerendered static public pages (Landing, Privacy, Docs)
-- [ ] **Phase P2: Skills and Calibration** (Skill statistics, confidence intervals, single-skill drills, habit tracking)
-- [ ] **Phase P3: Local Text Mode** (In-browser WebGPU WebLLM engine, local Ollama integration, offline text sessions)
-- [ ] **Phase P4: Company Packs (Static)** (Curated static JSON question packs with evidence citations)
-- [ ] **Phase P5: Research Service** (FastAPI + LangGraph scraping backend with hard budget caps)
-- [ ] **Phase P6: Calendar and Review** (`.ics` roadmap export, client-side Google Calendar integration)
-- [ ] **Phase P7: Advanced** (Custom community packs, on-device Whisper speech recognition)
 
 ---
 
@@ -416,7 +388,7 @@ Please keep the locked typefaces, token-based styling, and local-first invariant
 ## 📄 License
 
 - **Code:** Released under the **[MIT License](./LICENSE)**. Copyright © 2026 Samyak Jain.
-- **Brand & Mascot:** The name "Abhyas" and the pixel monitor-head mascot visual assets are protected trademarks governed by **[TRADEMARK.md](./TRADEMARK.md)**.
+- **Brand & Mascot:** The name "Abhyas" and the pixel monitor-head visual assets are protected trademarks governed by **[TRADEMARK.md](./TRADEMARK.md)**.
 
 ---
 

@@ -132,6 +132,15 @@ export default tseslint.config(
       },
     },
   },
+  // Static browser assets served as-is (pre-paint theme bootstrap)
+  {
+    files: ["apps/web/public/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
   // scripts rules
   {
     files: ["scripts/**/*.{js,mjs}"],

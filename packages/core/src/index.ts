@@ -17,4 +17,5 @@ export * from "./providers/types";
 export * from "./providers/mock-adapter";
 export * from "./schemas";
 export * from "./storage";
+export * from "./settings";
 export * from "./network";

@@ -11,7 +11,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@abhyas/content": "workspace:*",
     "@abhyas/core": "workspace:*",
     "react": "19.0.0",
     "react-dom": "19.0.0"

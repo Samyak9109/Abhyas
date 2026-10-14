@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Document | `architecture.md` (authority level 2 of 4) |
-| Version | 0.2.1 |
-| Last updated | 2026-10-13 |
+| Version | 0.2.2 |
+| Last updated | 2026-10-14 |
 | Governs | How the system is built: stack, structure, data, security, decisions |
 | Governed by | `PRD.md` (requirements win on conflict) |
 | Companion docs | `design.md`, `phases.md` |
@@ -365,6 +365,9 @@ Rules:
 - All dates are ISO strings in UTC; display converts to local time.
 - Streak and daily logic use the device's local date (FR-018).
 - Never store API keys unencrypted when a passphrase is set; never include keys in exports unless the user opts in (FR-020).
+- All reads go through a `StorageAdapter` (`DexieStorageAdapter` with validate-on-read and quarantine, or `MemoryStorageAdapter` fallback), never through Dexie directly from UI code.
+- Exports use the versioned format in `packages/core/src/storage/export-format.ts`; provider keys are stripped by default and the quarantine table is never exported (FR-020).
+- The pre-paint theme bootstrap (`apps/web/public/theme-init.js`) reads a localStorage mirror of the `theme` setting so the first render has no flash; the settings table stays the source of truth (FR-030).
 
 ---
 
@@ -798,3 +801,4 @@ Product runtime (see AI-014 and AI-024): condensed and cached profile and pack, 
 | 2026-10-12 | 0.1.0 | Initial architecture and ADR-001 to ADR-018 |
 | 2026-10-13 | 0.2.0 | Added route and page map (PG ids), theming and font architecture, public-page prerendering, font-src and egress updates, CI checks, ADR-019 to ADR-021 |
 | 2026-10-13 | 0.2.1 | Added sections 24.6 to 24.8 (no dead code, token economy, skills and tools), dead-code CI checks, ADR-022 |
+| 2026-10-14 | 0.2.2 | M1.1 storage layer: `StorageAdapter` implementations (Dexie with validate-on-read quarantine, in-memory fallback, persist-on-first-save), versioned export format (keys stripped by default, quarantine excluded), pre-paint theme bootstrap via localStorage mirror (FR-001, FR-020, FR-030) |

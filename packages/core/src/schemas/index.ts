@@ -5,3 +5,4 @@ export * from "./pack.schema";
 export * from "./taxonomy.schema";
 export * from "./rubric.schema";
 export * from "./question.schema";
+export * from "./storage-rows.schema";

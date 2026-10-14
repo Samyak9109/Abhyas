@@ -1,118 +1,36 @@
 // FR-001, ADR-004: Dexie IndexedDB Schema v1 for local-first storage.
+// Row types come from the Zod schemas (schemas/storage-rows.schema.ts) so there
+// is a single source of truth for what a valid row looks like.
 import Dexie, { type Table } from "dexie";
-import type { Evaluation, ExperienceLevel } from "../schemas";
+import type {
+  CompanyCacheRow,
+  DocumentRow,
+  ModelRow,
+  ProfileRow,
+  ProviderRow,
+  QuarantineRow,
+  ReviewQueueRow,
+  SessionRow,
+  SettingRow,
+  SkillStatRow,
+  StructuredProfileRow,
+  TurnRow,
+} from "../schemas";
 
-export interface ProfileRow {
-  id: string;
-  level: ExperienceLevel;
-  targetRole: string;
-  years?: number;
-  updatedAt: string;
-}
-
-export interface DocumentRow {
-  id: string;
-  kind: "resume" | "jd";
-  text: string;
-  hash: string;
-  updatedAt: string;
-}
-
-export interface StructuredProfileRow {
-  id: string;
-  inputHash: string;
-  json: unknown;
-  condensed: string;
-  promptVersion: number;
-}
-
-export interface ProviderRow {
-  id: string;
-  kind: string;
-  baseUrl?: string;
-  modelRoles: {
-    interviewer: string;
-    evaluator: string;
-  };
-  key?: string;
-  encryptedKey?: string;
-  lastTestedAt?: string;
-}
-
-export interface SessionRow {
-  id: string;
-  startedAt: string;
-  endedAt?: string;
-  status: "active" | "completed" | "abandoned";
-  plan: unknown;
-  modality: "voice" | "text";
-  level: ExperienceLevel;
-  companySlug?: string;
-  providerId: string;
-  modelId: string;
-  schemaVersion: number;
-}
-
-export interface TurnRow {
-  id: string;
-  sessionId: string;
-  index: number;
-  questionId?: string;
-  isUnverifiedQuestion: boolean;
-  skillTags: string[];
-  difficulty: number;
-  questionText: string;
-  answerText: string;
-  followUpOf?: string;
-  evaluation?: Evaluation;
-  delivery?: unknown;
-  status: "scored" | "unscored";
-}
-
-export interface SkillStatRow {
-  skillId: string;
-  score: number;
-  n: number;
-  confidence: "low" | "medium" | "high";
-  lastPracticedAt: string;
-  trend?: number;
-  taxonomyVersion: number;
-}
-
-export interface ReviewQueueRow {
-  id: string;
-  turnId: string;
-  dueAt: string;
-  intervalDays: number;
-}
-
-export interface SettingRow {
-  key: string;
-  value: unknown;
-}
-
-export interface CompanyCacheRow {
-  slug: string;
-  pack: unknown;
-  fetchedAt: string;
-  packVersion: number;
-}
-
-export interface ModelRow {
-  id: string;
-  engine: string;
-  sizeBytes: number;
-  status: string;
-  sanityResult?: unknown;
-}
-
-export interface QuarantineRow {
-  id: string;
-  table: string;
-  raw: unknown;
-  error: string;
-  at: string;
-}
+export type {
+  CompanyCacheRow,
+  DocumentRow,
+  ModelRow,
+  ProfileRow,
+  ProviderRow,
+  QuarantineRow,
+  ReviewQueueRow,
+  SessionRow,
+  SettingRow,
+  SkillStatRow,
+  StructuredProfileRow,
+  TurnRow,
+} from "../schemas";
 
 export class AbhyasDatabase extends Dexie {
   profile!: Table<ProfileRow, string>;

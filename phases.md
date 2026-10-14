@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Document | `phases.md` (authority level 4 of 4) |
-| Version | 0.2.1 |
-| Last updated | 2026-10-13 |
+| Version | 0.3.0 |
+| Last updated | 2026-10-14 |
 | Governs | Order of work, milestones, acceptance criteria, validation gates |
 | Governed by | `PRD.md`, `architecture.md`, `design.md` (they win on conflict) |
 
@@ -266,7 +266,7 @@ Design status values: **Designed** (approved in the design canvas), **Needs desi
 | PG-12 | Live interview (voice, text, drill) | M1.5 (text), M1.6 (voice), M2.4 (drill) | Needs design | M1.5 | Not started |
 | PG-13 | Results | M1.7 | Needs design | M1.7 | Not started |
 | PG-14 | Home | M1.7 (minimal), M2.6 (full) | Needs design | M1.7 | Not started |
-| PG-18 | Settings | M1.1 (data, theme), M1.2 (providers), M1.6 (voice) | Needs design | M1.1 | Not started |
+| PG-18 | Settings | M1.1 (data, theme), M1.2 (providers), M1.6 (voice) | Needs design | M1.1 | M1.1 sections built to design.md rules (appearance, data); flagged for design review |
 | PG-01 | Landing | M1.9 | Designed (canvas v1) | M1.9 | Not started |
 | PG-02 | Privacy | M1.9 | Needs design | M1.9 | Not started |
 | PG-03 | Open source and license | M1.9 | Needs design | M1.9 | Not started |
@@ -313,7 +313,15 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | M0.4 Content scaffolding | Done | 2026-10-13 | Skill taxonomy v1, 5 level rubrics, question schema, content validator, CI hook |
 | M0.5 Compliance skeleton | Done | 2026-10-13 | LICENSE (MIT), TRADEMARK.md, THIRD_PARTY_LICENSES, privacy-audit.md, CSP baseline, network allowlist suite, license check |
 | Phase 0 Exit Gate | Done | 2026-10-13 | All P0 milestones satisfied; CI green on empty shell build (ADR-003, ADR-016, NFR-015, NFR-022, NFR-023) |
-| M1.1 to M1.9 (P1) | Not started | 2026-10-13 | Track each milestone on its own row when P1 begins; M1.9 is the public site |
+| M1.1 Storage, settings, data tools | Done | 2026-10-14 | Storage adapters (Dexie validate-on-read + quarantine, in-memory fallback with banner, persist-on-first-save), settings screen (appearance + data), export v1 (keys excluded, quarantine excluded), delete-all with typed confirmation (FR-001, FR-020, FR-030) |
+| M1.2 AI setup | Not started | 2026-10-14 | Gemini and OpenAI-compatible adapters, key storage, test connection, model picker, caps |
+| M1.3 Profile | Not started | 2026-10-14 | Resume and JD ingestion, structured profile extraction |
+| M1.4 Session setup and question engine | Not started | 2026-10-14 | Setup screen, bank selection, AI personalization |
+| M1.5 Interview engine (text) | Not started | 2026-10-14 | State machine, text session end to end |
+| M1.6 Voice | Not started | 2026-10-14 | Push-to-talk, transcript, speech output, subtitles |
+| M1.7 Evaluation and results | Not started | 2026-10-14 | Rubric evaluator, results screen, recent sessions on Home |
+| M1.8 Hardening and release | Not started | 2026-10-14 | States, accessibility pass, budgets, end-to-end suite, deploy |
+| M1.9 Public site and docs | Not started | 2026-10-14 | PG-01 to PG-05, PG-08 prerendered static pages |
 | G1 validation | Not started | 2026-10-12 | Record outcome and decision here |
 | P2 to P7 | Not started | 2026-10-12 | Expand rows when the phase begins |
 | Page build tracker | See section 6A | 2026-10-13 | Update the Build status column there |
@@ -351,3 +359,4 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | 2026-10-13 | 0.2.4 | Completed M0.3 core contracts: ProviderAdapter contract suite, MockProviderAdapter, Zod schemas (profile, evaluation, pack), Dexie schema v1 with 12 typed stores, and migration harness with quarantine logic (NFR-023, ADR-004, ADR-006) |
 | 2026-10-13 | 0.2.5 | Completed M0.4 content scaffolding: Skill taxonomy v1 (15 skills across 3 categories), rubric level anchors across all 5 experience levels with 5 criteria and calibration axes, Question schema, sample question bank, content validation engine and CI validation command (FR-006, FR-007, FR-014, FR-017, ADR-006) |
 | 2026-10-13 | 0.2.6 | Completed M0.5 compliance skeleton: LICENSE (MIT), TRADEMARK.md, THIRD_PARTY_LICENSES, docs/privacy-audit.md, CSP baseline, network allowlist test suite, and automated license checker blocking copyleft (GPL/AGPL). Phase 0 Exit Gate completed with CI green on deployed empty shell build (NFR-006, NFR-015, NFR-017, NFR-022, ADR-003, ADR-005) |
+| 2026-10-14 | 0.3.0 | P1 begins. Completed M1.1: storage adapters (Dexie validate-on-read with quarantine, in-memory fallback + banner, persist-on-first-save, version-conflict refusal), PG-18 settings screen (appearance + data scope) built to design.md rules and flagged for design review, export file v1 (provider keys excluded by default, quarantine excluded, newer versions refused), delete-all with typed confirmation, pre-paint theme bootstrap (FR-001, FR-020, FR-030; app shell replaces the M0.2 component gallery) |

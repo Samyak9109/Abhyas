@@ -110,7 +110,7 @@
 | Phase | Plans Complete | Status | Completed |
 | --- | --- | --- | --- |
 | Phase 0: Foundations | 5/5 | Complete (exit gate passed; re-verified 2026-10-14) | 2026-10-13 |
-| Phase 1: MVP Core Loop & Public Site | 0/9 | Not started | - |
+| Phase 1: MVP Core Loop & Public Site | 1/9 | In progress (M1.1 done 2026-10-14) | - |
 | Phase 2: Skills & Calibration | 0/3 | Not started | - |
 | Phase 3: Local Text Mode | 0/2 | Not started | - |
 | Phase 4: Company Packs (Static) | 0/2 | Not started | - |

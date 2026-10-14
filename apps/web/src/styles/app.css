@@ -1,0 +1,179 @@
+/* FR-001, FR-030, ADR-021: App shell and settings screen styles. All values come
+   from design tokens (design.md 4); no raw colors, fonts or spacing here. */
+
+.abh-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.abh-app-loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+}
+
+.abh-app-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom));
+  background-color: var(--bg);
+  border-top: 1px solid var(--line);
+}
+
+.abh-wordmark {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.abh-app-nav-list {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.abh-app-nav-item {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.abh-app-nav-item[aria-current="page"] {
+  color: var(--accent-text);
+  background-color: var(--surface-2);
+}
+
+.abh-app-main {
+  flex: 1;
+  padding: var(--space-6) var(--space-4);
+}
+
+.abh-settings {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.abh-app-title {
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1.1;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.abh-settings-banner {
+  margin-bottom: var(--space-4);
+}
+
+.abh-panel {
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.abh-panel-title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.abh-panel-helper {
+  margin: 0 0 var(--space-5);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.abh-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.abh-data-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+}
+
+.abh-data-label {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.abh-data-value {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.abh-dialog-input {
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 1024px) {
+  .abh-app {
+    flex-direction: row;
+  }
+
+  .abh-app-nav {
+    position: sticky;
+    top: 0;
+    bottom: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-6);
+    width: 152px;
+    height: 100vh;
+    padding: var(--space-6) var(--space-4);
+    border-top: 0;
+    border-right: 1px solid var(--line);
+  }
+
+  .abh-wordmark {
+    font-size: 26px;
+  }
+
+  .abh-app-nav-list {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .abh-app-main {
+    padding: var(--space-8);
+  }
+}

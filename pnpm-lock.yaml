@@ -205,9 +205,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@abhyas/content':
-        specifier: workspace:*
-        version: link:../../packages/content
       '@abhyas/core':
         specifier: workspace:*
         version: link:../../packages/core

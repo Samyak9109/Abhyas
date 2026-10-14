@@ -192,6 +192,49 @@ describe("M1.1: Settings screen", () => {
     expect(onDataDeleted).toHaveBeenCalled();
   });
 
+  it("keeps focus in the confirm input while typing and submits on Enter", async () => {
+    const { storage } = renderScreen();
+    await storage.put("sessions", {
+      id: "s1",
+      startedAt: "2026-10-14T00:00:00.000Z",
+      status: "completed",
+      plan: null,
+      modality: "text",
+      level: "junior",
+      providerId: "gemini",
+      modelId: "m",
+      schemaVersion: 1,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete all…" }));
+    const input = screen.getByLabelText(/Type DELETE to confirm/) as HTMLInputElement;
+    expect(document.activeElement).toBe(input);
+
+    for (const char of "DELET") {
+      fireEvent.change(input, { target: { value: input.value + char } });
+      // NFR-011: parent re-renders must not steal focus back to the dialog chrome.
+      expect(document.activeElement).toBe(input);
+    }
+    expect(input.value).toBe("DELET");
+
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    expect(await storage.getAll("sessions")).toHaveLength(1);
+
+    fireEvent.change(input, { target: { value: "DELETE" } });
+    expect(document.activeElement).toBe(input);
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    await waitFor(
+      async () => {
+        expect(screen.queryByRole("dialog")).toBeNull();
+        expect(await storage.getAll("sessions")).toEqual([]);
+      },
+      { timeout: 3000 }
+    );
+    expect(screen.getByText("All data deleted from this browser.")).toBeTruthy();
+  });
+
   it("shows the in-memory banner when storage is unavailable", () => {
     renderScreen({ mode: "memory" });
     expect(screen.getByText(/running in memory/)).toBeTruthy();

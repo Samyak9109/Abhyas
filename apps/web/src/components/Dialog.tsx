@@ -13,15 +13,25 @@ export interface DialogProps {
 export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children, actions }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
 
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
+  // NFR-011: run only when the dialog opens — parent re-renders (e.g. typed
+  // confirmation input) must not steal focus back from the field being typed in.
   useEffect(() => {
     if (isOpen) {
       previouslyFocusedElement.current = document.activeElement as HTMLElement;
-      // Focus first focusable element inside dialog or dialog itself
+      // Prompt dialogs focus the field first so typing can start immediately.
+      const field = dialogRef.current?.querySelector<HTMLElement>("input, textarea, select");
       const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
-      if (focusable && focusable.length > 0) {
+      if (field) {
+        field.focus();
+      } else if (focusable && focusable.length > 0) {
         focusable[0]?.focus();
       } else {
         dialogRef.current?.focus();
@@ -29,7 +39,7 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children
 
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
-          onClose();
+          onCloseRef.current();
         }
       };
 
@@ -40,7 +50,7 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children
       };
     }
     return undefined;
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

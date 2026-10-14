@@ -250,6 +250,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             label={`Type ${DELETE_PHRASE} to confirm`}
             value={confirmText}
             onChange={(event) => setConfirmText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && confirmText === DELETE_PHRASE && !deleting) {
+                void handleDeleteAll();
+              }
+            }}
             autoComplete="off"
           />
         </div>

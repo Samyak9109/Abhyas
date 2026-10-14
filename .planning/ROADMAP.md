@@ -2,7 +2,7 @@
 
 ## Phases
 
-- [ ] **Phase 0: Foundations** - Scaffolding pnpm monorepo, strict TypeScript, design tokens, self-hosted typography, core contracts, and CI pipeline
+- [x] **Phase 0: Foundations** - Scaffolding pnpm monorepo, strict TypeScript, design tokens, self-hosted typography, core contracts, and CI pipeline (completed 2026-10-13)
 - [ ] **Phase 1: MVP Core Loop & Public Site** - End-to-end voice and text mock interview practice, rubric evaluations, actionable rewrites, and prerendered static public pages (Exit Gate G1)
 - [ ] **Phase 2: Skills & Calibration** - Multi-session skill tracking, confidence intervals, single-skill drills, and habit tracking
 - [ ] **Phase 3: Local Text Mode** - In-browser WebGPU (WebLLM) and Ollama local execution for offline interview practice
@@ -109,7 +109,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 | --- | --- | --- | --- |
-| Phase 0: Foundations | 0/5 | In planning (Ready for M0.1) | - |
+| Phase 0: Foundations | 5/5 | Complete (exit gate passed; re-verified 2026-10-14) | 2026-10-13 |
 | Phase 1: MVP Core Loop & Public Site | 0/9 | Not started | - |
 | Phase 2: Skills & Calibration | 0/3 | Not started | - |
 | Phase 3: Local Text Mode | 0/2 | Not started | - |

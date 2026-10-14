@@ -23,7 +23,7 @@ Candidates can practice realistic, out-loud job interviews calibrated to their e
 
 ### Active
 
-- [ ] **P0-Foundations**: Monorepo setup (`apps/web`, `packages/core`, `packages/content`), strict TypeScript, design tokens, self-hosted typography, Dexie schema v1, and CI/CD pipelines.
+- [x] **P0-Foundations**: Monorepo setup (`apps/web`, `packages/core`, `packages/content`), strict TypeScript, design tokens, self-hosted typography, Dexie schema v1, and CI/CD pipelines. (completed 2026-10-13)
 - [ ] **P1-Core Loop**: Ingest resume and job description in a Web Worker, deterministic FSM interview runner, push-to-talk browser voice, rubric evaluation with temperature 0, and actionable rewrites.
 - [ ] **P2-Skills & Calibration**: Multi-session skill tracking with confidence intervals, single-skill drills, and habit streak tracking.
 - [ ] **P3-Local Mode**: Offline text interview mode via WebGPU in-browser engine (WebLLM) and Ollama local server support.
@@ -74,4 +74,4 @@ Candidates can practice realistic, out-loud job interviews calibrated to their e
 | **ADR-022: Agent working agreements** | Zero dead code, token economy, automated tool invocation | ✅ Decided |
 
 ---
-*Last updated: 2026-10-13 after GSD onboarding initialization*
+*Last updated: 2026-10-14 — Phase 0 completion synced with `phases.md` (authoritative status tracker)*

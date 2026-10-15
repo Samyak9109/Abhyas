@@ -350,6 +350,7 @@ export async function selectQuestions(
         difficulty: difficultyBankToNorm(q.difficulty),
         text,
         ...(originalText ? { originalText } : {}),
+        ...(q.rubricHints ? { rubricHints: q.rubricHints } : {}),
         rationale: `Level ${q.difficulty} ${q.type} matching ${q.skillTags.join(", ")}`,
       })
     );

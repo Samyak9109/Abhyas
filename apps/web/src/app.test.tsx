@@ -42,6 +42,27 @@ describe("M1.1: App shell", () => {
     expect(await screen.findByRole("heading", { name: /set up your session/i })).toBeTruthy();
   });
 
+  it("navigates to session setup via aside navigation link", async () => {
+    render(<App />);
+    await screen.findByText(/running in memory/i);
+
+    const sessionLink = screen.getByRole("link", { name: /^session/i });
+    fireEvent.click(sessionLink);
+
+    expect(await screen.findByRole("heading", { name: /set up your session/i })).toBeTruthy();
+  });
+
+  it("renders empty state fallback with setup CTA when /app/interview has no active session", async () => {
+    window.history.pushState({}, "", "/app/interview");
+    render(<App />);
+
+    expect(await screen.findByText(/no active interview session/i)).toBeTruthy();
+    const cta = screen.getByRole("button", { name: /go to session setup/i });
+    fireEvent.click(cta);
+
+    expect(await screen.findByRole("heading", { name: /set up your session/i })).toBeTruthy();
+  });
+
   it("has no axe violations once loaded", async () => {
     const { container } = render(<App />);
     await screen.findByText(/running in memory/i);

@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
-import type { StorageAdapter } from "@abhyas/core";
+import {
+  selectQuestions,
+  type StructuredProfile,
+  type SelectedQuestion,
+  type SessionPlan,
+  type StorageAdapter,
+} from "@abhyas/core";
 import { Button, Callout, Skeleton } from "./components";
 import { AISetupScreen } from "./screens/AISetupScreen";
+import { LiveInterviewScreen } from "./screens/LiveInterviewScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { SessionSetupScreen } from "./screens/SessionSetupScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
+import { DEFAULT_QUESTION_BANK } from "./services/question-bank";
 import {
   StorageOpenError,
   initStorage,
@@ -17,11 +25,19 @@ import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/app.css";
 
-type AppRoute = "/app/settings" | "/app/setup/ai" | "/app/setup/profile" | "/app/setup/session";
+type AppRoute =
+  | "/app/settings"
+  | "/app/setup/ai"
+  | "/app/setup/profile"
+  | "/app/setup/session"
+  | "/app/interview";
 
 function getInitialRoute(): AppRoute {
   if (typeof window !== "undefined") {
     const path = window.location.pathname;
+    if (path.includes("interview") || window.location.hash.includes("interview")) {
+      return "/app/interview";
+    }
     if (path.includes("setup/session") || window.location.hash.includes("setup/session")) {
       return "/app/setup/session";
     }
@@ -45,6 +61,10 @@ export function App() {
   const [init, setInit] = useState<InitState>({ status: "loading" });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [activeSession, setActiveSession] = useState<{
+    plan: SessionPlan;
+    questions: SelectedQuestion[];
+  } | null>(null);
 
   const navigateTo = useCallback((nextRoute: AppRoute) => {
     setRoute(nextRoute);
@@ -91,6 +111,26 @@ export function App() {
   const handleWriteError = useCallback((error: unknown) => {
     if (isQuotaExceededError(error)) setQuotaExceeded(true);
   }, []);
+
+  const handleStartSession = useCallback(
+    async (plan: SessionPlan) => {
+      if (!storage) return;
+      try {
+        const structured = await storage.getAll<StructuredProfile>("structuredProfiles");
+        const profile = structured[0] ?? null;
+        const result = await selectQuestions({
+          plan,
+          bank: DEFAULT_QUESTION_BANK,
+          profile,
+        });
+        setActiveSession({ plan, questions: result.questions });
+        navigateTo("/app/interview");
+      } catch (err) {
+        console.error("Failed to select questions for session:", err);
+      }
+    },
+    [storage, navigateTo]
+  );
 
   // After delete-all the settings table is empty; reset the applied theme and
   // the pre-paint mirror to the default instead of leaving a stale preference.
@@ -175,10 +215,47 @@ export function App() {
       <div className="abh-app">
         <SessionSetupScreen
           storage={init.storage}
-          onStart={() => navigateTo("/app/settings")}
+          onStart={(plan) => void handleStartSession(plan)}
           onBack={() => navigateTo("/app/setup/profile")}
           onNavigateAISetup={() => navigateTo("/app/setup/ai")}
           onNavigateSettings={() => navigateTo("/app/settings")}
+        />
+      </div>
+    );
+  }
+
+  if (route === "/app/interview") {
+    if (!activeSession) {
+      return (
+        <div className="abh-app">
+          <main className="abh-app-main" style={{ padding: "var(--space-6)" }}>
+            <Callout variant="info" title="No active interview session">
+              Please configure your interview settings to begin a session.
+            </Callout>
+            <div style={{ marginTop: "var(--space-4)" }}>
+              <Button variant="primary" onClick={() => navigateTo("/app/setup/session")}>
+                Go to Session Setup
+              </Button>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    return (
+      <div className="abh-app">
+        <LiveInterviewScreen
+          storage={init.storage}
+          plan={activeSession.plan}
+          questions={activeSession.questions}
+          onFinish={() => {
+            setActiveSession(null);
+            navigateTo("/app/settings");
+          }}
+          onExit={() => {
+            setActiveSession(null);
+            navigateTo("/app/setup/session");
+          }}
         />
       </div>
     );
@@ -214,6 +291,18 @@ export function App() {
                 }}
               >
                 Profile
+              </a>
+            </li>
+            <li>
+              <a
+                className="abh-app-nav-item"
+                href="/app/setup/session"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo("/app/setup/session");
+                }}
+              >
+                Session
               </a>
             </li>
             <li>

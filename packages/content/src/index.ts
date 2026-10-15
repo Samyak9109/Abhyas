@@ -13,3 +13,4 @@ export function getContentInfo(): { name: string; version: string } {
 }
 
 export * from "./validator.js";
+export * from "./sample-bank.js";

@@ -85,6 +85,9 @@ export const SelectedQuestionSchema = z.object({
   /** Original bank question text before personalization, if applicable. */
   originalText: z.string().optional(),
 
+  /** Rubric hints from the bank question for live hints and evaluation. */
+  rubricHints: z.array(z.string()).optional(),
+
   /** Reason this question was selected (for debugging and future analytics). */
   rationale: z.string().optional(),
 });

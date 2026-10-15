@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@abhyas/content": "workspace:*",
     "@abhyas/core": "workspace:*",
     "mammoth": "^1.13.0",
     "pdfjs-dist": "^4.10.38",

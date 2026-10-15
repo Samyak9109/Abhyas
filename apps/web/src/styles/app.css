@@ -177,3 +177,522 @@
     padding: var(--space-8);
   }
 }
+
+/* --- PG-09 Setup Page Styles --- */
+.abh-setup-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.abh-setup-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.abh-setup-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-6);
+  gap: var(--space-4);
+}
+
+.abh-setup-main {
+  flex: 1;
+  max-width: 1120px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) calc(var(--space-16) + var(--space-8));
+}
+
+.abh-setup-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+}
+
+@media (min-width: 900px) {
+  .abh-setup-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-12);
+  }
+}
+
+.abh-step-badge {
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.abh-setup-title {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1.1;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.abh-setup-intro {
+  margin: 0 0 var(--space-6);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.abh-provider-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.abh-guide-link-wrap {
+  margin-top: var(--space-4);
+}
+
+.abh-guide-link {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.abh-guide-link:hover {
+  text-decoration: underline;
+}
+
+.abh-panel-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.abh-panel-monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--accent-text);
+}
+
+.abh-encryption-toggle {
+  margin: var(--space-4) 0;
+}
+
+.abh-passphrase-field {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  background-color: var(--surface-2);
+  border: 1px dashed var(--line);
+}
+
+.abh-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.abh-free-key-link {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.abh-free-key-link:hover {
+  color: var(--accent-text);
+  text-decoration: underline;
+}
+
+.abh-status-callout {
+  margin-top: var(--space-4);
+}
+
+.abh-select {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-square);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.abh-select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.abh-cost-preview {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--surface-2);
+  border-left: 3px solid var(--accent);
+}
+
+.abh-cost-title {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.abh-cost-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.abh-cost-note {
+  margin: var(--space-1) 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.abh-divider-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-6) 0;
+}
+
+.abh-divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: var(--line);
+}
+
+.abh-divider-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.abh-local-model-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.abh-local-helper {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.abh-setup-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background-color: var(--bg);
+  border-top: 1px solid var(--line);
+}
+
+.abh-setup-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-6);
+  gap: var(--space-4);
+}
+
+.abh-footer-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.abh-status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-square);
+  background-color: var(--text-muted);
+}
+
+.abh-status-indicator--success {
+  background-color: var(--success);
+}
+
+.abh-status-indicator--loading {
+  background-color: var(--warning);
+}
+
+.abh-footer-status-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* --- PG-10 Profile & Documents Page Styles --- */
+.abh-level-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.abh-mode-card {
+  padding: var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-6);
+}
+
+.abh-mode-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.abh-mode-card-title {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.abh-mode-card-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.abh-resume-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 var(--space-4);
+}
+
+.abh-resume-tab {
+  flex: 1;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.abh-resume-tab:hover {
+  background-color: var(--surface-raised);
+  color: var(--text);
+}
+
+.abh-resume-tab.active {
+  background-color: var(--primary);
+  color: var(--bg);
+  border-color: var(--primary);
+}
+
+.abh-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  border: 2px dashed var(--line);
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.abh-dropzone:hover,
+.abh-dropzone.dragging {
+  border-color: var(--primary);
+  background-color: var(--surface-raised);
+}
+
+.abh-dropzone:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.abh-file-input-hidden {
+  display: none;
+}
+
+.abh-dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.abh-dropzone-icon {
+  font-size: 28px;
+}
+
+.abh-dropzone-cta {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.abh-dropzone-formats {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.abh-parsing-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-4);
+}
+
+.abh-parsing-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.abh-field-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
+.abh-analyze-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+}
+
+.abh-structured-card {
+  padding: var(--space-5);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.abh-structured-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.abh-skills-pill-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+}
+
+.abh-skill-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  background-color: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  color: var(--text);
+}
+
+.abh-skill-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.abh-skill-remove-btn:hover {
+  background-color: var(--line);
+  color: var(--text);
+}
+
+.abh-add-skill-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.abh-gaps-list,
+.abh-claims-list {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.abh-gap-item {
+  color: var(--warning-text, var(--text));
+}
+
+.abh-claim-item {
+  color: var(--text);
+}
+
+.abh-role-only-notice {
+  margin-top: var(--space-4);
+}

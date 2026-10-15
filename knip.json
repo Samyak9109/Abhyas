@@ -14,7 +14,13 @@
       "project": ["src/**/*.{ts,tsx}"]
     },
     "apps/web": {
-      "entry": ["src/main.tsx!", "src/components/index.ts!", "index.html!", "vite.config.ts"],
+      "entry": [
+        "src/main.tsx!",
+        "src/components/index.ts!",
+        "src/workers/parser.worker.ts!",
+        "index.html!",
+        "vite.config.ts"
+      ],
       "project": ["src/**/*.{ts,tsx}"]
     }
   }

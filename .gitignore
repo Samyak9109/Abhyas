@@ -90,3 +90,8 @@ $RECYCLE.BIN/
 
 # Tool caches
 graphify-out/
+
+# Local logs & documentation (do not push to git)
+decision.md
+flow.md
+

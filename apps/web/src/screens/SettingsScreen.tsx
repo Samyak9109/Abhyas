@@ -1,7 +1,10 @@
-// FR-020, FR-030: Settings screen (PG-18, M1.1 scope: appearance + data tools).
-// Providers, voice and privacy sections arrive with M1.2 and M1.6.
 import React, { useEffect, useRef, useState } from "react";
-import { buildExport, type StorageAdapter, type ThemePreference } from "@abhyas/core";
+import {
+  buildExport,
+  type ProviderRow,
+  type StorageAdapter,
+  type ThemePreference,
+} from "@abhyas/core";
 import { Banner, Button, Callout, Dialog, Input, RadioCard, Toast } from "../components";
 import type { StorageMode } from "../services/storage";
 
@@ -26,6 +29,7 @@ interface SettingsScreenProps {
   onThemeChange: (preference: ThemePreference) => void;
   onWriteError: (error: unknown) => void;
   onDataDeleted: () => void;
+  onNavigateAISetup?: () => void;
 }
 
 function formatBytes(bytes: number): string {
@@ -55,7 +59,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onThemeChange,
   onWriteError,
   onDataDeleted,
+  onNavigateAISetup,
 }) => {
+  const [activeProvider, setActiveProvider] = useState<ProviderRow | null>(null);
   const [usage, setUsage] = useState<{ usage: number; quota: number } | null>(null);
   const [exporting, setExporting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -79,10 +85,40 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const rows = (await storage.getAll("providers")) as ProviderRow[];
+        if (!cancelled && rows.length > 0) {
+          setActiveProvider(rows[0] || null);
+        } else if (!cancelled) {
+          setActiveProvider(null);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [storage]);
+
+  useEffect(() => {
     if (!toast) return undefined;
     const timer = setTimeout(() => setToast(null), 5000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  const handleRemoveProvider = async (id: string) => {
+    try {
+      await storage.delete("providers", id);
+      setActiveProvider(null);
+      setToast("Provider key removed from this browser.");
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to remove provider key.");
+    }
+  };
 
   const handleExport = async () => {
     setExporting(true);
@@ -152,6 +188,69 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           />
         </div>
       )}
+
+      <section className="abh-panel" aria-labelledby="abh-settings-providers">
+        <h2 id="abh-settings-providers" className="abh-panel-title">
+          Providers and keys
+        </h2>
+        <p className="abh-panel-helper">
+          Bring your own API key. Keys are sent only to the provider you choose.
+        </p>
+
+        {activeProvider ? (
+          <div className="abh-data-row">
+            <div>
+              <p className="abh-data-label">Active Provider</p>
+              <p className="abh-data-value">
+                {activeProvider.kind === "gemini"
+                  ? "Google Gemini"
+                  : activeProvider.kind === "openai"
+                    ? "OpenAI"
+                    : "OpenAI-Compatible"}
+                {" · "}
+                {activeProvider.modelRoles?.interviewer || "Default model"}
+              </p>
+              <p className="abh-data-label" style={{ marginTop: "var(--space-2)" }}>
+                Key Status
+              </p>
+              <p className="abh-data-value">
+                {activeProvider.encryptedKey
+                  ? "Encrypted at rest (passphrase required)"
+                  : activeProvider.key
+                    ? "Stored unencrypted in local browser storage"
+                    : "No key saved"}
+                {activeProvider.lastTestedAt && (
+                  <span style={{ color: "var(--text-muted)", fontSize: "12px", display: "block" }}>
+                    Last verified: {new Date(activeProvider.lastTestedAt).toLocaleDateString()}
+                  </span>
+                )}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+              {onNavigateAISetup && (
+                <Button variant="secondary" onClick={onNavigateAISetup}>
+                  Change provider
+                </Button>
+              )}
+              <Button variant="danger" onClick={() => void handleRemoveProvider(activeProvider.id)}>
+                Remove key
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="abh-data-row">
+            <div>
+              <p className="abh-data-label">Status</p>
+              <p className="abh-data-value">No AI provider configured yet.</p>
+            </div>
+            {onNavigateAISetup && (
+              <Button variant="primary" onClick={onNavigateAISetup}>
+                Configure AI source
+              </Button>
+            )}
+          </div>
+        )}
+      </section>
 
       <section className="abh-panel" aria-labelledby="abh-settings-appearance">
         <h2 id="abh-settings-appearance" className="abh-panel-title">

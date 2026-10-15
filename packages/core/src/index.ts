@@ -15,7 +15,14 @@ export function getCoreInfo(): { name: string; version: string; isFrameworkFree:
 
 export * from "./providers/types";
 export * from "./providers/mock-adapter";
+export * from "./providers/gemini-adapter";
+export * from "./providers/openai-compatible-adapter";
+export * from "./providers/encryption";
+export * from "./providers/cost-estimator";
+export * from "./providers/fixtures/gemini-fixtures";
+export * from "./providers/fixtures/openai-fixtures";
 export * from "./schemas";
 export * from "./storage";
 export * from "./settings";
 export * from "./network";
+export * from "./profile";

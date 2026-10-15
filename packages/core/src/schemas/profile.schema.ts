@@ -40,6 +40,8 @@ export const StructuredProfileSchema = z.object({
       highlights: z.array(z.string()),
     })
   ),
+  gaps: z.array(z.string()).optional(),
+  quantifiedClaims: z.array(z.string()).optional(),
   promptVersion: z.number().int().positive(),
 });
 export type StructuredProfile = z.infer<typeof StructuredProfileSchema>;

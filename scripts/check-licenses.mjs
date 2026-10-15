@@ -33,11 +33,23 @@ export const ALLOWED_LICENSES = new Set([
 
 /**
  * Evaluates whether a license string is banned.
+ * If dual-licensed with OR (e.g., "(MIT OR GPL-3.0)"), electing a permitted
+ * permissive license satisfies our compliance requirements.
  */
 export function isBannedLicense(licenseStr) {
   if (!licenseStr || typeof licenseStr !== "string") {
     return false;
   }
+
+  // Handle SPDX disjunctive dual-licensing with OR
+  const cleaned = licenseStr.replace(/^\(|\)$/g, "").trim();
+  if (/\bOR\b/i.test(cleaned)) {
+    const parts = cleaned.split(/\s+OR\s+/i).map((p) => p.replace(/[()]/g, "").trim());
+    if (parts.some((p) => ALLOWED_LICENSES.has(p))) {
+      return false;
+    }
+  }
+
   return BANNED_LICENSE_PATTERNS.some((pattern) => pattern.test(licenseStr));
 }
 

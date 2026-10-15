@@ -183,6 +183,7 @@ describe("M1.1: Settings screen", () => {
 
     await waitFor(
       async () => {
+        expect(screen.queryByRole("dialog")).toBeNull();
         expect(await storage.getAll("sessions")).toEqual([]);
         expect(await storage.getAll("settings")).toEqual([]);
       },

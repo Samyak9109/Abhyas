@@ -1,9 +1,8 @@
-// FR-001, FR-030: App shell with storage initialization, theme wiring and the
-// M1.1 settings screen. The M0.2 component gallery is superseded by real screens;
-// component coverage lives in components.test.tsx.
 import { useCallback, useEffect, useState } from "react";
 import type { StorageAdapter } from "@abhyas/core";
 import { Button, Callout, Skeleton } from "./components";
+import { AISetupScreen } from "./screens/AISetupScreen";
+import { ProfileScreen } from "./screens/ProfileScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import {
   StorageOpenError,
@@ -17,15 +16,50 @@ import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/app.css";
 
+type AppRoute = "/app/settings" | "/app/setup/ai" | "/app/setup/profile";
+
+function getInitialRoute(): AppRoute {
+  if (typeof window !== "undefined") {
+    const path = window.location.pathname;
+    if (path.includes("setup/profile") || window.location.hash.includes("setup/profile")) {
+      return "/app/setup/profile";
+    }
+    if (path.includes("setup/ai") || window.location.hash.includes("setup/ai")) {
+      return "/app/setup/ai";
+    }
+  }
+  return "/app/settings";
+}
+
 type InitState =
   | { status: "loading" }
   | { status: "error"; kind: "version_conflict" | "unknown" }
   | { status: "ready"; storage: StorageAdapter; mode: StorageMode };
 
 export function App() {
+  const [route, setRoute] = useState<AppRoute>(getInitialRoute);
   const [init, setInit] = useState<InitState>({ status: "loading" });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+
+  const navigateTo = useCallback((nextRoute: AppRoute) => {
+    setRoute(nextRoute);
+    if (typeof window !== "undefined" && window.location.pathname !== nextRoute) {
+      try {
+        window.history.pushState({}, "", nextRoute);
+      } catch {
+        // ignore navigation history failures in restricted environments
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const onPopState = () => {
+      setRoute(getInitialRoute());
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -107,6 +141,31 @@ export function App() {
     );
   }
 
+  if (route === "/app/setup/ai") {
+    return (
+      <div className="abh-app">
+        <AISetupScreen
+          storage={init.storage}
+          onComplete={() => navigateTo("/app/setup/profile")}
+          onNavigateSettings={() => navigateTo("/app/settings")}
+        />
+      </div>
+    );
+  }
+
+  if (route === "/app/setup/profile") {
+    return (
+      <div className="abh-app">
+        <ProfileScreen
+          storage={init.storage}
+          onComplete={() => navigateTo("/app/settings")}
+          onBack={() => navigateTo("/app/setup/ai")}
+          onNavigateSettings={() => navigateTo("/app/settings")}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="abh-app">
       <aside className="abh-app-nav">
@@ -116,7 +175,39 @@ export function App() {
         <nav aria-label="App">
           <ul className="abh-app-nav-list">
             <li>
-              <a className="abh-app-nav-item" href="/app/settings" aria-current="page">
+              <a
+                className="abh-app-nav-item"
+                href="/app/setup/ai"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo("/app/setup/ai");
+                }}
+              >
+                AI Setup
+              </a>
+            </li>
+            <li>
+              <a
+                className="abh-app-nav-item"
+                href="/app/setup/profile"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo("/app/setup/profile");
+                }}
+              >
+                Profile
+              </a>
+            </li>
+            <li>
+              <a
+                className="abh-app-nav-item"
+                href="/app/settings"
+                aria-current="page"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo("/app/settings");
+                }}
+              >
                 Settings
               </a>
             </li>
@@ -132,6 +223,7 @@ export function App() {
           onThemeChange={(next) => void setThemePreference(next)}
           onWriteError={handleWriteError}
           onDataDeleted={handleDataDeleted}
+          onNavigateAISetup={() => navigateTo("/app/setup/ai")}
         />
       </main>
     </div>

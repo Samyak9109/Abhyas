@@ -83,5 +83,16 @@ describe("M0.5: License Compliance & Copyleft Prevention (ADR-003, NFR-022)", ()
       expect(result.violations).toEqual([]);
       expect(result.scannedCount).toBe(permissivePackages.length);
     });
+
+    it("approves packages dual-licensed with a permissive option (e.g. MIT OR GPL-3.0)", () => {
+      const dualLicensed = [
+        { name: "dual-mit-gpl", version: "1.0.0", license: "(MIT OR GPL-3.0-or-later)" },
+        { name: "dual-bsd-gpl", version: "2.0.0", license: "BSD-3-Clause OR GPL-2.0" },
+      ];
+
+      const result = auditPackageLicenses(dualLicensed);
+      expect(result.valid).toBe(true);
+      expect(result.violations).toEqual([]);
+    });
   });
 });

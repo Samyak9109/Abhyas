@@ -1,0 +1,183 @@
+// FR-006, PG-11: Tests for Session Setup screen (M1.4).
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { axe } from "vitest-axe";
+import {
+  MemoryStorageAdapter,
+  SessionPlanSchema,
+  type ProfileRow,
+  type ProviderRow,
+} from "@abhyas/core";
+import { SessionSetupScreen } from "./SessionSetupScreen";
+
+describe("M1.4: SessionSetupScreen (PG-11)", () => {
+  it("renders with 5 interview types, lengths, styles, and gated voice mode", async () => {
+    const storage = new MemoryStorageAdapter();
+    const onStart = vi.fn();
+    const onBack = vi.fn();
+
+    render(<SessionSetupScreen storage={storage} onStart={onStart} onBack={onBack} />);
+
+    // Header & Stepper
+    expect(screen.getByText("Abhyas")).toBeTruthy();
+    expect(screen.getByText("Step 3 of 3")).toBeTruthy();
+    expect(await screen.findByText("Set Up Your Session")).toBeTruthy();
+
+    // 5 Interview Types (FR-006)
+    expect(screen.getByText("HR / Behavioral")).toBeTruthy();
+    expect(screen.getByText("Technical")).toBeTruthy();
+    expect(screen.getByText("System Design")).toBeTruthy();
+    expect(screen.getByText("DSA Verbal")).toBeTruthy();
+    expect(screen.getByText("Mixed")).toBeTruthy();
+
+    // Session Lengths
+    expect(screen.getByText("5 questions")).toBeTruthy();
+    expect(screen.getByText("10 questions")).toBeTruthy();
+    expect(screen.getByText("15 questions")).toBeTruthy();
+
+    // Interviewer Styles
+    expect(screen.getByText("Friendly")).toBeTruthy();
+    expect(screen.getByText("Standard")).toBeTruthy();
+    expect(screen.getByText("Strict")).toBeTruthy();
+
+    // Input Mode: Voice is gated
+    expect(screen.getByText("Text")).toBeTruthy();
+    expect(screen.getByText("Voice")).toBeTruthy();
+    expect(screen.getByText(/Coming soon/i)).toBeTruthy();
+  });
+
+  it("loads profile level and displays calibrated difficulty notice", async () => {
+    const storage = new MemoryStorageAdapter();
+    const profile: ProfileRow = {
+      id: "current_profile",
+      level: "staff_plus",
+      targetRole: "Staff Systems Architect",
+      updatedAt: new Date().toISOString(),
+    };
+    await storage.put("profile", profile);
+
+    render(<SessionSetupScreen storage={storage} onStart={vi.fn()} onBack={vi.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Difficulty 4–5 \(expert\)/i)).toBeTruthy();
+      expect(screen.getByText("Staff Systems Architect")).toBeTruthy();
+    });
+  });
+
+  it("warns and disables Start Session when no provider is configured", async () => {
+    const storage = new MemoryStorageAdapter();
+    const onNavigateAISetup = vi.fn();
+
+    render(
+      <SessionSetupScreen
+        storage={storage}
+        onStart={vi.fn()}
+        onBack={vi.fn()}
+        onNavigateAISetup={onNavigateAISetup}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("AI provider not configured")).toBeTruthy();
+    });
+
+    const startBtn = screen.getByRole("button", { name: /Start Session/i });
+    expect(startBtn).toHaveProperty("disabled", true);
+
+    const link = screen.getByRole("button", { name: /Go to AI Setup/i });
+    fireEvent.click(link);
+    expect(onNavigateAISetup).toHaveBeenCalledTimes(1);
+  });
+
+  it("creates a validated SessionPlan and triggers onStart when provider is configured", async () => {
+    const storage = new MemoryStorageAdapter();
+    const provider: ProviderRow = {
+      id: "provider_1",
+      kind: "gemini",
+      modelRoles: {
+        interviewer: "gemini-2.0-flash",
+        evaluator: "gemini-2.0-flash",
+      },
+      key: "dummy-key",
+    };
+    await storage.put("providers", provider);
+
+    const onStart = vi.fn();
+    render(<SessionSetupScreen storage={storage} onStart={onStart} onBack={vi.fn()} />);
+
+    // Wait for provider to load and enable start
+    await waitFor(() => {
+      const startBtn = screen.getByRole("button", { name: /Start Session/i });
+      expect(startBtn).toHaveProperty("disabled", false);
+    });
+
+    // Change interview type to system design
+    fireEvent.click(screen.getByText("System Design"));
+
+    // Change length to 5
+    fireEvent.click(screen.getByText("5 questions"));
+
+    // Change style to strict
+    fireEvent.click(screen.getByText("Strict"));
+
+    // Start session
+    fireEvent.click(screen.getByRole("button", { name: /Start Session/i }));
+
+    await waitFor(() => {
+      expect(onStart).toHaveBeenCalledTimes(1);
+    });
+
+    const plan = onStart.mock.calls[0]?.[0];
+    expect(plan).toBeDefined();
+
+    // Verify against SessionPlanSchema
+    const parsed = SessionPlanSchema.safeParse(plan);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.type).toBe("system_design");
+      expect(parsed.data.length).toBe(5);
+      expect(parsed.data.style).toBe("strict");
+      expect(parsed.data.inputMode).toBe("text");
+      expect(parsed.data.sessionId).toBeTruthy();
+    }
+  });
+
+  it("calls onBack when Back to Profile button is clicked", async () => {
+    const storage = new MemoryStorageAdapter();
+    const onBack = vi.fn();
+
+    render(<SessionSetupScreen storage={storage} onStart={vi.fn()} onBack={onBack} />);
+    await screen.findByText("Set Up Your Session");
+
+    fireEvent.click(screen.getByRole("button", { name: /Back to Profile/i }));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  describe("Accessibility (axe)", () => {
+    it("has zero axe violations under Ink theme in default state", async () => {
+      const storage = new MemoryStorageAdapter();
+      const { container } = render(
+        <div data-theme="ink">
+          <SessionSetupScreen storage={storage} onStart={vi.fn()} onBack={vi.fn()} />
+        </div>
+      );
+      await screen.findByText("Set Up Your Session");
+
+      const results = await axe(container);
+      expect(results.violations).toEqual([]);
+    });
+
+    it("has zero axe violations under Paper theme in default state", async () => {
+      const storage = new MemoryStorageAdapter();
+      const { container } = render(
+        <div data-theme="paper">
+          <SessionSetupScreen storage={storage} onStart={vi.fn()} onBack={vi.fn()} />
+        </div>
+      );
+      await screen.findByText("Set Up Your Session");
+
+      const results = await axe(container);
+      expect(results.violations).toEqual([]);
+    });
+  });
+});

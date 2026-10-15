@@ -696,3 +696,37 @@
 .abh-role-only-notice {
   margin-top: var(--space-4);
 }
+
+/* --- PG-11 Session Setup & Shared Form Styles --- */
+.abh-section-heading {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.abh-setup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.abh-inline-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-family: var(--font-body);
+  color: var(--accent-text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.abh-inline-link:hover {
+  color: var(--text);
+}

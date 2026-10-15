@@ -36,6 +36,12 @@ describe("M1.1: App shell", () => {
     expect(await screen.findByRole("heading", { name: /your profile & role/i })).toBeTruthy();
   });
 
+  it("renders Session Setup screen when URL is /app/setup/session", async () => {
+    window.history.pushState({}, "", "/app/setup/session");
+    render(<App />);
+    expect(await screen.findByRole("heading", { name: /set up your session/i })).toBeTruthy();
+  });
+
   it("has no axe violations once loaded", async () => {
     const { container } = render(<App />);
     await screen.findByText(/running in memory/i);

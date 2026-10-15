@@ -3,6 +3,7 @@ import type { StorageAdapter } from "@abhyas/core";
 import { Button, Callout, Skeleton } from "./components";
 import { AISetupScreen } from "./screens/AISetupScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
+import { SessionSetupScreen } from "./screens/SessionSetupScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import {
   StorageOpenError,
@@ -16,11 +17,14 @@ import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/app.css";
 
-type AppRoute = "/app/settings" | "/app/setup/ai" | "/app/setup/profile";
+type AppRoute = "/app/settings" | "/app/setup/ai" | "/app/setup/profile" | "/app/setup/session";
 
 function getInitialRoute(): AppRoute {
   if (typeof window !== "undefined") {
     const path = window.location.pathname;
+    if (path.includes("setup/session") || window.location.hash.includes("setup/session")) {
+      return "/app/setup/session";
+    }
     if (path.includes("setup/profile") || window.location.hash.includes("setup/profile")) {
       return "/app/setup/profile";
     }
@@ -158,8 +162,22 @@ export function App() {
       <div className="abh-app">
         <ProfileScreen
           storage={init.storage}
-          onComplete={() => navigateTo("/app/settings")}
+          onComplete={() => navigateTo("/app/setup/session")}
           onBack={() => navigateTo("/app/setup/ai")}
+          onNavigateSettings={() => navigateTo("/app/settings")}
+        />
+      </div>
+    );
+  }
+
+  if (route === "/app/setup/session") {
+    return (
+      <div className="abh-app">
+        <SessionSetupScreen
+          storage={init.storage}
+          onStart={() => navigateTo("/app/settings")}
+          onBack={() => navigateTo("/app/setup/profile")}
+          onNavigateAISetup={() => navigateTo("/app/setup/ai")}
           onNavigateSettings={() => navigateTo("/app/settings")}
         />
       </div>

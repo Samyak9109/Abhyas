@@ -1,7 +1,6 @@
-// FR-002, NFR-002: Client-side document parsing service for PDF, DOCX, and TXT.
+// FR-002, NFR-001, NFR-002: Client-side document parsing service for PDF, DOCX, and TXT.
 // Extracts plain text strictly in the browser with zero outbound network requests.
-import * as pdfjsLib from "pdfjs-dist";
-import mammoth from "mammoth";
+// PDF and DOCX parsers are dynamically imported on demand to respect initial bundle budgets (NFR-001).
 
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB (FR-002)
 
@@ -19,6 +18,7 @@ interface DocumentParseResult {
 export async function parsePdfBuffer(
   arrayBuffer: ArrayBuffer
 ): Promise<{ text: string; isScanned: boolean }> {
+  const pdfjsLib = await import("pdfjs-dist");
   const loadingTask = pdfjsLib.getDocument({
     data: new Uint8Array(arrayBuffer),
     useSystemFonts: true,
@@ -48,7 +48,12 @@ export async function parsePdfBuffer(
  * Extracts raw text from an ArrayBuffer of a DOCX document using mammoth.
  */
 export async function parseDocxBuffer(arrayBuffer: ArrayBuffer): Promise<{ text: string }> {
-  const result = await mammoth.extractRawText({ arrayBuffer });
+  const mammoth = await import("mammoth");
+  const extractFn =
+    mammoth.extractRawText ??
+    (mammoth as unknown as { default: { extractRawText: typeof mammoth.extractRawText } }).default
+      ?.extractRawText;
+  const result = await extractFn({ arrayBuffer });
   return { text: result.value.trim() };
 }
 

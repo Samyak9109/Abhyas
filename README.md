@@ -14,7 +14,7 @@ It interviews you from your resume, a job description, or your target field, and
 <br/>
 
 [![License](https://img.shields.io/badge/license-MIT-f5c542?style=for-the-badge&labelColor=1a1a2e)](./LICENSE)
-[![Status](https://img.shields.io/badge/status-Phase%200%3A%20Foundations-ff6b6b?style=for-the-badge&labelColor=1a1a2e)](./phases.md)
+[![Status](https://img.shields.io/badge/status-Phase%201%3A%20Voice%20MVP-4ecdc4?style=for-the-badge&labelColor=1a1a2e)](./phases.md)
 [![BYOK](https://img.shields.io/badge/BYOK-bring%20your%20own%20key-4ecdc4?style=for-the-badge&labelColor=1a1a2e)](#-supported-ai-models)
 [![Local](https://img.shields.io/badge/local%20models-supported-95e1d3?style=for-the-badge&labelColor=1a1a2e)](#-running-with-a-local-model)
 [![PRs](https://img.shields.io/badge/PRs-welcome-a29bfe?style=for-the-badge&labelColor=1a1a2e)](#-contributing)

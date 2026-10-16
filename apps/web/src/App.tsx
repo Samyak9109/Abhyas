@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import {
   selectQuestions,
   type StructuredProfile,
@@ -6,14 +6,8 @@ import {
   type SessionPlan,
   type StorageAdapter,
 } from "@abhyas/core";
-import { Button, Callout, Skeleton } from "./components";
-import { AISetupScreen } from "./screens/AISetupScreen";
+import { Banner, Button, Callout, Skeleton } from "./components";
 import { HomeScreen } from "./screens/HomeScreen";
-import { LiveInterviewScreen } from "./screens/LiveInterviewScreen";
-import { ProfileScreen } from "./screens/ProfileScreen";
-import { ResultsScreen } from "./screens/ResultsScreen";
-import { SessionSetupScreen } from "./screens/SessionSetupScreen";
-import { SettingsScreen } from "./screens/SettingsScreen";
 import { DEFAULT_QUESTION_BANK } from "./services/question-bank";
 import {
   StorageOpenError,
@@ -26,6 +20,26 @@ import { useTheme } from "./services/use-theme";
 import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/app.css";
+
+// Lazy-loaded screen modules to meet NFR-001 initial bundle budget (<300 KB gzipped)
+const AISetupScreen = lazy(() =>
+  import("./screens/AISetupScreen").then((m) => ({ default: m.AISetupScreen }))
+);
+const ProfileScreen = lazy(() =>
+  import("./screens/ProfileScreen").then((m) => ({ default: m.ProfileScreen }))
+);
+const SessionSetupScreen = lazy(() =>
+  import("./screens/SessionSetupScreen").then((m) => ({ default: m.SessionSetupScreen }))
+);
+const LiveInterviewScreen = lazy(() =>
+  import("./screens/LiveInterviewScreen").then((m) => ({ default: m.LiveInterviewScreen }))
+);
+const ResultsScreen = lazy(() =>
+  import("./screens/ResultsScreen").then((m) => ({ default: m.ResultsScreen }))
+);
+const SettingsScreen = lazy(() =>
+  import("./screens/SettingsScreen").then((m) => ({ default: m.SettingsScreen }))
+);
 
 type AppRoute =
   | "/app/home"
@@ -79,6 +93,20 @@ export function App() {
     plan: SessionPlan;
     questions: SelectedQuestion[];
   } | null>(null);
+  const [isOffline, setIsOffline] = useState(
+    () => typeof navigator !== "undefined" && !navigator.onLine
+  );
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   const navigateTo = useCallback((nextRoute: AppRoute) => {
     setRoute(nextRoute);
@@ -199,14 +227,33 @@ export function App() {
     );
   }
 
+  const renderOfflineBanner = () =>
+    isOffline ? (
+      <Banner
+        variant="warning"
+        message="You are currently offline. Local data, review, and settings are available; cloud AI connections require network access."
+      />
+    ) : null;
+
+  const screenLoading = (
+    <div className="abh-app-loading" role="status" aria-label="Loading view">
+      <Skeleton height="36px" />
+      <Skeleton height="140px" />
+      <Skeleton height="140px" />
+    </div>
+  );
+
   if (route === "/app/setup/ai") {
     return (
       <div className="abh-app">
-        <AISetupScreen
-          storage={init.storage}
-          onComplete={() => navigateTo("/app/setup/profile")}
-          onNavigateSettings={() => navigateTo("/app/settings")}
-        />
+        {renderOfflineBanner()}
+        <Suspense fallback={screenLoading}>
+          <AISetupScreen
+            storage={init.storage}
+            onComplete={() => navigateTo("/app/setup/profile")}
+            onNavigateSettings={() => navigateTo("/app/settings")}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -214,12 +261,15 @@ export function App() {
   if (route === "/app/setup/profile") {
     return (
       <div className="abh-app">
-        <ProfileScreen
-          storage={init.storage}
-          onComplete={() => navigateTo("/app/setup/session")}
-          onBack={() => navigateTo("/app/setup/ai")}
-          onNavigateSettings={() => navigateTo("/app/settings")}
-        />
+        {renderOfflineBanner()}
+        <Suspense fallback={screenLoading}>
+          <ProfileScreen
+            storage={init.storage}
+            onComplete={() => navigateTo("/app/setup/session")}
+            onBack={() => navigateTo("/app/setup/ai")}
+            onNavigateSettings={() => navigateTo("/app/settings")}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -227,13 +277,16 @@ export function App() {
   if (route === "/app/setup/session") {
     return (
       <div className="abh-app">
-        <SessionSetupScreen
-          storage={init.storage}
-          onStart={(plan) => void handleStartSession(plan)}
-          onBack={() => navigateTo("/app/setup/profile")}
-          onNavigateAISetup={() => navigateTo("/app/setup/ai")}
-          onNavigateSettings={() => navigateTo("/app/settings")}
-        />
+        {renderOfflineBanner()}
+        <Suspense fallback={screenLoading}>
+          <SessionSetupScreen
+            storage={init.storage}
+            onStart={(plan) => void handleStartSession(plan)}
+            onBack={() => navigateTo("/app/setup/profile")}
+            onNavigateAISetup={() => navigateTo("/app/setup/ai")}
+            onNavigateSettings={() => navigateTo("/app/settings")}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -258,24 +311,27 @@ export function App() {
 
     return (
       <div className="abh-app">
-        <LiveInterviewScreen
-          storage={init.storage}
-          plan={activeSession.plan}
-          questions={activeSession.questions}
-          onFinish={(completedSessionId) => {
-            setActiveSession(null);
-            if (completedSessionId) {
-              setResultsSessionId(completedSessionId);
-              navigateTo("/app/results");
-            } else {
-              navigateTo("/app/home");
-            }
-          }}
-          onExit={() => {
-            setActiveSession(null);
-            navigateTo("/app/setup/session");
-          }}
-        />
+        {renderOfflineBanner()}
+        <Suspense fallback={screenLoading}>
+          <LiveInterviewScreen
+            storage={init.storage}
+            plan={activeSession.plan}
+            questions={activeSession.questions}
+            onFinish={(completedSessionId) => {
+              setActiveSession(null);
+              if (completedSessionId) {
+                setResultsSessionId(completedSessionId);
+                navigateTo("/app/results");
+              } else {
+                navigateTo("/app/home");
+              }
+            }}
+            onExit={() => {
+              setActiveSession(null);
+              navigateTo("/app/setup/session");
+            }}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -283,6 +339,7 @@ export function App() {
   if (route === "/app/results") {
     return (
       <div className="abh-app">
+        {renderOfflineBanner()}
         <aside className="abh-app-nav">
           <span className="abh-wordmark" aria-hidden="true">
             Abhyas
@@ -353,20 +410,22 @@ export function App() {
           </nav>
         </aside>
         <main className="abh-app-main">
-          <ResultsScreen
-            storage={init.storage}
-            sessionId={resultsSessionId ?? ""}
-            onRetryQuestion={() => navigateTo("/app/setup/session")}
-            onPracticeSkill={() => navigateTo("/app/setup/session")}
-            onFinish={() => {
-              setResultsSessionId(null);
-              navigateTo("/app/home");
-            }}
-            onNavigateHome={() => {
-              setResultsSessionId(null);
-              navigateTo("/app/home");
-            }}
-          />
+          <Suspense fallback={screenLoading}>
+            <ResultsScreen
+              storage={init.storage}
+              sessionId={resultsSessionId ?? ""}
+              onRetryQuestion={() => navigateTo("/app/setup/session")}
+              onPracticeSkill={() => navigateTo("/app/setup/session")}
+              onFinish={() => {
+                setResultsSessionId(null);
+                navigateTo("/app/home");
+              }}
+              onNavigateHome={() => {
+                setResultsSessionId(null);
+                navigateTo("/app/home");
+              }}
+            />
+          </Suspense>
         </main>
       </div>
     );
@@ -375,6 +434,7 @@ export function App() {
   if (route === "/app/home") {
     return (
       <div className="abh-app">
+        {renderOfflineBanner()}
         <aside className="abh-app-nav">
           <span className="abh-wordmark" aria-hidden="true">
             Abhyas
@@ -463,6 +523,7 @@ export function App() {
 
   return (
     <div className="abh-app">
+      {renderOfflineBanner()}
       <aside className="abh-app-nav">
         <span className="abh-wordmark" aria-hidden="true">
           Abhyas
@@ -534,16 +595,18 @@ export function App() {
         </nav>
       </aside>
       <main className="abh-app-main">
-        <SettingsScreen
-          storage={init.storage}
-          mode={init.mode}
-          quotaExceeded={quotaExceeded}
-          themePreference={preference}
-          onThemeChange={(next) => void setThemePreference(next)}
-          onWriteError={handleWriteError}
-          onDataDeleted={handleDataDeleted}
-          onNavigateAISetup={() => navigateTo("/app/setup/ai")}
-        />
+        <Suspense fallback={screenLoading}>
+          <SettingsScreen
+            storage={init.storage}
+            mode={init.mode}
+            quotaExceeded={quotaExceeded}
+            themePreference={preference}
+            onThemeChange={(next) => void setThemePreference(next)}
+            onWriteError={handleWriteError}
+            onDataDeleted={handleDataDeleted}
+            onNavigateAISetup={() => navigateTo("/app/setup/ai")}
+          />
+        </Suspense>
       </main>
     </div>
   );

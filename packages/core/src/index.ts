@@ -30,3 +30,4 @@ export * from "./session";
 export * from "./interview";
 export * from "./speech";
 export * from "./evaluation";
+export * from "./skills";

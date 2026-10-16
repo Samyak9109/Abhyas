@@ -11,6 +11,7 @@ import {
   type TurnRow,
 } from "@abhyas/core";
 import { Button, Callout, Disclosure, Progress, Skeleton, Tabs } from "../components";
+import { recomputeAndStoreSkillStats } from "../services/skills-recompute";
 
 interface ResultsScreenProps {
   storage: StorageAdapter;
@@ -64,6 +65,9 @@ export function ResultsScreen({
 
           const card = computeSessionScorecard(loadedSession, sessionTurns);
           setScorecard(card);
+
+          // FR-014: Automatically update skill statistics cache in storage
+          void recomputeAndStoreSkillStats(storage);
         }
       } catch (err) {
         console.error("Failed to load interview results:", err);

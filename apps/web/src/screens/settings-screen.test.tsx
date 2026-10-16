@@ -247,6 +247,63 @@ describe("M1.1: Settings screen", () => {
     expect(screen.getByRole("button", { name: "Export now" })).toBeTruthy();
   });
 
+  describe("M1.6: Voice and Subtitles settings (PG-18)", () => {
+    it("renders the Voice and Subtitles panel with all controls and disclosure", () => {
+      renderScreen();
+      expect(screen.getByRole("heading", { name: "Voice & Subtitles" })).toBeTruthy();
+      expect(screen.getByText("Spoken Questions")).toBeTruthy();
+      expect(screen.getByRole("switch", { name: /Speak Questions/i })).toBeTruthy();
+      expect(screen.getByText("Live Subtitles")).toBeTruthy();
+      expect(screen.getByRole("switch", { name: /Live Subtitles/i })).toBeTruthy();
+      expect(screen.getByText(/Voice Privacy & Web Speech API/i)).toBeTruthy();
+    });
+
+    it("toggles spoken questions and updates storage", async () => {
+      const { storage } = renderScreen();
+      const voiceSwitch = await screen.findByRole("switch", { name: /Speak Questions/i });
+      expect(voiceSwitch.getAttribute("aria-checked")).toBe("true");
+
+      fireEvent.click(voiceSwitch);
+
+      await waitFor(async () => {
+        const stored = await storage.get<{ key: string; value: { enabled: boolean } }>(
+          "settings",
+          "voice"
+        );
+        expect(stored?.value.enabled).toBe(false);
+        expect(voiceSwitch.getAttribute("aria-checked")).toBe("false");
+      });
+    });
+
+    it("toggles live subtitles and changes subtitle size in storage", async () => {
+      const { storage } = renderScreen();
+      const largeRadio = screen.getByRole("radio", { name: /Large/i });
+      fireEvent.click(largeRadio);
+
+      await waitFor(async () => {
+        const stored = await storage.get<{ key: string; value: { size: string } }>(
+          "settings",
+          "subtitles"
+        );
+        expect(stored?.value.size).toBe("L");
+      });
+    });
+
+    it("changes speech playback speed in storage", async () => {
+      const { storage } = renderScreen();
+      const fastRadio = screen.getByRole("radio", { name: /1.2x Fast/i });
+      fireEvent.click(fastRadio);
+
+      await waitFor(async () => {
+        const stored = await storage.get<{ key: string; value: { rate: number } }>(
+          "settings",
+          "voice"
+        );
+        expect(stored?.value.rate).toBe(1.2);
+      });
+    });
+  });
+
   describe.each(["ink", "paper"] as const)("theme %s", (theme) => {
     it("has no axe violations in the default state", async () => {
       const { container } = render(

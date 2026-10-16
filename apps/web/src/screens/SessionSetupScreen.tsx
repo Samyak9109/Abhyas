@@ -1,8 +1,7 @@
-// FR-006, PG-11: Session setup screen (Step 3 of 3).
-// Collects: interview type, session length, interviewer style, input mode.
-// Voice is gated (disabled) — actual voice implementation is M1.6.
+// FR-006, FR-009, PG-11: Session setup screen (Step 3 of 3).
+// Collects: interview type, session length, interviewer style, input mode (text or voice).
 // Company selection is deferred to M4.3.
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   SessionPlanSchema,
   type ExperienceLevel,
@@ -12,12 +11,15 @@ import {
   type SessionLength,
   type SessionPlan,
   type SessionType,
+  type SpeechInput,
   type StorageAdapter,
 } from "@abhyas/core";
 import { Button, Callout, RadioCard, Stepper } from "../components";
+import { getBrowserSpeechInput } from "../services/speech";
 
 interface SessionSetupScreenProps {
   storage: StorageAdapter;
+  speechInput?: SpeechInput;
   onStart: (plan: SessionPlan) => void;
   onBack: () => void;
   onNavigateAISetup?: () => void;
@@ -130,6 +132,7 @@ function levelLabel(level: ExperienceLevel): string {
 
 export function SessionSetupScreen({
   storage,
+  speechInput,
   onStart,
   onBack,
   onNavigateAISetup,
@@ -138,7 +141,12 @@ export function SessionSetupScreen({
   const [sessionType, setSessionType] = useState<SessionType>("mixed");
   const [length, setLength] = useState<SessionLength>(10);
   const [style, setStyle] = useState<InterviewerStyle>("standard");
-  const [inputMode] = useState<InputMode>("text"); // voice is M1.6 — gated
+
+  const isSpeechSupported = useMemo(() => {
+    return speechInput ? speechInput.isSupported : getBrowserSpeechInput().isSupported;
+  }, [speechInput]);
+
+  const [inputMode, setInputMode] = useState<InputMode>("text");
 
   // Profile-derived state
   const [level, setLevel] = useState<ExperienceLevel>("mid");
@@ -312,7 +320,7 @@ export function SessionSetupScreen({
               </div>
             </div>
 
-            {/* Input mode — voice gated for M1.6 */}
+            {/* Input mode */}
             <div className="abh-form-field">
               <h2 id="input-mode-heading" className="abh-section-heading">
                 Input Mode
@@ -328,22 +336,28 @@ export function SessionSetupScreen({
                   description="Type your answers. Works on any device and browser."
                   monogram="T"
                   checked={inputMode === "text"}
-                  onChange={() => {
-                    /* text is the only available mode */
-                  }}
+                  onChange={() => setInputMode("text")}
                 />
                 <RadioCard
                   title="Voice"
-                  description="Push-to-talk microphone input with speech recognition."
+                  description={
+                    isSpeechSupported
+                      ? "Push-to-talk microphone input with live subtitles and review."
+                      : "Voice input is not supported in this browser."
+                  }
                   monogram="🎙"
-                  checked={false}
+                  checked={inputMode === "voice"}
                   onChange={() => {
-                    /* voice is M1.6 */
+                    if (isSpeechSupported) setInputMode("voice");
                   }}
-                  disabled
-                  comingSoon
+                  disabled={!isSpeechSupported}
                 />
               </div>
+              {!isSpeechSupported && (
+                <p className="abh-form-hint" style={{ marginTop: "var(--space-2)" }}>
+                  Voice input requires Chrome, Edge, or Safari speech recognition.
+                </p>
+              )}
             </div>
 
             {/* Difficulty info callout */}

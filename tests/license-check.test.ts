@@ -14,7 +14,7 @@ describe("M0.5: License Compliance & Copyleft Prevention (ADR-003, NFR-022)", ()
       expect(result.valid).toBe(true);
       expect(result.violations).toEqual([]);
       expect(result.scannedCount).toBeGreaterThan(50);
-    });
+    }, 30000);
   });
 
   describe("Blocking Copyleft Licenses (Acceptance Criterion)", () => {

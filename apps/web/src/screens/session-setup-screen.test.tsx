@@ -40,10 +40,10 @@ describe("M1.4: SessionSetupScreen (PG-11)", () => {
     expect(screen.getByText("Standard")).toBeTruthy();
     expect(screen.getByText("Strict")).toBeTruthy();
 
-    // Input Mode: Voice is gated
+    // Input Mode: Voice is un-gated but unsupported in jsdom without mock
     expect(screen.getByText("Text")).toBeTruthy();
     expect(screen.getByText("Voice")).toBeTruthy();
-    expect(screen.getByText(/Coming soon/i)).toBeTruthy();
+    expect(screen.getByText(/Voice input requires Chrome, Edge, or Safari/i)).toBeTruthy();
   });
 
   it("loads profile level and displays calibrated difficulty notice", async () => {
@@ -151,6 +151,54 @@ describe("M1.4: SessionSetupScreen (PG-11)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Back to Profile/i }));
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows selecting Voice mode when speech input is supported and creates voice plan", async () => {
+    const storage = new MemoryStorageAdapter();
+    const { MockSpeechInput } = await import("@abhyas/core");
+    const mockSpeech = new MockSpeechInput({ isSupported: true });
+
+    const provider: ProviderRow = {
+      id: "prov-1",
+      kind: "gemini",
+      modelRoles: {
+        interviewer: "gemini-2.5-flash",
+        evaluator: "gemini-2.5-flash",
+      },
+      key: "dummy-key",
+    };
+    await storage.put("providers", provider);
+
+    const onStart = vi.fn();
+    render(
+      <SessionSetupScreen
+        storage={storage}
+        speechInput={mockSpeech}
+        onStart={onStart}
+        onBack={vi.fn()}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Start Session/i })).toHaveProperty(
+        "disabled",
+        false
+      );
+    });
+
+    // Voice card is active and not disabled
+    const voiceCard = screen.getByText("Voice");
+    fireEvent.click(voiceCard);
+
+    // Start session
+    fireEvent.click(screen.getByRole("button", { name: /Start Session/i }));
+
+    await waitFor(() => {
+      expect(onStart).toHaveBeenCalledTimes(1);
+    });
+
+    const plan = onStart.mock.calls[0]?.[0];
+    expect(plan.inputMode).toBe("voice");
   });
 
   describe("Accessibility (axe)", () => {

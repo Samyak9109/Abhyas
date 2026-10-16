@@ -1,23 +1,34 @@
-// FR-008, FR-011, PG-12: Live interview screen (Text-only MVP).
-// Focus view with progress, timer, interviewer card, hint callouts,
-// turn history, answer textarea, and error recovery options.
+// FR-008, FR-009, FR-010, FR-011, PG-12: Live interview screen (Voice + Text modes).
+// Focus view with progress, timer, interviewer card, subtitle lanes,
+// push-to-talk talk timer, review step, turn history, and error recovery options.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  DEFAULT_SUBTITLE_SETTINGS,
+  DEFAULT_VOICE_SETTINGS,
+  loadSubtitleSettings,
+  loadVoiceSettings,
   SessionRunner,
   type InterviewState,
   type ProviderAdapter,
   type SelectedQuestion,
   type SessionPlan,
+  type SpeechInput,
+  type SpeechOutput,
   type StorageAdapter,
+  type SubtitleSettings,
+  type VoiceSettings,
 } from "@abhyas/core";
-import { Button, Callout, Dialog, Progress } from "../components";
+import { Button, Callout, Dialog, Progress, SubtitleLanes } from "../components";
+import { getBrowserSpeechInput, getBrowserSpeechOutput } from "../services/speech";
 
 interface LiveInterviewScreenProps {
   storage: StorageAdapter;
   plan: SessionPlan;
   questions: SelectedQuestion[];
   provider?: ProviderAdapter;
+  speechInput?: SpeechInput;
+  speechOutput?: SpeechOutput;
   onFinish: () => void;
   onExit: () => void;
 }
@@ -29,9 +40,27 @@ export function LiveInterviewScreen({
   plan,
   questions,
   provider,
+  speechInput,
+  speechOutput,
   onFinish,
   onExit,
 }: LiveInterviewScreenProps) {
+  // Speech services
+  const inputService = useMemo(() => speechInput ?? getBrowserSpeechInput(), [speechInput]);
+  const outputService = useMemo(() => speechOutput ?? getBrowserSpeechOutput(), [speechOutput]);
+
+  // Mode resolution (fallback to text if voice is not supported)
+  const [effectiveMode, setEffectiveMode] = useState<"text" | "voice">(() => {
+    return plan.inputMode === "voice" && inputService.isSupported ? "voice" : "text";
+  });
+
+  // Settings
+  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(DEFAULT_VOICE_SETTINGS);
+  const [subtitleSettings, setSubtitleSettings] =
+    useState<SubtitleSettings>(DEFAULT_SUBTITLE_SETTINGS);
+  const [isMuted, setIsMuted] = useState(false);
+  const [subtitlesCollapsed, setSubtitlesCollapsed] = useState(false);
+
   // Initialize the SessionRunner once per plan
   const runner = useMemo(() => {
     return new SessionRunner({
@@ -49,6 +78,40 @@ export function LiveInterviewScreen({
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [highlightQuestion, setHighlightQuestion] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const reviewTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Voice state
+  const [pttState, setPttState] = useState<"idle" | "listening" | "reviewing">("idle");
+  const [interimSpeech, setInterimSpeech] = useState("");
+  const [pttSeconds, setPttSeconds] = useState(0);
+  const [speechError, setSpeechError] = useState<{ message: string; isPermission: boolean } | null>(
+    null
+  );
+
+  // Load voice & subtitle settings from storage on mount
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const [loadedVoice, loadedSubtitles] = await Promise.all([
+          loadVoiceSettings(storage),
+          loadSubtitleSettings(storage),
+        ]);
+        if (active) {
+          setVoiceSettings(loadedVoice);
+          setSubtitleSettings(loadedSubtitles);
+          if (!loadedVoice.enabled) {
+            setIsMuted(true);
+          }
+        }
+      } catch {
+        // Fallback to defaults
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [storage]);
 
   // Subscribe to runner state updates
   useEffect(() => {
@@ -71,13 +134,66 @@ export function LiveInterviewScreen({
     return () => clearInterval(timer);
   }, [state.status]);
 
-  // Clear answer field when moving to a new question
+  // PTT Talk elapsed timer
+  useEffect(() => {
+    if (pttState !== "listening") return;
+    const timer = setInterval(() => {
+      setPttSeconds((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [pttState]);
+
+  // Clean-up speech on unmount
+  useEffect(() => {
+    return () => {
+      outputService.cancel();
+      void inputService.abort();
+    };
+  }, [outputService, inputService]);
+
+  // Clear answer and reset voice state when moving to a new question
   useEffect(() => {
     if (state.status === "await_answer") {
       setTypedAnswer("");
-      textareaRef.current?.focus();
+      setInterimSpeech("");
+      setPttState("idle");
+      setSpeechError(null);
+      if (effectiveMode === "text") {
+        textareaRef.current?.focus();
+      }
     }
-  }, [state.status, state.context.currentQuestion?.id]);
+  }, [state.status, state.context.currentQuestion?.id, effectiveMode]);
+
+  // Auto-speak question in voice mode (FR-010)
+  const lastSpokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      effectiveMode === "voice" &&
+      state.status === "await_answer" &&
+      state.context.currentQuestion &&
+      !isMuted &&
+      voiceSettings.enabled &&
+      voiceSettings.autoPlay
+    ) {
+      const q = state.context.currentQuestion;
+      const key = `${state.context.currentQuestionIndex}-${q.id}`;
+      if (lastSpokenRef.current !== key) {
+        lastSpokenRef.current = key;
+        void outputService.speak(q.text, {
+          rate: voiceSettings.rate,
+          voiceURI: voiceSettings.voiceURI,
+        });
+      }
+    }
+  }, [
+    effectiveMode,
+    state.status,
+    state.context.currentQuestion,
+    state.context.currentQuestionIndex,
+    isMuted,
+    voiceSettings,
+    outputService,
+  ]);
 
   // Handle question repeat animation
   useEffect(() => {
@@ -89,14 +205,155 @@ export function LiveInterviewScreen({
     return undefined;
   }, [state.context.repeatRequested]);
 
+  // Focus review textarea when entering reviewing step
+  useEffect(() => {
+    if (pttState === "reviewing") {
+      reviewTextareaRef.current?.focus();
+    }
+  }, [pttState]);
+
+  // --- Voice Actions (FR-009) ---
+
+  const startListening = async () => {
+    if (state.status !== "await_answer" || pttState === "listening") return;
+    // Interrupt ongoing interviewer speech immediately (design.md 7.1)
+    outputService.cancel();
+    setSpeechError(null);
+    setInterimSpeech("");
+    setPttSeconds(0);
+
+    try {
+      await inputService.start({
+        onInterim: (text) => setInterimSpeech(text),
+        onFinal: (text) => {
+          setTypedAnswer((prev) => (prev ? `${prev} ${text}` : text).trim());
+        },
+        onError: (err) => {
+          setPttState("idle");
+          setSpeechError({
+            message: err.message,
+            isPermission: err.kind === "not_allowed",
+          });
+        },
+        onStateChange: (s) => {
+          if (s === "listening") setPttState("listening");
+        },
+      });
+      setPttState("listening");
+    } catch (err) {
+      setPttState("idle");
+      setSpeechError({
+        message: err instanceof Error ? err.message : "Failed to start speech recognition",
+        isPermission: true,
+      });
+    }
+  };
+
+  const stopListening = async () => {
+    if (pttState !== "listening") return;
+    try {
+      const finalTranscript = await inputService.stop();
+      const combined = (finalTranscript || interimSpeech || typedAnswer).trim();
+      setTypedAnswer(combined);
+      setInterimSpeech("");
+      setPttState("reviewing");
+    } catch {
+      setPttState("idle");
+    }
+  };
+
+  const handlePttToggle = async () => {
+    if (pttState === "listening") {
+      await stopListening();
+    } else if (pttState === "idle") {
+      await startListening();
+    }
+  };
+
+  const handleRecordAgain = async () => {
+    setTypedAnswer("");
+    setInterimSpeech("");
+    setPttState("idle");
+    await startListening();
+  };
+
+  const handleSwitchToTyping = () => {
+    if (pttState === "listening") {
+      void inputService.abort();
+    }
+    outputService.cancel();
+    setPttState("idle");
+    setEffectiveMode("text");
+  };
+
+  const handleSwitchToVoice = () => {
+    if (inputService.isSupported) {
+      setEffectiveMode("voice");
+      setPttState("idle");
+      setSpeechError(null);
+    }
+  };
+
+  const handlersRef = useRef({
+    startListening,
+    stopListening,
+    handleSubmit,
+  });
+  useEffect(() => {
+    handlersRef.current = {
+      startListening,
+      stopListening,
+      handleSubmit,
+    };
+  });
+
+  // Keyboard shortcuts (FR-011, Space for PTT, Ctrl+Enter to submit)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput =
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+
+      // Spacebar for Push-to-Talk (only in voice mode, only when NOT typing in an input/textarea)
+      if (
+        e.code === "Space" &&
+        !isInput &&
+        effectiveMode === "voice" &&
+        state.status === "await_answer"
+      ) {
+        e.preventDefault();
+        if (pttState === "idle") {
+          void handlersRef.current.startListening();
+        } else if (pttState === "listening") {
+          void handlersRef.current.stopListening();
+        }
+      }
+
+      // Ctrl+Enter or Cmd+Enter to submit
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && state.status === "await_answer") {
+        if (typedAnswer.trim()) {
+          e.preventDefault();
+          void handlersRef.current.handleSubmit();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [effectiveMode, pttState, state.status, typedAnswer]);
+
   // --- Actions ---
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!typedAnswer.trim() || state.status !== "await_answer") return;
 
+    outputService.cancel();
     const answerToSubmit = typedAnswer.trim().slice(0, MAX_ANSWER_CHARS);
     setTypedAnswer("");
+    setInterimSpeech("");
+    setPttState("idle");
     await runner.dispatch({
       type: "SUBMIT",
       answerText: answerToSubmit,
@@ -105,6 +362,11 @@ export function LiveInterviewScreen({
 
   const handleSkip = async () => {
     if (state.status !== "await_answer") return;
+    outputService.cancel();
+    if (pttState === "listening") {
+      void inputService.abort();
+      setPttState("idle");
+    }
     await runner.dispatch({ type: "SKIP" });
   };
 
@@ -115,6 +377,13 @@ export function LiveInterviewScreen({
 
   const handleRepeat = async () => {
     if (state.status !== "await_answer") return;
+    if (effectiveMode === "voice" && !isMuted && state.context.currentQuestion) {
+      outputService.cancel();
+      void outputService.speak(state.context.currentQuestion.text, {
+        rate: voiceSettings.rate,
+        voiceURI: voiceSettings.voiceURI,
+      });
+    }
     await runner.dispatch({ type: "REPEAT" });
   };
 
@@ -122,11 +391,21 @@ export function LiveInterviewScreen({
     if (state.status === "paused") {
       await runner.dispatch({ type: "RESUME" });
     } else {
+      outputService.cancel();
+      if (pttState === "listening") {
+        void inputService.abort();
+        setPttState("idle");
+      }
       await runner.dispatch({ type: "PAUSE" });
     }
   };
 
   const handleConfirmEnd = async () => {
+    outputService.cancel();
+    if (pttState === "listening") {
+      void inputService.abort();
+      setPttState("idle");
+    }
     setShowEndDialog(false);
     await runner.dispatch({ type: "END" });
     onExit();
@@ -137,6 +416,10 @@ export function LiveInterviewScreen({
   };
 
   const handleSavePartial = async () => {
+    outputService.cancel();
+    if (pttState === "listening") {
+      void inputService.abort();
+    }
     await runner.dispatch({ type: "SAVE_PARTIAL" });
     onExit();
   };
@@ -228,6 +511,20 @@ export function LiveInterviewScreen({
           </div>
 
           <div className="abh-topbar-right">
+            {effectiveMode === "voice" && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  if (!isMuted) {
+                    outputService.cancel();
+                  }
+                  setIsMuted((prev) => !prev);
+                }}
+                aria-label={isMuted ? "Unmute interviewer voice" : "Mute interviewer voice"}
+              >
+                {isMuted ? "Unmute" : "Mute"}
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={handleTogglePause}
@@ -280,6 +577,14 @@ export function LiveInterviewScreen({
           </Callout>
         )}
 
+        {/* Fallback Notice when plan requested voice but browser does not support it */}
+        {plan.inputMode === "voice" && !inputService.isSupported && (
+          <Callout variant="info" title="Voice Input Unavailable">
+            Voice recognition is not supported in this browser. Switched to typing mode
+            automatically.
+          </Callout>
+        )}
+
         {/* Center: Interviewer Card */}
         <div className={`abh-interviewer-card ${highlightQuestion ? "highlight" : ""}`}>
           <div className="abh-interviewer-header">
@@ -292,7 +597,12 @@ export function LiveInterviewScreen({
               </span>
               <span className="abh-interviewer-status-text" role="status" aria-live="polite">
                 {state.status === "ask" && "Asking question..."}
-                {state.status === "await_answer" && "Waiting for your answer..."}
+                {state.status === "await_answer" &&
+                  (pttState === "listening"
+                    ? "Listening to you..."
+                    : pttState === "reviewing"
+                      ? "Review your response..."
+                      : "Waiting for your answer...")}
                 {state.status === "evaluate" && "Evaluating your response..."}
                 {state.status === "wrap_up" && "Wrapping up interview..."}
                 {state.status === "paused" && "Paused"}
@@ -318,6 +628,25 @@ export function LiveInterviewScreen({
           )}
         </div>
 
+        {/* Live Subtitle Lanes (FR-010, design.md 7.2) */}
+        {effectiveMode === "voice" && subtitleSettings.enabled && (
+          <SubtitleLanes
+            interviewerText={currentQ?.text || ""}
+            candidateText={
+              pttState === "listening"
+                ? interimSpeech || "Listening..."
+                : pttState === "reviewing"
+                  ? typedAnswer
+                  : ""
+            }
+            isCandidateInterim={pttState === "listening"}
+            size={subtitleSettings.size}
+            highContrast={subtitleSettings.highContrast}
+            visible={!subtitlesCollapsed}
+            onToggleVisible={() => setSubtitlesCollapsed((prev) => !prev)}
+          />
+        )}
+
         {/* Live Hint Callout */}
         {state.context.hintText && (
           <Callout variant="info" title="Interviewer Hint">
@@ -325,8 +654,162 @@ export function LiveInterviewScreen({
           </Callout>
         )}
 
-        {/* Text Answer Area */}
-        {state.status !== "paused" && (
+        {/* Microphone Permission / Speech Input Error (design.md 7.1) */}
+        {speechError && (
+          <Callout
+            variant="danger"
+            title={speechError.isPermission ? "Microphone Access Blocked" : "Speech Input Issue"}
+          >
+            <p>{speechError.message || "Microphone access was denied or is unavailable."}</p>
+            {speechError.isPermission && (
+              <p className="abh-form-hint" style={{ marginTop: "var(--space-2)" }}>
+                To enable voice, click the lock or camera icon in your address bar, allow
+                Microphone, and click Try Again.
+              </p>
+            )}
+            <div style={{ marginTop: "var(--space-3)", display: "flex", gap: "var(--space-2)" }}>
+              <Button variant="secondary" onClick={() => setSpeechError(null)}>
+                Try Again
+              </Button>
+              <Button variant="primary" onClick={handleSwitchToTyping}>
+                Switch to Typing
+              </Button>
+            </div>
+          </Callout>
+        )}
+
+        {/* === VOICE MODE INTERACTION (FR-009, design.md 7.1) === */}
+        {effectiveMode === "voice" && state.status !== "paused" && (
+          <section className="abh-voice-section" aria-label="Voice answer control">
+            {/* Review step: editable transcript before submitting (FR-009) */}
+            {pttState === "reviewing" ? (
+              <div className="abh-voice-review-box">
+                <div className="abh-voice-review-header">
+                  <label htmlFor="voice-review-textarea" className="abh-form-label">
+                    Review Your Answer Before Submitting
+                  </label>
+                  <span className="abh-form-hint">
+                    {typedAnswer.length} / {MAX_ANSWER_CHARS} characters
+                  </span>
+                </div>
+                <textarea
+                  ref={reviewTextareaRef}
+                  id="voice-review-textarea"
+                  className="abh-textarea"
+                  rows={5}
+                  value={typedAnswer}
+                  onChange={(e) => setTypedAnswer(e.target.value.slice(0, MAX_ANSWER_CHARS))}
+                  placeholder="Your spoken transcript will appear here. Edit or fix any words before submitting."
+                  disabled={state.status === "evaluate"}
+                  aria-describedby="review-help-text"
+                />
+                <span id="review-help-text" className="abh-form-hint">
+                  Fix any transcription errors above. You can submit when ready or record again.
+                </span>
+
+                <div className="abh-voice-review-actions">
+                  <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => void handleRecordAgain()}
+                      disabled={state.status !== "await_answer"}
+                    >
+                      Record Again
+                    </Button>
+                    <button
+                      type="button"
+                      className="abh-switch-to-text-btn"
+                      onClick={handleSwitchToTyping}
+                    >
+                      Switch to typing
+                    </button>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={() => void handleSubmit()}
+                    disabled={!typedAnswer.trim() || state.status !== "await_answer"}
+                    isLoading={state.status === "evaluate"}
+                  >
+                    {state.status === "evaluate" ? "Evaluating..." : "Submit Answer"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* Push-To-Talk Button */
+              <div className="abh-ptt-container">
+                <button
+                  type="button"
+                  className={`abh-ptt-button ${
+                    pttState === "listening" ? "abh-ptt-button--listening" : ""
+                  }`}
+                  onClick={() => void handlePttToggle()}
+                  disabled={state.status !== "await_answer"}
+                  aria-label={
+                    pttState === "listening"
+                      ? "Stop speaking and review answer"
+                      : "Start speaking answer"
+                  }
+                >
+                  <div className="abh-ptt-label">
+                    <span className="abh-ptt-icon" aria-hidden="true">
+                      {pttState === "listening" ? "⏹" : "🎙"}
+                    </span>
+                    <span>{pttState === "listening" ? "Stop & Review" : "Push to Talk"}</span>
+                    {pttState === "listening" && (
+                      <span className="abh-ptt-elapsed">{formatTime(pttSeconds)}</span>
+                    )}
+                  </div>
+                </button>
+                <span className="abh-ptt-shortcut-hint">
+                  Tap button or press Space to {pttState === "listening" ? "stop" : "talk"}
+                </span>
+                <button
+                  type="button"
+                  className="abh-switch-to-text-btn"
+                  onClick={handleSwitchToTyping}
+                >
+                  Prefer typing? Switch to text mode
+                </button>
+              </div>
+            )}
+
+            {/* Voice Secondary Controls */}
+            <div className="abh-interview-controls-row" style={{ marginTop: "var(--space-3)" }}>
+              <div className="abh-secondary-controls">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleHint}
+                  disabled={state.status !== "await_answer" || Boolean(state.context.hintText)}
+                >
+                  Hint
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleRepeat}
+                  disabled={state.status !== "await_answer"}
+                >
+                  Repeat
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleSkip}
+                  disabled={state.status !== "await_answer"}
+                >
+                  Skip
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* === TEXT ANSWER AREA (FR-011) === */}
+        {effectiveMode === "text" && state.status !== "paused" && (
           <form onSubmit={handleSubmit} className="abh-answer-form">
             <div className="abh-form-field">
               <div className="abh-field-header-row">
@@ -348,9 +831,28 @@ export function LiveInterviewScreen({
                 disabled={state.status === "evaluate" || state.status === "error_recoverable"}
                 aria-describedby="answer-help-text"
               />
-              <span id="answer-help-text" className="abh-form-hint">
-                Press Submit or use Ctrl+Enter when complete. You can also ask for a hint or skip.
-              </span>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "var(--space-2)",
+                }}
+              >
+                <span id="answer-help-text" className="abh-form-hint">
+                  Press Submit or use Ctrl+Enter when complete. You can also ask for a hint or skip.
+                </span>
+                {inputService.isSupported && (
+                  <button
+                    type="button"
+                    className="abh-switch-to-text-btn"
+                    onClick={handleSwitchToVoice}
+                  >
+                    Want to speak? Switch to voice mode
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Answer Control Buttons */}

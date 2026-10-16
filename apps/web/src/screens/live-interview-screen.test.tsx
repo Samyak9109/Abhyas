@@ -2,7 +2,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
-import { MemoryStorageAdapter, type SelectedQuestion, type SessionPlan } from "@abhyas/core";
+import {
+  MemoryStorageAdapter,
+  MockSpeechInput,
+  MockSpeechOutput,
+  type SelectedQuestion,
+  type SessionPlan,
+} from "@abhyas/core";
 import { LiveInterviewScreen } from "./LiveInterviewScreen";
 
 const samplePlan: SessionPlan = {
@@ -14,6 +20,11 @@ const samplePlan: SessionPlan = {
   level: "mid",
   targetRole: "Full Stack Engineer",
   createdAt: new Date().toISOString(),
+};
+
+const sampleVoicePlan: SessionPlan = {
+  ...samplePlan,
+  inputMode: "voice",
 };
 
 const sampleQuestions: SelectedQuestion[] = [
@@ -260,8 +271,238 @@ describe("M1.5: LiveInterviewScreen (PG-12)", () => {
     });
   });
 
+  describe("M1.6: Voice Mode & Subtitles (FR-009, FR-010, PG-12)", () => {
+    it("renders push-to-talk button, subtitle lanes, and speaks initial question", async () => {
+      const storage = new MemoryStorageAdapter();
+      const mockSpeechInput = new MockSpeechInput({
+        isSupported: true,
+        transcript: "Spoken answer",
+      });
+      const mockSpeechOutput = new MockSpeechOutput({ isSupported: true });
+
+      render(
+        <LiveInterviewScreen
+          storage={storage}
+          plan={sampleVoicePlan}
+          questions={sampleQuestions}
+          speechInput={mockSpeechInput}
+          speechOutput={mockSpeechOutput}
+          onFinish={vi.fn()}
+          onExit={vi.fn()}
+        />
+      );
+
+      // Question rendered
+      expect(
+        await screen.findByRole("heading", {
+          name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+        })
+      ).toBeTruthy();
+
+      // Interviewer question spoken aloud via speech output
+      await waitFor(() => {
+        expect(mockSpeechOutput.getSpokenTexts()).toContain(
+          "When a web page experiences poor INP, how do you diagnose the bottleneck?"
+        );
+      });
+
+      // Push-To-Talk button present
+      expect(screen.getByRole("button", { name: "Start speaking answer" })).toBeTruthy();
+      expect(screen.getByText("Push to Talk")).toBeTruthy();
+
+      // Subtitle lanes present with interviewer and candidate labels
+      expect(screen.getByText("{ AI }")).toBeTruthy();
+      expect(screen.getByText("{ You }")).toBeTruthy();
+    });
+
+    it("executes PTT listening, interim speech, stop, review step and submission", async () => {
+      const storage = new MemoryStorageAdapter();
+      const mockSpeechInput = new MockSpeechInput({
+        isSupported: true,
+        transcript: "Draft answer from speech",
+      });
+      const mockSpeechOutput = new MockSpeechOutput({ isSupported: true });
+
+      render(
+        <LiveInterviewScreen
+          storage={storage}
+          plan={sampleVoicePlan}
+          questions={sampleQuestions}
+          speechInput={mockSpeechInput}
+          speechOutput={mockSpeechOutput}
+          onFinish={vi.fn()}
+          onExit={vi.fn()}
+        />
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      // 1. Click Push-to-Talk to start listening
+      const pttBtn = screen.getByRole("button", { name: "Start speaking answer" });
+      fireEvent.click(pttBtn);
+
+      await waitFor(() => {
+        expect(mockSpeechInput.getState()).toBe("listening");
+        expect(
+          screen.getByRole("button", { name: "Stop speaking and review answer" })
+        ).toBeTruthy();
+      });
+
+      // 2. Emit interim text
+      mockSpeechInput.emitInterim("Diagnosing long tasks using Profiler");
+      expect(await screen.findByText(/Diagnosing long tasks using Profiler/i)).toBeTruthy();
+
+      // 3. Stop speaking
+      const stopBtn = screen.getByRole("button", { name: "Stop speaking and review answer" });
+      fireEvent.click(stopBtn);
+
+      // 4. Review step appears with editable textarea (FR-009)
+      const reviewTextarea = (await screen.findByLabelText(
+        "Review Your Answer Before Submitting"
+      )) as HTMLTextAreaElement;
+      expect(reviewTextarea).toBeTruthy();
+      expect(reviewTextarea.value).toBe("Draft answer from speech");
+
+      // 5. Candidate edits the transcript before submission
+      fireEvent.change(reviewTextarea, {
+        target: { value: "Draft answer from speech and checking scheduler.yield()." },
+      });
+      expect(reviewTextarea.value).toBe("Draft answer from speech and checking scheduler.yield().");
+
+      // 6. Submit answer
+      const submitBtn = screen.getByRole("button", { name: "Submit Answer" });
+      fireEvent.click(submitBtn);
+
+      // Successfully advances to turn history / next question
+      await waitFor(() => {
+        expect(screen.getByText("Session History (1)")).toBeTruthy();
+        expect(
+          screen.getByText("Draft answer from speech and checking scheduler.yield().")
+        ).toBeTruthy();
+      });
+    });
+
+    it("switches to typing mode and back to voice mode", async () => {
+      const storage = new MemoryStorageAdapter();
+      const mockSpeechInput = new MockSpeechInput({ isSupported: true });
+      const mockSpeechOutput = new MockSpeechOutput({ isSupported: true });
+
+      render(
+        <LiveInterviewScreen
+          storage={storage}
+          plan={sampleVoicePlan}
+          questions={sampleQuestions}
+          speechInput={mockSpeechInput}
+          speechOutput={mockSpeechOutput}
+          onFinish={vi.fn()}
+          onExit={vi.fn()}
+        />
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      // Click "Prefer typing? Switch to text mode"
+      const switchToTextBtn = screen.getByRole("button", {
+        name: "Prefer typing? Switch to text mode",
+      });
+      fireEvent.click(switchToTextBtn);
+
+      // Text answer textarea is now visible
+      expect(await screen.findByLabelText("Your Answer")).toBeTruthy();
+
+      // Click "Want to speak? Switch to voice mode"
+      const switchToVoiceBtn = screen.getByRole("button", {
+        name: "Want to speak? Switch to voice mode",
+      });
+      fireEvent.click(switchToVoiceBtn);
+
+      // Voice PTT is back
+      expect(await screen.findByRole("button", { name: "Start speaking answer" })).toBeTruthy();
+    });
+
+    it("handles microphone permission denied error with switch to typing option", async () => {
+      const storage = new MemoryStorageAdapter();
+      const mockSpeechInput = new MockSpeechInput({ isSupported: true });
+      const mockSpeechOutput = new MockSpeechOutput({ isSupported: true });
+
+      render(
+        <LiveInterviewScreen
+          storage={storage}
+          plan={sampleVoicePlan}
+          questions={sampleQuestions}
+          speechInput={mockSpeechInput}
+          speechOutput={mockSpeechOutput}
+          onFinish={vi.fn()}
+          onExit={vi.fn()}
+        />
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      // Start listening
+      const pttBtn = screen.getByRole("button", { name: "Start speaking answer" });
+      fireEvent.click(pttBtn);
+
+      await waitFor(() => {
+        expect(mockSpeechInput.getState()).toBe("listening");
+      });
+
+      // Simulate permission denied error
+      mockSpeechInput.emitError({
+        kind: "not_allowed",
+        message: "Permission denied by user.",
+        retryable: false,
+      });
+
+      // Error callout appears
+      expect(await screen.findByText("Microphone Access Blocked")).toBeTruthy();
+      expect(screen.getByText(/Permission denied by user/i)).toBeTruthy();
+
+      // Click "Switch to Typing" button in callout
+      const switchToTypingBtn = screen.getByRole("button", { name: "Switch to Typing" });
+      fireEvent.click(switchToTypingBtn);
+
+      // Now in text mode
+      expect(await screen.findByLabelText("Your Answer")).toBeTruthy();
+    });
+
+    it("mutes and cancels interviewer speech when Mute button is clicked", async () => {
+      const storage = new MemoryStorageAdapter();
+      const mockSpeechInput = new MockSpeechInput({ isSupported: true });
+      const mockSpeechOutput = new MockSpeechOutput({ isSupported: true });
+
+      render(
+        <LiveInterviewScreen
+          storage={storage}
+          plan={sampleVoicePlan}
+          questions={sampleQuestions}
+          speechInput={mockSpeechInput}
+          speechOutput={mockSpeechOutput}
+          onFinish={vi.fn()}
+          onExit={vi.fn()}
+        />
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      const muteBtn = screen.getByRole("button", { name: /Mute/i });
+      fireEvent.click(muteBtn);
+
+      expect(mockSpeechOutput.isSpeaking()).toBe(false);
+      expect(screen.getByRole("button", { name: /Unmute/i })).toBeTruthy();
+    });
+  });
+
   describe("Accessibility (axe)", () => {
-    it("has zero axe violations under Ink theme", async () => {
+    it("has zero axe violations under Ink theme (Text Mode)", async () => {
       const storage = new MemoryStorageAdapter();
       const { container } = render(
         <div data-theme="ink">
@@ -283,7 +524,7 @@ describe("M1.5: LiveInterviewScreen (PG-12)", () => {
       expect(results.violations).toEqual([]);
     });
 
-    it("has zero axe violations under Paper theme", async () => {
+    it("has zero axe violations under Paper theme (Text Mode)", async () => {
       const storage = new MemoryStorageAdapter();
       const { container } = render(
         <div data-theme="paper">
@@ -300,6 +541,60 @@ describe("M1.5: LiveInterviewScreen (PG-12)", () => {
       await screen.findByText(
         "When a web page experiences poor INP, how do you diagnose the bottleneck?"
       );
+
+      const results = await axe(container);
+      expect(results.violations).toEqual([]);
+    });
+
+    it("has zero axe violations under Ink theme (Voice Mode)", async () => {
+      const storage = new MemoryStorageAdapter();
+      const mockSpeechInput = new MockSpeechInput({ isSupported: true });
+      const mockSpeechOutput = new MockSpeechOutput({ isSupported: true });
+
+      const { container } = render(
+        <div data-theme="ink">
+          <LiveInterviewScreen
+            storage={storage}
+            plan={sampleVoicePlan}
+            questions={sampleQuestions}
+            speechInput={mockSpeechInput}
+            speechOutput={mockSpeechOutput}
+            onFinish={vi.fn()}
+            onExit={vi.fn()}
+          />
+        </div>
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      const results = await axe(container);
+      expect(results.violations).toEqual([]);
+    });
+
+    it("has zero axe violations under Paper theme (Voice Mode)", async () => {
+      const storage = new MemoryStorageAdapter();
+      const mockSpeechInput = new MockSpeechInput({ isSupported: true });
+      const mockSpeechOutput = new MockSpeechOutput({ isSupported: true });
+
+      const { container } = render(
+        <div data-theme="paper">
+          <LiveInterviewScreen
+            storage={storage}
+            plan={sampleVoicePlan}
+            questions={sampleQuestions}
+            speechInput={mockSpeechInput}
+            speechOutput={mockSpeechOutput}
+            onFinish={vi.fn()}
+            onExit={vi.fn()}
+          />
+        </div>
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
 
       const results = await axe(container);
       expect(results.violations).toEqual([]);

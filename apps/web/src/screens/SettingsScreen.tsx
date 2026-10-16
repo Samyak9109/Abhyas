@@ -1,11 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   buildExport,
+  DEFAULT_SUBTITLE_SETTINGS,
+  DEFAULT_VOICE_SETTINGS,
+  loadSubtitleSettings,
+  loadVoiceSettings,
+  saveSubtitleSettings,
+  saveVoiceSettings,
   type ProviderRow,
   type StorageAdapter,
+  type SubtitleSettings,
+  type SubtitleSize,
   type ThemePreference,
+  type VoiceSettings,
 } from "@abhyas/core";
-import { Banner, Button, Callout, Dialog, Input, RadioCard, Toast } from "../components";
+import { Banner, Button, Callout, Dialog, Input, RadioCard, Switch, Toast } from "../components";
 import type { StorageMode } from "../services/storage";
 
 const DELETE_PHRASE = "DELETE";
@@ -19,6 +28,53 @@ const THEME_OPTIONS: {
   { id: "system", title: "System", description: "Match your device appearance", monogram: "◐" },
   { id: "ink", title: "Ink", description: "Dark theme, the default Abhyas look", monogram: "●" },
   { id: "paper", title: "Paper", description: "Light theme for bright rooms", monogram: "○" },
+];
+
+const SPEECH_RATES: {
+  rate: number;
+  label: string;
+  description: string;
+  monogram: string;
+}[] = [
+  {
+    rate: 0.8,
+    label: "0.8x Slow",
+    description: "Relaxed pacing for deliberate practice",
+    monogram: "🐢",
+  },
+  {
+    rate: 1.0,
+    label: "1.0x Normal",
+    description: "Natural conversational interview speed",
+    monogram: "🎯",
+  },
+  {
+    rate: 1.2,
+    label: "1.2x Fast",
+    description: "Crisp faster pace to practice under time pressure",
+    monogram: "⚡",
+  },
+];
+
+const SUBTITLE_SIZES: {
+  id: SubtitleSize;
+  title: string;
+  description: string;
+  monogram: string;
+}[] = [
+  {
+    id: "S",
+    title: "Small",
+    description: "Compact size (13px) to maximize screen area",
+    monogram: "S",
+  },
+  {
+    id: "M",
+    title: "Medium",
+    description: "Standard balanced size (15px) for reading",
+    monogram: "M",
+  },
+  { id: "L", title: "Large", description: "Prominent readable size (18px)", monogram: "L" },
 ];
 
 interface SettingsScreenProps {
@@ -71,6 +127,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [actionError, setActionError] = useState<string | null>(null);
   const themeGroupRef = useRef<HTMLDivElement>(null);
 
+  // Voice & Subtitle settings
+  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(DEFAULT_VOICE_SETTINGS);
+  const [subtitleSettings, setSubtitleSettings] =
+    useState<SubtitleSettings>(DEFAULT_SUBTITLE_SETTINGS);
+
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.storage?.estimate) return;
     let cancelled = false;
@@ -103,11 +164,90 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     };
   }, [storage]);
 
+  // Load voice & subtitle settings
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [v, s] = await Promise.all([
+          loadVoiceSettings(storage),
+          loadSubtitleSettings(storage),
+        ]);
+        if (!cancelled) {
+          setVoiceSettings(v);
+          setSubtitleSettings(s);
+        }
+      } catch {
+        // fallback to defaults
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [storage]);
+
   useEffect(() => {
     if (!toast) return undefined;
     const timer = setTimeout(() => setToast(null), 5000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  const handleVoiceToggle = async (enabled: boolean) => {
+    const updated: VoiceSettings = { ...voiceSettings, enabled, autoPlay: enabled };
+    setVoiceSettings(updated);
+    try {
+      await saveVoiceSettings(storage, updated);
+      setToast(enabled ? "Question speech enabled." : "Question speech disabled.");
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to save voice settings.");
+    }
+  };
+
+  const handleRateChange = async (rate: number) => {
+    const updated: VoiceSettings = { ...voiceSettings, rate };
+    setVoiceSettings(updated);
+    try {
+      await saveVoiceSettings(storage, updated);
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to save speech rate.");
+    }
+  };
+
+  const handleSubtitlesToggle = async (enabled: boolean) => {
+    const updated: SubtitleSettings = { ...subtitleSettings, enabled };
+    setSubtitleSettings(updated);
+    try {
+      await saveSubtitleSettings(storage, updated);
+      setToast(enabled ? "Live subtitles enabled." : "Live subtitles disabled.");
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to save subtitle settings.");
+    }
+  };
+
+  const handleSubtitleSizeChange = async (size: SubtitleSize) => {
+    const updated: SubtitleSettings = { ...subtitleSettings, size };
+    setSubtitleSettings(updated);
+    try {
+      await saveSubtitleSettings(storage, updated);
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to save subtitle size.");
+    }
+  };
+
+  const handleHighContrastToggle = async (highContrast: boolean) => {
+    const updated: SubtitleSettings = { ...subtitleSettings, highContrast };
+    setSubtitleSettings(updated);
+    try {
+      await saveSubtitleSettings(storage, updated);
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to save high contrast setting.");
+    }
+  };
 
   const handleRemoveProvider = async (id: string) => {
     try {
@@ -151,8 +291,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     }
   };
 
-  // design.md 6.1: radio groups support arrow keys in addition to Tab.
-  const handleThemeKeys = (event: React.KeyboardEvent) => {
+  const handleThemeKeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(event.key)) return;
     const radios = themeGroupRef.current?.querySelectorAll<HTMLElement>('[role="radio"]');
     if (!radios || radios.length === 0) return;
@@ -274,6 +413,119 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               onChange={() => onThemeChange(option.id)}
             />
           ))}
+        </div>
+      </section>
+
+      {/* Voice & Subtitles Section (PG-18, FR-009, FR-010, FR-021) */}
+      <section className="abh-panel" aria-labelledby="abh-settings-voice">
+        <h2 id="abh-settings-voice" className="abh-panel-title">
+          Voice &amp; Subtitles
+        </h2>
+        <p className="abh-panel-helper">
+          Configure spoken questions, speech rate, live subtitles, and speech privacy.
+        </p>
+
+        {/* Spoken questions toggle */}
+        <div className="abh-data-row" style={{ alignItems: "center" }}>
+          <div>
+            <p className="abh-data-label">Spoken Questions</p>
+            <p className="abh-data-value">
+              Read interviewer questions aloud using speech synthesis.
+            </p>
+          </div>
+          <Switch
+            label="Speak Questions"
+            checked={voiceSettings.enabled}
+            onChange={(checked) => void handleVoiceToggle(checked)}
+          />
+        </div>
+
+        {/* Speech rate picker */}
+        {voiceSettings.enabled && (
+          <div style={{ marginTop: "var(--space-3)" }}>
+            <p className="abh-data-label" style={{ marginBottom: "var(--space-2)" }}>
+              Speech Playback Speed
+            </p>
+            <div className="abh-theme-grid" role="radiogroup" aria-label="Speech playback speed">
+              {SPEECH_RATES.map((opt) => (
+                <RadioCard
+                  key={opt.rate}
+                  title={opt.label}
+                  description={opt.description}
+                  monogram={opt.monogram}
+                  checked={voiceSettings.rate === opt.rate}
+                  onChange={() => void handleRateChange(opt.rate)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <hr className="abh-divider" style={{ margin: "var(--space-4) 0" }} />
+
+        {/* Subtitles toggle */}
+        <div className="abh-data-row" style={{ alignItems: "center" }}>
+          <div>
+            <p className="abh-data-label">Live Subtitles</p>
+            <p className="abh-data-value">
+              Display real-time subtitles for interviewer and candidate.
+            </p>
+          </div>
+          <Switch
+            label="Live Subtitles"
+            checked={subtitleSettings.enabled}
+            onChange={(checked) => void handleSubtitlesToggle(checked)}
+          />
+        </div>
+
+        {/* Subtitle size and high contrast */}
+        {subtitleSettings.enabled && (
+          <>
+            <div style={{ marginTop: "var(--space-3)" }}>
+              <p className="abh-data-label" style={{ marginBottom: "var(--space-2)" }}>
+                Subtitle Text Size
+              </p>
+              <div className="abh-theme-grid" role="radiogroup" aria-label="Subtitle text size">
+                {SUBTITLE_SIZES.map((opt) => (
+                  <RadioCard
+                    key={opt.id}
+                    title={opt.title}
+                    description={opt.description}
+                    monogram={opt.monogram}
+                    checked={subtitleSettings.size === opt.id}
+                    onChange={() => void handleSubtitleSizeChange(opt.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div
+              className="abh-data-row"
+              style={{ alignItems: "center", marginTop: "var(--space-3)" }}
+            >
+              <div>
+                <p className="abh-data-label">High-Contrast Subtitles</p>
+                <p className="abh-data-value">
+                  Use solid high-contrast backgrounds with enhanced borders for subtitles.
+                </p>
+              </div>
+              <Switch
+                label="High Contrast"
+                checked={subtitleSettings.highContrast}
+                onChange={(checked) => void handleHighContrastToggle(checked)}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Voice Privacy Disclosure (FR-021) */}
+        <div style={{ marginTop: "var(--space-4)" }}>
+          <Callout variant="info" title="Voice Privacy & Web Speech API">
+            Voice recognition uses your browser&apos;s native Web Speech API. Depending on your
+            browser vendor (such as Google or Apple), audio may be sent to their cloud servers for
+            transcription. Your AI provider API keys are never used for speech recognition, and no
+            audio or transcripts are stored on any Abhyas servers.
+          </Callout>
         </div>
       </section>
 

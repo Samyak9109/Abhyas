@@ -979,3 +979,240 @@
   font-weight: 700;
   color: var(--text);
 }
+
+/* --- M1.6: Subtitle Lanes (FR-010, FR-011, design.md 7.2) ----------------- */
+
+.abh-subtitles-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  transition: all 0.2s ease;
+}
+
+.abh-subtitles--high-contrast {
+  background-color: var(--bg);
+  border: 2px solid var(--accent);
+}
+
+.abh-subtitles--size-s .abh-subtitle-text {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.abh-subtitles--size-m .abh-subtitle-text {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.abh-subtitles--size-l .abh-subtitle-text {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.abh-subtitles-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.abh-subtitles-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.abh-subtitles-toggle-btn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.abh-subtitles-toggle-btn:hover {
+  color: var(--text);
+}
+
+.abh-subtitles-collapsed {
+  margin-bottom: var(--space-3);
+}
+
+.abh-subtitles-lanes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-subtitle-lane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.abh-subtitle-speaker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+.abh-subtitle-text {
+  margin: 0;
+  color: var(--text);
+}
+
+.abh-subtitle-text--interim {
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.abh-subtitle-placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* --- M1.6: Push-To-Talk Voice Controls (FR-009, design.md 7.1) ------------ */
+
+.abh-voice-controls-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-2);
+}
+
+.abh-ptt-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.abh-ptt-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: var(--surface-2);
+  border: 3px solid var(--primary);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.abh-ptt-button:hover:not(:disabled) {
+  transform: scale(1.04);
+  border-color: var(--accent);
+}
+
+.abh-ptt-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+
+.abh-ptt-button--listening {
+  background-color: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  animation: abh-ptt-pulse 1.8s infinite ease-in-out;
+}
+
+@keyframes abh-ptt-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 106, 43, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(255, 106, 43, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 106, 43, 0);
+  }
+}
+
+.abh-ptt-icon {
+  font-size: 28px;
+  margin-bottom: var(--space-1);
+}
+
+.abh-ptt-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.abh-ptt-elapsed {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent-text);
+}
+
+.abh-ptt-shortcut-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* --- Review Step (FR-009) ------------------------------------------------- */
+
+.abh-voice-review-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.abh-voice-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.abh-voice-review-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.abh-switch-to-text-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: var(--space-1) 0;
+}
+
+.abh-switch-to-text-btn:hover {
+  color: var(--text);
+}

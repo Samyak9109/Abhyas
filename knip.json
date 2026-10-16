@@ -3,7 +3,8 @@
   "workspaces": {
     ".": {
       "entry": ["vitest.config.ts", "tests/setup.ts", "tests/**/*.test.ts", "scripts/*.mjs"],
-      "project": ["*.{js,mjs,ts}", "tests/**/*.ts", "scripts/*.mjs"]
+      "project": ["*.{js,mjs,ts}", "tests/**/*.ts", "scripts/*.mjs"],
+      "ignoreDependencies": ["@abhyas/content", "@abhyas/core"]
     },
     "packages/core": {
       "entry": ["src/index.ts!"],

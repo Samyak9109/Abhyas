@@ -114,7 +114,9 @@ describe("M1.5: LiveInterviewScreen (PG-12)", () => {
     const textarea = screen.getByLabelText("Your Answer");
     fireEvent.change(textarea, { target: { value: "I use Chrome DevTools Performance panel." } });
 
-    expect(screen.getByText("40 / 2000 characters")).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText("40 / 2000 characters")).toBeTruthy();
+    });
     const submitBtn = screen.getByRole("button", { name: /Submit Answer/i }) as HTMLButtonElement;
     expect(submitBtn.disabled).toBe(false);
   });

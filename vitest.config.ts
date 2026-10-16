@@ -1,7 +1,13 @@
-// FR-N/A, NFR-015, NFR-023: Monorepo test runner configuration.
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@abhyas/core": path.resolve(__dirname, "packages/core/src/index.ts"),
+      "@abhyas/content": path.resolve(__dirname, "packages/content/src/index.ts"),
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",

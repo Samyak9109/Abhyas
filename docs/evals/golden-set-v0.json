@@ -1,0 +1,447 @@
+[
+  {
+    "id": "gold-inf-dsa-01",
+    "level": "intern_fresher",
+    "targetRole": "Software Engineer Intern",
+    "question": "Explain how you would determine whether a linked list contains a cycle, and what the time and space complexity of your approach would be.",
+    "skillTags": ["dsa", "communication"],
+    "answer": "To check for a cycle in a linked list, I would use Floyd's Tortoise and Hare algorithm. We initialize two pointers: a slow pointer moving one step at a time, and a fast pointer moving two steps at a time. If there is a cycle, the fast pointer will eventually catch up and meet the slow pointer. If the fast pointer reaches the end of the list (null), then there is no cycle. The time complexity is O(n) because the fast pointer visits at most 2n nodes, and the space complexity is O(1) auxiliary space since we only store two pointer variables.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Clear, direct explanation of Floyd's algorithm with correct Big-O analysis and O(1) auxiliary space.",
+    "candidateProfile": {
+      "role": "Software Engineer Intern",
+      "level": "intern_fresher",
+      "skills": ["Python", "Data Structures", "Algorithms", "Git"],
+      "companies": ["University Lab"]
+    }
+  },
+  {
+    "id": "gold-inf-dsa-02",
+    "level": "intern_fresher",
+    "targetRole": "Junior Software Engineer",
+    "question": "Explain how you would determine whether a linked list contains a cycle, and what the time and space complexity of your approach would be.",
+    "skillTags": ["dsa", "communication"],
+    "answer": "Um, you can maybe put all the nodes into an array or a set as you traverse it. If you see a node that is already in the set, that means you have a loop. It takes O(n) time and O(n) space because you need memory for the hash set.",
+    "labeledScores": {
+      "relevance": 4,
+      "structure": 3,
+      "depth": 3,
+      "clarity": 3,
+      "levelFit": 3
+    },
+    "rationale": "Valid alternative approach using a hash set with correct complexity, but does not identify the optimal O(1) space two-pointer approach.",
+    "candidateProfile": {
+      "role": "Junior Developer",
+      "level": "intern_fresher",
+      "skills": ["JavaScript", "HTML", "CSS", "Algorithms"],
+      "companies": ["Campus Club"]
+    }
+  },
+  {
+    "id": "gold-inf-dsa-03",
+    "level": "intern_fresher",
+    "targetRole": "Software Engineer Intern",
+    "question": "Explain how you would determine whether a linked list contains a cycle, and what the time and space complexity of your approach would be.",
+    "skillTags": ["dsa", "communication"],
+    "answer": "Linked lists have nodes with pointers. You just loop through until you hit null. If it loops forever then your program crashes with an out of memory error.",
+    "labeledScores": {
+      "relevance": 2,
+      "structure": 1,
+      "depth": 1,
+      "clarity": 2,
+      "levelFit": 1
+    },
+    "rationale": "Misses the core algorithmic mechanism completely; does not solve the cycle detection problem.",
+    "candidateProfile": {
+      "role": "CS Student",
+      "level": "intern_fresher",
+      "skills": ["Java", "Object-Oriented Programming"],
+      "companies": []
+    }
+  },
+  {
+    "id": "gold-inf-beh-01",
+    "level": "intern_fresher",
+    "targetRole": "Associate Engineer",
+    "question": "Tell me about a challenging project in college where you had to learn a completely new technology under a tight deadline.",
+    "skillTags": ["communication", "ownership"],
+    "answer": "During my final semester capstone project, our team needed to build an automated attendance mobile app in two weeks. I had never used React Native before. I spent the first weekend going through official documentation and building a prototype screen. I then established daily standup check-ins with my teammates to divide tasks between authentication and backend API integration. We delivered the project on time and earned an A grade.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 4,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Structured STAR response with clear personal accountability and proactive learning.",
+    "candidateProfile": {
+      "role": "Associate Engineer",
+      "level": "intern_fresher",
+      "skills": ["React Native", "JavaScript", "Mobile Development"],
+      "companies": ["College Capstone"]
+    }
+  },
+  {
+    "id": "gold-jun-fe-01",
+    "level": "junior",
+    "targetRole": "Frontend Engineer",
+    "question": "When a web page experiences poor Interaction to Next Paint (INP) during heavy user interactions, how do you diagnose and resolve the bottleneck in the browser rendering pipeline?",
+    "skillTags": ["frontend", "clarity"],
+    "answer": "First, I open Chrome DevTools Performance panel and record a trace while reproducing the slow interaction. I look for long tasks taking greater than 50 milliseconds on the main thread. To resolve it, I break up synchronous CPU-heavy work using scheduler.yield() or requestAnimationFrame so the browser can paint intermediate frames. I also check for layout thrashing by ensuring DOM reads happen before DOM writes.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 4,
+      "clarity": 5,
+      "levelFit": 4
+    },
+    "rationale": "Excellent practical troubleshooting workflow: measures before optimizing, identifies long tasks, and breaks up main thread blocking.",
+    "candidateProfile": {
+      "role": "Frontend Developer",
+      "level": "junior",
+      "skills": ["TypeScript", "React", "Chrome DevTools", "Web Vitals"],
+      "companies": ["AppStudio"]
+    }
+  },
+  {
+    "id": "gold-jun-fe-02",
+    "level": "junior",
+    "targetRole": "Frontend Engineer",
+    "question": "When a web page experiences poor Interaction to Next Paint (INP) during heavy user interactions, how do you diagnose and resolve the bottleneck in the browser rendering pipeline?",
+    "skillTags": ["frontend", "clarity"],
+    "answer": "I would just put React.memo everywhere on every component and wrap handlers in useCallback. That usually makes the page faster.",
+    "labeledScores": {
+      "relevance": 2,
+      "structure": 2,
+      "depth": 2,
+      "clarity": 3,
+      "levelFit": 2
+    },
+    "rationale": "Cargo-cult optimization without measuring the actual rendering pipeline bottleneck.",
+    "candidateProfile": {
+      "role": "Junior Web Developer",
+      "level": "junior",
+      "skills": ["React", "HTML", "CSS"],
+      "companies": ["WebDev Co"]
+    }
+  },
+  {
+    "id": "gold-jun-be-01",
+    "level": "junior",
+    "targetRole": "Backend Developer",
+    "question": "How do you handle database connection pooling in a Node.js microservice to prevent exhausting database connections under load?",
+    "skillTags": ["backend_apis", "databases"],
+    "answer": "In our Node.js services, we configure the pg pool with minimum and maximum connection limits, such as a max of 20 connections per container instance. We set a connectionTimeoutMillis so queries fail fast if the pool is exhausted rather than hanging indefinitely. We also ensure connections are always released back to the pool in a finally block or by using automatic client borrowing.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 4,
+      "depth": 4,
+      "clarity": 4,
+      "levelFit": 4
+    },
+    "rationale": "Sensible production practices: pool limits, fail-fast timeouts, and guaranteed release in finally block.",
+    "candidateProfile": {
+      "role": "Backend Developer",
+      "level": "junior",
+      "skills": ["Node.js", "PostgreSQL", "Docker", "Express"],
+      "companies": ["FinTech Starter"]
+    }
+  },
+  {
+    "id": "gold-jun-beh-01",
+    "level": "junior",
+    "targetRole": "Software Engineer",
+    "question": "Tell me about a time when a critical production bug occurred in an area you were responsible for. How did you handle the immediate triage, communication, and long-term resolution?",
+    "skillTags": ["ownership", "communication"],
+    "answer": "A release I shipped caused user profile avatars to fail loading due to an S3 CORS header change. As soon as customer support alerted us, I verified the issue on staging, immediately communicated in our incident Slack channel, and rolled back the deployment within 10 minutes. Afterwards, I wrote a post-mortem, fixed the CORS bucket configuration, and added an automated end-to-end test verifying avatar uploads to our CI pipeline.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 4,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Exemplary junior ownership: rapid triage, clear cross-team communication, swift rollback, and regression prevention.",
+    "candidateProfile": {
+      "role": "Software Engineer",
+      "level": "junior",
+      "skills": ["TypeScript", "AWS S3", "CI/CD", "Jest"],
+      "companies": ["CloudNet"]
+    }
+  },
+  {
+    "id": "gold-mid-be-01",
+    "level": "mid",
+    "targetRole": "Mid-Level Backend Engineer",
+    "question": "How do you design a payment processing API endpoint to guarantee strict idempotency even if clients retry requests during network timeouts?",
+    "skillTags": ["backend_apis", "databases"],
+    "answer": "I require clients to provide a unique Idempotency-Key header on every payment request. On receiving the request, the API initiates an ACID database transaction and attempts an INSERT into an idempotency_records table with a UNIQUE constraint on the key. If the insert succeeds, we proceed with the payment charge, record the response payload, and commit. If the insert encounters a conflict, we check the record status: if already completed, we return the cached response; if currently in progress, we return a 409 Conflict with a Retry-After header. We also enforce a 24-hour TTL on idempotency keys to manage storage growth.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Comprehensive architectural solution covering unique constraint locking, in-progress concurrency handling (409), cached return, and data lifecycle.",
+    "candidateProfile": {
+      "role": "Mid-Level Backend Engineer",
+      "level": "mid",
+      "skills": ["PostgreSQL", "Go", "Distributed Systems", "Payments API"],
+      "companies": ["PayFlow Inc"]
+    }
+  },
+  {
+    "id": "gold-mid-be-02",
+    "level": "mid",
+    "targetRole": "Mid-Level Backend Engineer",
+    "question": "How do you design a payment processing API endpoint to guarantee strict idempotency even if clients retry requests during network timeouts?",
+    "skillTags": ["backend_apis", "databases"],
+    "answer": "You can store the idempotency key in Redis with a 5 minute expiration. Before doing anything, check if the key is in Redis. If it is, don't do it again.",
+    "labeledScores": {
+      "relevance": 3,
+      "structure": 2,
+      "depth": 2,
+      "clarity": 3,
+      "levelFit": 2
+    },
+    "rationale": "Shallow explanation; misses race conditions (check-then-set), atomic operations (SET NX), persistent transaction durability, and what response to return.",
+    "candidateProfile": {
+      "role": "Backend Engineer",
+      "level": "mid",
+      "skills": ["Node.js", "Redis"],
+      "companies": ["Tech Solutions"]
+    }
+  },
+  {
+    "id": "gold-mid-sys-01",
+    "level": "mid",
+    "targetRole": "Systems Engineer",
+    "question": "Design a globally distributed URL shortening service (like Bitly) handling 100 million new URLs created per month and 10 billion redirects per month.",
+    "skillTags": ["system_design", "databases", "backend_apis"],
+    "answer": "With 10 billion redirects and 100 million writes per month, this is a read-heavy system (100:1 read-to-write ratio). For writes, we generate unique 7-character short codes using Base62 encoding on a 64-bit counter allocated in ranges to application nodes to avoid central bottlenecks. For reads, we place an edge CDN for 301 redirects on hot links and maintain a distributed Redis cache holding the top 20% URLs (80/20 rule). The primary store uses a partitioned NoSQL database (like DynamoDB or Cassandra) partitioned on short_code for sub-10ms point lookups.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Sound scale estimations, distributed ID range allocation without central bottlenecks, caching strategy, and partitioned storage choice.",
+    "candidateProfile": {
+      "role": "Systems Engineer",
+      "level": "mid",
+      "skills": ["Distributed Systems", "DynamoDB", "Redis", "CDN Architecture"],
+      "companies": ["ScaleCraft"]
+    }
+  },
+  {
+    "id": "gold-mid-beh-01",
+    "level": "mid",
+    "targetRole": "Software Engineer",
+    "question": "Describe a situation where you had a strong technical disagreement with a team lead or architect regarding system design. How did you navigate the conversation and what was the outcome?",
+    "skillTags": ["conflict", "communication", "leadership"],
+    "answer": "Our team lead proposed building an in-house message queue on top of MySQL, whereas I advocated for adopting RabbitMQ or AWS SQS. Instead of debating subjectively, I created a prototype comparing throughput, lock contention, and operational maintenance overhead under simulated traffic. The benchmarks demonstrated that MySQL table locking would saturate CPU at 2,000 events/sec. When presented with the data, the lead agreed SQS was the safer choice. Once the decision was finalized, I led the SQS integration and created documentation for the team.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Principled, data-driven disagreement that avoids emotional conflict, respects peers, and demonstrates commitment to team success.",
+    "candidateProfile": {
+      "role": "Software Engineer",
+      "level": "mid",
+      "skills": ["MySQL", "RabbitMQ", "AWS SQS", "Benchmarking"],
+      "companies": ["LogisticsHub"]
+    }
+  },
+  {
+    "id": "gold-sen-sys-01",
+    "level": "senior",
+    "targetRole": "Senior Distributed Systems Engineer",
+    "question": "Design a real-time collaborative document editing service (similar to Google Docs or Figma) supporting concurrent edits across users on high-latency networks.",
+    "skillTags": ["system_design", "cloud_devops"],
+    "answer": "For collaborative editing over high-latency networks, Conflict-free Replicated Data Types (CRDTs) like state-based or operation-based sequences (such as Yjs or Automerge) provide strong eventual consistency without requiring every keystroke to round-trip to a central sequencer like Operational Transformation (OT) demands. Clients maintain a local CRDT document model and broadcast compact binary update vectors over WebSockets through an edge gateway. To keep memory bounded, we run background compaction workers that snapshot document states to object storage at quiet intervals and prune obsolete tombstone records. For connection dropouts, clients replay missed state vectors using a version vector clock upon reconnection.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Nuanced evaluation of CRDTs vs OT under latency, tombstone pruning compaction, and vector clock reconciliation.",
+    "candidateProfile": {
+      "role": "Senior Systems Engineer",
+      "level": "senior",
+      "skills": ["CRDTs", "WebSockets", "Distributed Consensus", "Eventual Consistency"],
+      "companies": ["CollabPlatform"]
+    }
+  },
+  {
+    "id": "gold-sen-sys-02",
+    "level": "senior",
+    "targetRole": "Senior Architect",
+    "question": "Design a real-time collaborative document editing service (similar to Google Docs or Figma) supporting concurrent edits across users on high-latency networks.",
+    "skillTags": ["system_design", "cloud_devops"],
+    "answer": "We will have users connect to a server. When they type a letter, we send it to a Redis pub/sub topic and then broadcast it to all other connected clients.",
+    "labeledScores": {
+      "relevance": 2,
+      "structure": 2,
+      "depth": 1,
+      "clarity": 2,
+      "levelFit": 1
+    },
+    "rationale": "Completely ignores concurrency resolution, out-of-order packet delivery, split-brain, and offline state reconciliation.",
+    "candidateProfile": {
+      "role": "Senior Developer",
+      "level": "senior",
+      "skills": ["Node.js", "Redis"],
+      "companies": ["Web Agency"]
+    }
+  },
+  {
+    "id": "gold-sen-beh-01",
+    "level": "senior",
+    "targetRole": "Senior Staff Engineer",
+    "question": "Describe a multi-quarter engineering initiative where you had to drive alignment across several cross-functional teams with conflicting roadmaps and technical priorities.",
+    "skillTags": ["leadership", "ownership", "communication"],
+    "answer": "I led a 3-quarter migration to deprecate a monolithic authentication service across four product divisions. Each team had conflicting roadmaps and feared downtime. I drafted an RFC establishing a Strangler Fig migration pattern with dual-token validation and invited team representatives to weekly design reviews. To reduce their risk, my team built the shared client SDKs and automated canary analysis. We achieved 100% migration with zero user-facing outages and retired $180k/year in legacy infrastructure overhead.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "High-leverage technical leadership: empathetic stakeholder alignment, risk de-risking via shared tooling, and measurable ROI.",
+    "candidateProfile": {
+      "role": "Staff Engineer",
+      "level": "senior",
+      "skills": ["Architecture Governance", "OAuth2", "Canary Deployment", "Strangler Pattern"],
+      "companies": ["FinCorp Global"]
+    }
+  },
+  {
+    "id": "gold-sen-tech-01",
+    "level": "senior",
+    "targetRole": "Senior Database Engineer",
+    "question": "How do you achieve zero-downtime database schema migrations for a table with hundreds of millions of rows receiving thousands of writes per second?",
+    "skillTags": ["databases", "backend_apis"],
+    "answer": "Altering large tables directly causes table locks that cascade into connection starvation. I apply the expand-and-contract pattern across distinct deployment phases. Phase 1: Add the new column/table as nullable or with defaults without locking. Phase 2: Deploy application code with dual-writing to both old and new structures while continuing to read from old. Phase 3: Run an asynchronous, rate-limited backfill script in small batches (e.g. 1,000 rows with short sleep intervals) to migrate historical records. Phase 4: Verify data parity using checksums, switch application reads to the new structure, and finally drop writes and obsolete columns in a cleanup release.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Authoritative explanation of expand-and-contract, asynchronous backfill batching, parity verification, and phased rollback safety.",
+    "candidateProfile": {
+      "role": "Senior Database Engineer",
+      "level": "senior",
+      "skills": ["PostgreSQL", "Database Migrations", "High Availability", "Performance Tuning"],
+      "companies": ["DataScale Systems"]
+    }
+  },
+  {
+    "id": "gold-staff-strat-01",
+    "level": "staff_plus",
+    "targetRole": "Principal Architect",
+    "question": "Your organization is evaluating migrating a critical legacy monolith to microservices or modern modular architecture. How would you formulate the multi-year strategy, evaluate the ROI, and choose the migration path?",
+    "skillTags": ["system_design", "leadership", "cloud_devops"],
+    "answer": "First, I resist the urge for a big-bang rewrite, which almost always triggers the second-system effect. I evaluate whether the monolith's friction is due to code coupling or organizational Conway's Law mismatch. I conduct a Value Stream Mapping exercise across teams to measure deployment frequency and change failure rates. If migration is justified by ROI, I formulate a multi-phase Strangler Fig strategy based on Domain-Driven Design bounded contexts, extracting low-risk read domains first. Crucially, I establish platform primitives (observability, CI/CD templates, service mesh, API gateways) before teams extract services, preventing operational fragmentation across the organization.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Profound strategic synthesis: business ROI grounding, Conway's law alignment, DDD bounded contexts, and platform primitives prerequisite.",
+    "candidateProfile": {
+      "role": "Principal Architect",
+      "level": "staff_plus",
+      "skills": [
+        "Enterprise Architecture",
+        "Domain-Driven Design",
+        "Organizational Strategy",
+        "Platform Engineering"
+      ],
+      "companies": ["Enterprise Tech Global"]
+    }
+  },
+  {
+    "id": "gold-staff-strat-02",
+    "level": "staff_plus",
+    "targetRole": "Staff Engineer",
+    "question": "Your organization is evaluating migrating a critical legacy monolith to microservices or modern modular architecture. How would you formulate the multi-year strategy, evaluate the ROI, and choose the migration path?",
+    "skillTags": ["system_design", "leadership", "cloud_devops"],
+    "answer": "Microservices are better because everyone uses Kubernetes now. We should break all services into small Go services and put everything in Docker containers right away.",
+    "labeledScores": {
+      "relevance": 2,
+      "structure": 2,
+      "depth": 1,
+      "clarity": 2,
+      "levelFit": 1
+    },
+    "rationale": "Dogmatic technology advocacy with zero business ROI evaluation, organizational context, or risk migration strategy.",
+    "candidateProfile": {
+      "role": "Software Engineer",
+      "level": "staff_plus",
+      "skills": ["Go", "Kubernetes", "Docker"],
+      "companies": ["Dev Studio"]
+    }
+  },
+  {
+    "id": "gold-staff-beh-01",
+    "level": "staff_plus",
+    "targetRole": "Distinguished Engineer",
+    "question": "How do you balance investing in long-term foundational architectural health against short-term product delivery pressures from executive stakeholders?",
+    "skillTags": ["leadership", "ownership", "communication"],
+    "answer": "I translate technical debt into financial and operational risk metrics that executive stakeholders care about: developer cycle time, revenue risk from downtime, and customer churn. Rather than requesting broad 'refactoring quarters', I institute architectural tax agreements where 15-20% of every engineering sprint is dedicated to paying down high-interest technical debt. I also structure foundational improvements into incremental deliverable milestones that unlock new product capabilities, turning architecture into a business accelerator rather than a cost center.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Executive-grade leadership: converts technical debt into financial risk and sprint budget allocations.",
+    "candidateProfile": {
+      "role": "Distinguished Engineer",
+      "level": "staff_plus",
+      "skills": ["Executive Communication", "Technical Debt Economics", "Engineering Strategy"],
+      "companies": ["OmniCloud Platform"]
+    }
+  },
+  {
+    "id": "gold-staff-tech-01",
+    "level": "staff_plus",
+    "targetRole": "Principal Systems Architect",
+    "question": "How do you architect multi-region active-active database replication while addressing data sovereignty regulations (such as GDPR) and network partition risks?",
+    "skillTags": ["system_design", "databases", "cloud_devops"],
+    "answer": "Active-active across regions requires decoupling global routing from localized data residency boundaries. For regulatory compliance (e.g. GDPR), user personally identifiable data (PII) is pinned to sovereign regional shards using geographically bounded database clusters (e.g. CockroachDB or Spanner with geo-partitioned tables) where row leases stay within local boundaries. For non-PII global configuration and read models, we utilize conflict-free replication topologies with deterministic conflict resolution (CRDTs or Last-Write-Wins with hybrid logical clocks). Under network partitions, regional clusters continue serving local reads and writes autonomously (AP/PC trade-off), queuing cross-region reconciliation vectors until inter-region transit is restored.",
+    "labeledScores": {
+      "relevance": 5,
+      "structure": 5,
+      "depth": 5,
+      "clarity": 5,
+      "levelFit": 5
+    },
+    "rationale": "Deep mastery: geo-partitioned table sharding for regulatory compliance, hybrid logical clocks, and partition tolerance strategy.",
+    "candidateProfile": {
+      "role": "Principal Systems Architect",
+      "level": "staff_plus",
+      "skills": ["CockroachDB", "Google Spanner", "GDPR Data Sovereignty", "Hybrid Logical Clocks"],
+      "companies": ["GlobalBank Systems"]
+    }
+  }
+]

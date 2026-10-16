@@ -8,8 +8,10 @@ import {
 } from "@abhyas/core";
 import { Button, Callout, Skeleton } from "./components";
 import { AISetupScreen } from "./screens/AISetupScreen";
+import { HomeScreen } from "./screens/HomeScreen";
 import { LiveInterviewScreen } from "./screens/LiveInterviewScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
+import { ResultsScreen } from "./screens/ResultsScreen";
 import { SessionSetupScreen } from "./screens/SessionSetupScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import { DEFAULT_QUESTION_BANK } from "./services/question-bank";
@@ -26,17 +28,22 @@ import "./styles/components.css";
 import "./styles/app.css";
 
 type AppRoute =
+  | "/app/home"
   | "/app/settings"
   | "/app/setup/ai"
   | "/app/setup/profile"
   | "/app/setup/session"
-  | "/app/interview";
+  | "/app/interview"
+  | "/app/results";
 
 function getInitialRoute(): AppRoute {
   if (typeof window !== "undefined") {
     const path = window.location.pathname;
     if (path.includes("interview") || window.location.hash.includes("interview")) {
       return "/app/interview";
+    }
+    if (path.includes("results") || window.location.hash.includes("results")) {
+      return "/app/results";
     }
     if (path.includes("setup/session") || window.location.hash.includes("setup/session")) {
       return "/app/setup/session";
@@ -46,6 +53,12 @@ function getInitialRoute(): AppRoute {
     }
     if (path.includes("setup/ai") || window.location.hash.includes("setup/ai")) {
       return "/app/setup/ai";
+    }
+    if (path.includes("settings") || window.location.hash.includes("settings")) {
+      return "/app/settings";
+    }
+    if (path.includes("home") || window.location.hash.includes("home")) {
+      return "/app/home";
     }
   }
   return "/app/settings";
@@ -58,6 +71,7 @@ type InitState =
 
 export function App() {
   const [route, setRoute] = useState<AppRoute>(getInitialRoute);
+  const [resultsSessionId, setResultsSessionId] = useState<string | null>(null);
   const [init, setInit] = useState<InitState>({ status: "loading" });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -248,15 +262,201 @@ export function App() {
           storage={init.storage}
           plan={activeSession.plan}
           questions={activeSession.questions}
-          onFinish={() => {
+          onFinish={(completedSessionId) => {
             setActiveSession(null);
-            navigateTo("/app/settings");
+            if (completedSessionId) {
+              setResultsSessionId(completedSessionId);
+              navigateTo("/app/results");
+            } else {
+              navigateTo("/app/home");
+            }
           }}
           onExit={() => {
             setActiveSession(null);
             navigateTo("/app/setup/session");
           }}
         />
+      </div>
+    );
+  }
+
+  if (route === "/app/results") {
+    return (
+      <div className="abh-app">
+        <aside className="abh-app-nav">
+          <span className="abh-wordmark" aria-hidden="true">
+            Abhyas
+          </span>
+          <nav aria-label="App">
+            <ul className="abh-app-nav-list">
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/home"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/home");
+                  }}
+                >
+                  Home
+                </a>
+              </li>
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/setup/ai"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/setup/ai");
+                  }}
+                >
+                  AI Setup
+                </a>
+              </li>
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/setup/profile"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/setup/profile");
+                  }}
+                >
+                  Profile
+                </a>
+              </li>
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/setup/session"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/setup/session");
+                  }}
+                >
+                  Session
+                </a>
+              </li>
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/settings"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/settings");
+                  }}
+                >
+                  Settings
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </aside>
+        <main className="abh-app-main">
+          <ResultsScreen
+            storage={init.storage}
+            sessionId={resultsSessionId ?? ""}
+            onRetryQuestion={() => navigateTo("/app/setup/session")}
+            onPracticeSkill={() => navigateTo("/app/setup/session")}
+            onFinish={() => {
+              setResultsSessionId(null);
+              navigateTo("/app/home");
+            }}
+            onNavigateHome={() => {
+              setResultsSessionId(null);
+              navigateTo("/app/home");
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
+
+  if (route === "/app/home") {
+    return (
+      <div className="abh-app">
+        <aside className="abh-app-nav">
+          <span className="abh-wordmark" aria-hidden="true">
+            Abhyas
+          </span>
+          <nav aria-label="App">
+            <ul className="abh-app-nav-list">
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/home"
+                  aria-current="page"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/home");
+                  }}
+                >
+                  Home
+                </a>
+              </li>
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/setup/ai"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/setup/ai");
+                  }}
+                >
+                  AI Setup
+                </a>
+              </li>
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/setup/profile"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/setup/profile");
+                  }}
+                >
+                  Profile
+                </a>
+              </li>
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/setup/session"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/setup/session");
+                  }}
+                >
+                  Session
+                </a>
+              </li>
+              <li>
+                <a
+                  className="abh-app-nav-item"
+                  href="/app/settings"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo("/app/settings");
+                  }}
+                >
+                  Settings
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </aside>
+        <main className="abh-app-main">
+          <HomeScreen
+            storage={init.storage}
+            onStartSession={() => navigateTo("/app/setup/session")}
+            onViewResults={(sid) => {
+              setResultsSessionId(sid);
+              navigateTo("/app/results");
+            }}
+            onNavigateSettings={() => navigateTo("/app/settings")}
+            onNavigateProfile={() => navigateTo("/app/setup/profile")}
+          />
+        </main>
       </div>
     );
   }
@@ -269,6 +469,18 @@ export function App() {
         </span>
         <nav aria-label="App">
           <ul className="abh-app-nav-list">
+            <li>
+              <a
+                className="abh-app-nav-item"
+                href="/app/home"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo("/app/home");
+                }}
+              >
+                Home
+              </a>
+            </li>
             <li>
               <a
                 className="abh-app-nav-item"

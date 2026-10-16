@@ -101,6 +101,7 @@ export type InterviewEvent =
   | { type: "TIMEOUT" }
   | { type: "SCORED"; evaluation: Evaluation }
   | { type: "SCORE_FAILED"; error: { kind: string; message: string } }
+  | { type: "UNSCORED"; reason: string }
   | { type: "FOLLOW_UP"; question: ActiveQuestion }
   | { type: "NEXT" }
   | { type: "WRAP_UP" }
@@ -474,6 +475,39 @@ export function interviewReducer(state: InterviewState, event: InterviewEvent): 
             {
               type: "DECIDE_FOLLOW_UP",
               lastTurn: scoredTurn,
+              followUpCount: context.currentQuestion?.followUpCount ?? 0,
+              plan: context.plan,
+            },
+          ],
+        };
+      }
+
+      if (event.type === "UNSCORED") {
+        const lastIdx = context.turns.length - 1;
+        const lastTurn = context.turns[lastIdx];
+        if (!lastTurn) return { state, effects: [] };
+
+        const unscoredTurn: CompletedTurn = {
+          ...lastTurn,
+          status: "unscored",
+        };
+
+        const updatedTurns = [...context.turns.slice(0, lastIdx), unscoredTurn];
+
+        return {
+          state: {
+            ...state,
+            status: "follow_up_or_next",
+            context: {
+              ...context,
+              turns: updatedTurns,
+            },
+          },
+          effects: [
+            { type: "PERSIST_TURN", turn: unscoredTurn, sessionId: context.plan.sessionId },
+            {
+              type: "DECIDE_FOLLOW_UP",
+              lastTurn: unscoredTurn,
               followUpCount: context.currentQuestion?.followUpCount ?? 0,
               plan: context.plan,
             },

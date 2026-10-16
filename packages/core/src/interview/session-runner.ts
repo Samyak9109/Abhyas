@@ -2,8 +2,10 @@
 // Manages the state machine, executes side-effects (AI provider, storage persistence),
 // and provides reactive subscriptions for the UI.
 
+import { evaluateAnswer } from "../evaluation/rubric-evaluator.js";
 import type { ProviderAdapter } from "../providers/types.js";
-import { EvaluationSchema, type Evaluation } from "../schemas/evaluation.schema.js";
+import type { StructuredProfile } from "../schemas/profile.schema.js";
+import type { RubricLevel } from "../schemas/rubric.schema.js";
 import type { SelectedQuestion, SessionPlan } from "../schemas/session.schema.js";
 import type { SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
 import type { StorageAdapter } from "../storage/storage-interface.js";
@@ -24,6 +26,8 @@ export interface SessionRunnerOptions {
   provider?: ProviderAdapter | undefined;
   providerId?: string | undefined;
   modelId?: string | undefined;
+  rubric?: RubricLevel | undefined;
+  profile?: StructuredProfile | null | undefined;
   /** Auto-start the session upon creation (default: false) */
   autoStart?: boolean | undefined;
 }
@@ -37,6 +41,8 @@ export class SessionRunner {
   private provider?: ProviderAdapter | undefined;
   private providerId: string;
   private modelId: string;
+  private rubric?: RubricLevel | undefined;
+  private profile?: StructuredProfile | null | undefined;
   private isProcessing = false;
   private eventQueue: InterviewEvent[] = [];
 
@@ -45,6 +51,8 @@ export class SessionRunner {
     this.provider = options.provider;
     this.providerId = options.providerId ?? options.provider?.id ?? "mock-provider";
     this.modelId = options.modelId ?? "default-model";
+    this.rubric = options.rubric;
+    this.profile = options.profile;
     this.state = createInitialInterviewState(options.plan, options.questions);
 
     if (options.autoStart) {
@@ -210,71 +218,90 @@ export class SessionRunner {
     }
   }
 
-  private async evaluateTurn(turn: CompletedTurn, plan: SessionPlan): Promise<void> {
-    // If the answer is skipped or empty, no need to call AI
-    if (turn.answerText === "[Skipped]" || turn.answerText === "[Time expired]") {
-      const fallbackEvaluation: Evaluation = {
-        criteria: {
-          relevance: { score: 1, reason: "Answer was skipped", evidence: "Skipped" },
-          structure: { score: 1, reason: "No response provided", evidence: "None" },
-          depth: { score: 1, reason: "No technical details", evidence: "None" },
-          clarity: { score: 1, reason: "No communication", evidence: "None" },
-          levelFit: { score: 1, reason: "Unanswered", evidence: "None" },
-        },
-        skillScores: {},
-        topFix: "Attempt to provide at least a brief summary of your approach.",
-        unsupportedClaims: [],
-      };
-      await this.dispatch({ type: "SCORED", evaluation: fallbackEvaluation });
-      return;
-    }
-
-    if (!this.provider) {
-      // Deterministic evaluation fallback when running without an active provider
-      const fallbackEvaluation = this.createFallbackEvaluation(turn, plan);
-      await this.dispatch({ type: "SCORED", evaluation: fallbackEvaluation });
-      return;
-    }
-
-    try {
-      const controller = new AbortController();
-      const prompt = `Evaluate candidate answer for role: ${plan.targetRole} (${plan.level}).
-Question: "${turn.questionText}"
-Candidate Answer: "${turn.answerText}"
-Rate criteria 1-5 with short reason and verbatim evidence excerpt. Provide topFix and skillScores (0-100).`;
-
-      const result = await this.provider.generateObject<Evaluation>(
-        [
-          {
-            role: "system",
-            content:
-              "You are an objective engineering interview evaluator. Return valid evaluation JSON.",
+  private getEffectiveRubric(level: SessionPlan["level"]): RubricLevel {
+    if (this.rubric) return this.rubric;
+    return {
+      level,
+      description: `${level} engineering baseline expectations.`,
+      axes: {
+        depth: "Technical depth on architecture and operational trade-offs.",
+        ambiguity: "Ability to handle ambiguity and state assumptions.",
+        expectedScope: "Feature to system-level scope.",
+        followUpPressure: "Follow-up probing on edge cases and failure modes.",
+        behavioralExpectations: "Ownership, collaboration, and learning mindset.",
+      },
+      criteria: {
+        relevance: {
+          name: "Relevance & Directness",
+          description: "Addresses prompt directly.",
+          anchors: {
+            "1": "Misses prompt completely.",
+            "3": "Focuses directly on relevant trade-offs.",
+            "5": "Pinpoints architectural tension immediately.",
           },
-          { role: "user", content: prompt },
-        ],
-        EvaluationSchema,
-        {
-          signal: controller.signal,
-          maxOutputTokens: 1000,
-          temperature: 0,
-        }
-      );
+        },
+        structure: {
+          name: "Structural Framing",
+          description: "Uses STAR and clear logical flow.",
+          anchors: {
+            "1": "Ad-hoc design.",
+            "3": "Well-organized presentation.",
+            "5": "Masterful systematic presentation.",
+          },
+        },
+        depth: {
+          name: "Technical & Conceptual Depth",
+          description: "Understands operational failure modes.",
+          anchors: {
+            "1": "Superficial knowledge.",
+            "3": "Solid depth on mechanisms and complexity.",
+            "5": "Impressive depth on edge cases.",
+          },
+        },
+        clarity: {
+          name: "Clarity & Articulation",
+          description: "Balances technical depth with succinct clarity.",
+          anchors: {
+            "1": "Rambling answers.",
+            "3": "Speaks with clarity and good pacing.",
+            "5": "Highly articulate and engaging delivery.",
+          },
+        },
+        levelFit: {
+          name: "Level Alignment",
+          description: "Calibrated against level expectations.",
+          anchors: {
+            "1": "Below expected baseline.",
+            "3": "Meets level expectations comfortably.",
+            "5": "Exhibits instincts above current level.",
+          },
+        },
+      },
+    };
+  }
 
-      if (result.ok) {
-        await this.dispatch({ type: "SCORED", evaluation: result.value });
-      } else {
-        await this.dispatch({
-          type: "SCORE_FAILED",
-          error: { kind: result.error.kind, message: result.error.message },
-        });
-      }
-    } catch (err: unknown) {
+  private async evaluateTurn(turn: CompletedTurn, plan: SessionPlan): Promise<void> {
+    const rubric = this.getEffectiveRubric(plan.level);
+    const outcome = await evaluateAnswer({
+      question: {
+        text: turn.questionText,
+        skillTags: turn.skillTags,
+        difficulty: turn.difficulty,
+      },
+      answerText: turn.answerText,
+      level: plan.level,
+      targetRole: plan.targetRole,
+      rubric,
+      profile: this.profile,
+      provider: this.provider,
+    });
+
+    if (outcome.status === "scored") {
+      await this.dispatch({ type: "SCORED", evaluation: outcome.evaluation });
+    } else {
       await this.dispatch({
         type: "SCORE_FAILED",
-        error: {
-          kind: "network",
-          message: err instanceof Error ? err.message : "Provider call failed during evaluation.",
-        },
+        error: { kind: "network", message: outcome.error },
       });
     }
   }
@@ -357,43 +384,5 @@ Ask a focused, 1-sentence follow-up digging deeper into the candidate's last ans
       return `Consider thinking about: ${hints[0]}`;
     }
     return `Focus your answer on the core technical trade-offs relevant to ${question.skillTags.join(", ")}.`;
-  }
-
-  private createFallbackEvaluation(turn: CompletedTurn, _plan: SessionPlan): Evaluation {
-    const len = turn.answerText.length;
-    const depthScore = len > 300 ? 4 : len > 100 ? 3 : 2;
-
-    return {
-      criteria: {
-        relevance: {
-          score: 3,
-          reason: "Answer addresses topic",
-          evidence: turn.answerText.slice(0, 50),
-        },
-        structure: {
-          score: 3,
-          reason: "Clear sequential phrasing",
-          evidence: turn.answerText.slice(0, 50),
-        },
-        depth: {
-          score: depthScore,
-          reason: "Coverage of technical details",
-          evidence: turn.answerText.slice(0, 50),
-        },
-        clarity: {
-          score: 3,
-          reason: "Understandable explanation",
-          evidence: turn.answerText.slice(0, 50),
-        },
-        levelFit: {
-          score: 3,
-          reason: "Matches expected level",
-          evidence: turn.answerText.slice(0, 50),
-        },
-      },
-      skillScores: turn.skillTags.reduce((acc, tag) => ({ ...acc, [tag]: 70 }), {}),
-      topFix: "Include more concrete examples and quantified impact in your response.",
-      unsupportedClaims: [],
-    };
   }
 }

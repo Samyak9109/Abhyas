@@ -29,7 +29,7 @@ interface LiveInterviewScreenProps {
   provider?: ProviderAdapter;
   speechInput?: SpeechInput;
   speechOutput?: SpeechOutput;
-  onFinish: () => void;
+  onFinish: (sessionId?: string) => void;
   onExit: () => void;
 }
 
@@ -294,6 +294,23 @@ export function LiveInterviewScreen({
     }
   };
 
+  // --- Actions ---
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!typedAnswer.trim() || state.status !== "await_answer") return;
+
+    outputService.cancel();
+    const answerToSubmit = typedAnswer.trim().slice(0, MAX_ANSWER_CHARS);
+    setTypedAnswer("");
+    setInterimSpeech("");
+    setPttState("idle");
+    await runner.dispatch({
+      type: "SUBMIT",
+      answerText: answerToSubmit,
+    });
+  };
+
   const handlersRef = useRef({
     startListening,
     stopListening,
@@ -342,23 +359,6 @@ export function LiveInterviewScreen({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [effectiveMode, pttState, state.status, typedAnswer]);
-
-  // --- Actions ---
-
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!typedAnswer.trim() || state.status !== "await_answer") return;
-
-    outputService.cancel();
-    const answerToSubmit = typedAnswer.trim().slice(0, MAX_ANSWER_CHARS);
-    setTypedAnswer("");
-    setInterimSpeech("");
-    setPttState("idle");
-    await runner.dispatch({
-      type: "SUBMIT",
-      answerText: answerToSubmit,
-    });
-  };
 
   const handleSkip = async () => {
     if (state.status !== "await_answer") return;
@@ -476,7 +476,7 @@ export function LiveInterviewScreen({
             </div>
 
             <div className="abh-setup-actions">
-              <Button variant="primary" onClick={onFinish}>
+              <Button variant="primary" onClick={() => onFinish(plan.sessionId)}>
                 Finish Session
               </Button>
             </div>

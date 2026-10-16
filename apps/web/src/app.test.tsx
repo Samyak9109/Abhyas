@@ -63,6 +63,25 @@ describe("M1.1: App shell", () => {
     expect(await screen.findByRole("heading", { name: /set up your session/i })).toBeTruthy();
   });
 
+  it("navigates to Home screen via aside navigation link", async () => {
+    render(<App />);
+    await screen.findByText(/running in memory/i);
+
+    const homeLink = screen.getByRole("link", { name: /^home/i });
+    fireEvent.click(homeLink);
+
+    expect(
+      await screen.findByRole("heading", { name: /welcome to your practice studio/i })
+    ).toBeTruthy();
+  });
+
+  it("renders Results screen when navigating to /app/results", async () => {
+    window.history.pushState({}, "", "/app/results");
+    render(<App />);
+
+    expect(await screen.findByText(/session not found/i)).toBeTruthy();
+  });
+
   it("has no axe violations once loaded", async () => {
     const { container } = render(<App />);
     await screen.findByText(/running in memory/i);

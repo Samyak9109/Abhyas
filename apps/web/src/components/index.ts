@@ -14,3 +14,4 @@ export * from "./Skeleton";
 export * from "./Tabs";
 export * from "./Disclosure";
 export * from "./SubtitleLanes";
+export * from "./Mascot";

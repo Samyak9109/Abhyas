@@ -18,6 +18,7 @@
       "entry": [
         "src/main.tsx!",
         "src/components/index.ts!",
+        "src/screens/public/prerender.tsx!",
         "src/workers/parser.worker.ts!",
         "index.html!",
         "vite.config.ts"

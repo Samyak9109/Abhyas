@@ -37,6 +37,15 @@
   --paper-band-text: #121110;
   --paper-band-muted: #5a5348;
   --paper-band-accent-text: #a83409;
+
+  /* Mascot artwork tokens (design.md 4.8) */
+  --mascot-body: #cfc8b8;
+  --mascot-screen: #0e0d0c;
+  --mascot-neck: #8e887b;
+  --mascot-blazer: #6f6a60;
+  --mascot-shirt: #e8e1d2;
+  --mascot-outline: #121110;
+  --mascot-bezel: #1c1a17;
 }
 
 /* Default Theme: Dark "Ink" */

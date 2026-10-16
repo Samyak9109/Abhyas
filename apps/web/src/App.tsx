@@ -20,6 +20,15 @@ import { useTheme } from "./services/use-theme";
 import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/app.css";
+import "./styles/public.css";
+import {
+  LandingPage,
+  PrivacyPage,
+  OpenSourcePage,
+  KeyGuidePage,
+  TroubleshootingPage,
+  NotFoundPage,
+} from "./screens/public";
 
 // Lazy-loaded screen modules to meet NFR-001 initial bundle budget (<300 KB gzipped)
 const AISetupScreen = lazy(() =>
@@ -42,6 +51,12 @@ const SettingsScreen = lazy(() =>
 );
 
 type AppRoute =
+  | "/"
+  | "/privacy"
+  | "/open-source"
+  | "/guide/keys"
+  | "/help"
+  | "/404"
   | "/app/home"
   | "/app/settings"
   | "/app/setup/ai"
@@ -50,9 +65,27 @@ type AppRoute =
   | "/app/interview"
   | "/app/results";
 
+function isPublicRoute(r: AppRoute): boolean {
+  return (
+    r === "/" ||
+    r === "/privacy" ||
+    r === "/open-source" ||
+    r === "/guide/keys" ||
+    r === "/help" ||
+    r === "/404"
+  );
+}
+
 function getInitialRoute(): AppRoute {
   if (typeof window !== "undefined") {
     const path = window.location.pathname;
+    if (path === "/privacy") return "/privacy";
+    if (path === "/open-source") return "/open-source";
+    if (path === "/guide/keys") return "/guide/keys";
+    if (path === "/help") return "/help";
+    if (path === "/404") return "/404";
+    if (path === "/") return "/";
+
     if (path.includes("interview") || window.location.hash.includes("interview")) {
       return "/app/interview";
     }
@@ -128,6 +161,9 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (isPublicRoute(route)) {
+      return;
+    }
     let cancelled = false;
     initStorage()
       .then((appStorage) => {
@@ -145,7 +181,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, route]);
 
   const storage = init.status === "ready" ? init.storage : null;
   const { preference, setThemePreference } = useTheme(storage);
@@ -184,6 +220,24 @@ export function App() {
       mirrorThemePreference(preference);
     });
   }, [storage]);
+
+  if (isPublicRoute(route)) {
+    switch (route) {
+      case "/":
+        return <LandingPage />;
+      case "/privacy":
+        return <PrivacyPage />;
+      case "/open-source":
+        return <OpenSourcePage />;
+      case "/guide/keys":
+        return <KeyGuidePage />;
+      case "/help":
+        return <TroubleshootingPage />;
+      case "/404":
+      default:
+        return <NotFoundPage mode="not-found" />;
+    }
+  }
 
   if (init.status === "loading") {
     return (

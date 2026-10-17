@@ -12,8 +12,18 @@ import {
   type ProviderError,
   type ProviderRow,
   type StorageAdapter,
+  type HardwareRuntime,
 } from "@abhyas/core";
-import { Button, Callout, Input, RadioCard, SecretInput, Stepper, Switch } from "../components";
+import {
+  Button,
+  Callout,
+  HardwareBenchmarkCard,
+  Input,
+  RadioCard,
+  SecretInput,
+  Stepper,
+  Switch,
+} from "../components";
 
 interface AISetupScreenProps {
   storage: StorageAdapter;
@@ -21,6 +31,8 @@ interface AISetupScreenProps {
   onNavigateSettings?: () => void;
   /** Optional custom fetch implementation for testing */
   fetchFn?: typeof fetch;
+  /** Optional custom hardware runtime for capability testing (FR-024) */
+  hardwareRuntime?: HardwareRuntime;
 }
 
 type ProviderChoice = "gemini" | "openai" | "openai-compatible";
@@ -36,6 +48,7 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
   onComplete,
   onNavigateSettings,
   fetchFn,
+  hardwareRuntime,
 }) => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderChoice>("gemini");
   const [apiKey, setApiKey] = useState("");
@@ -471,12 +484,7 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                 <p className="abh-local-helper">
                   Runs WebGPU in browser. Requires a capable PC with dedicated GPU (text-only).
                 </p>
-                {useLocalModel && (
-                  <Callout variant="info" title="Local model mode (Phase 3)">
-                    In-browser WebGPU model management arrives in Phase 3. For Phase 1 practice,
-                    connect via Gemini or an OpenAI-compatible endpoint.
-                  </Callout>
-                )}
+                {useLocalModel && <HardwareBenchmarkCard runtime={hardwareRuntime} />}
               </div>
             </div>
           </section>

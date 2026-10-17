@@ -3423,3 +3423,256 @@
   font-size: 13px;
   font-weight: 500;
 }
+
+/* --- M3.1: Hardware Capability & Benchmark (FR-024, FR-022) ---------------- */
+.abh-hw-card {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.abh-hw-card--loading {
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+}
+
+.abh-hw-loading-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.abh-hw-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.abh-hw-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.abh-hw-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text);
+}
+
+.abh-hw-supported-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--success);
+  background-color: var(--surface);
+  border: 1px solid var(--success);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.abh-hw-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.abh-hw-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--space-2);
+}
+
+.abh-hw-spec-tile {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.abh-hw-spec-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.abh-hw-spec-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.abh-hw-benchmark-section {
+  margin-top: var(--space-1);
+}
+
+.abh-hw-bench-cta-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.abh-hw-bench-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.abh-hw-bench-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--accent-text);
+}
+
+.abh-hw-result-box {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-hw-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.abh-hw-result-metric {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.abh-hw-result-metric-val {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.abh-hw-result-metric-unit {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.abh-hw-tier-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.abh-hw-tier-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.abh-hw-tier-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.abh-hw-tier-badge--basic {
+  background-color: var(--surface-2);
+  border: 1px solid var(--cat-behav);
+  color: var(--cat-behav);
+}
+
+.abh-hw-tier-badge--standard {
+  background-color: var(--surface-2);
+  border: 1px solid var(--cat-tech);
+  color: var(--cat-tech);
+}
+
+.abh-hw-tier-badge--advanced {
+  background-color: var(--surface-2);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.abh-hw-result-notes {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.abh-hw-recommended-models {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.abh-hw-models-heading {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.abh-hw-models-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.abh-hw-model-item code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+}
+
+.abh-hw-bench-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.abh-hw-bench-disclaimer {
+  font-size: 11px;
+  color: var(--text-muted);
+  max-width: 75%;
+}

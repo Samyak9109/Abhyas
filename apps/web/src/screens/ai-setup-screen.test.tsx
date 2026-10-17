@@ -220,6 +220,29 @@ describe("M1.2: AISetupScreen (PG-09)", () => {
     expect(await screen.findByText(/connection verified/i)).toBeTruthy();
   });
 
+  it("toggles local model mode and renders hardware capability benchmark card (FR-024, M3.1)", async () => {
+    const storage = new MemoryStorageAdapter();
+    const mockRuntime = {
+      hasWebGpu: () => true,
+      isMobileDevice: () => false,
+      getAdapterInfo: async () => ({ description: "NVIDIA RTX 4070" }),
+      runComputeBenchmark: async () => ({ tokensPerSecond: 28, latencyMs: 90 }),
+    };
+
+    render(<AISetupScreen storage={storage} onComplete={() => {}} hardwareRuntime={mockRuntime} />);
+
+    const localSwitch = screen.getByRole("switch", { name: /use a local model/i });
+    expect(localSwitch).toBeDefined();
+
+    fireEvent.click(localSwitch);
+
+    await waitFor(() => {
+      expect(screen.getByText("Hardware Capabilities & WebGPU")).toBeDefined();
+    });
+
+    expect(screen.getByText("NVIDIA RTX 4070")).toBeDefined();
+  });
+
   describe("Accessibility (axe)", () => {
     it("has no axe violations in default state under Ink theme", async () => {
       document.documentElement.setAttribute("data-theme", "ink");

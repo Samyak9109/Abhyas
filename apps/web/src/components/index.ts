@@ -15,3 +15,4 @@ export * from "./Tabs";
 export * from "./Disclosure";
 export * from "./SubtitleLanes";
 export * from "./Mascot";
+export * from "./HardwareBenchmarkCard";

@@ -75,6 +75,17 @@ describe("M1.1: App shell", () => {
     ).toBeTruthy();
   });
 
+  it("navigates to Skills Dashboard via aside navigation link", async () => {
+    render(<App />);
+    await screen.findByText(/running in memory/i);
+
+    const skillsLink = screen.getByRole("link", { name: /^skills/i });
+    fireEvent.click(skillsLink);
+
+    expect(await screen.findByRole("heading", { name: "Skills Dashboard_" })).toBeTruthy();
+    expect(screen.getByText("No interview data yet")).toBeTruthy();
+  });
+
   it("renders Results screen when navigating to /app/results", async () => {
     window.history.pushState({}, "", "/app/results");
     render(<App />);

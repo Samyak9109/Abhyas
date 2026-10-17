@@ -7,6 +7,14 @@ import {
   selectWeakestSkill,
   selectStrongestSkill,
   recomputeSkillStats,
+  getScoreBand,
+  getScoreBandLabel,
+  isSkillStale,
+  LEVEL_BENCHMARKS,
+  getBenchmarkForLevel,
+  selectWeakestSkills,
+  selectStrongestSkills,
+  computeSkillHistory,
 } from "./statistics.js";
 import type { SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
 import type { Evaluation } from "../schemas/evaluation.schema.js";
@@ -353,6 +361,208 @@ describe("M2.1: Skill Statistics Engine (FR-014, architecture.md 14)", () => {
       const dsaStat = stats.find((s) => s.skillId === "dsa");
       // Total turns tagged dsa was 5 (including 1 unscored), so n should be 4
       expect(dsaStat!.n).toBe(4);
+    });
+  });
+
+  describe("M2.3: Dashboard Visualization & Calibration Helpers (FR-015, design.md 9)", () => {
+    describe("Score Bands (design.md 9)", () => {
+      it("classifies scores >= 75 as strong", () => {
+        expect(getScoreBand(75)).toBe("strong");
+        expect(getScoreBand(88.5)).toBe("strong");
+        expect(getScoreBand(100)).toBe("strong");
+        expect(getScoreBandLabel("strong")).toBe("Strong");
+      });
+
+      it("classifies scores 50 to 74 as developing", () => {
+        expect(getScoreBand(50)).toBe("developing");
+        expect(getScoreBand(62)).toBe("developing");
+        expect(getScoreBand(74.9)).toBe("developing");
+        expect(getScoreBandLabel("developing")).toBe("Developing");
+      });
+
+      it("classifies scores < 50 as needs_work", () => {
+        expect(getScoreBand(0)).toBe("needs_work");
+        expect(getScoreBand(35)).toBe("needs_work");
+        expect(getScoreBand(49.9)).toBe("needs_work");
+        expect(getScoreBandLabel("needs_work")).toBe("Needs work");
+      });
+    });
+
+    describe("Stale Skills (FR-015, design.md 8)", () => {
+      it("flags skills not practiced for >= 14 days as stale", () => {
+        const now = new Date("2026-10-17T12:00:00Z");
+        const freshDate = "2026-10-10T12:00:00Z"; // 7 days ago
+        const staleDate = "2026-10-01T12:00:00Z"; // 16 days ago
+
+        expect(isSkillStale(freshDate, now)).toBe(false);
+        expect(isSkillStale(staleDate, now)).toBe(true);
+      });
+
+      it("handles custom threshold days", () => {
+        const now = new Date("2026-10-17T12:00:00Z");
+        const fiveDaysAgo = "2026-10-12T12:00:00Z";
+        expect(isSkillStale(fiveDaysAgo, now, 7)).toBe(false);
+        expect(isSkillStale(fiveDaysAgo, now, 3)).toBe(true);
+      });
+
+      it("returns false for invalid date strings", () => {
+        expect(isSkillStale("invalid-date")).toBe(false);
+      });
+    });
+
+    describe("Level Benchmarks (FR-015)", () => {
+      it("maps experience levels to canonical score targets", () => {
+        expect(LEVEL_BENCHMARKS.intern_fresher).toBe(60);
+        expect(LEVEL_BENCHMARKS.junior).toBe(65);
+        expect(LEVEL_BENCHMARKS.mid).toBe(70);
+        expect(LEVEL_BENCHMARKS.senior).toBe(75);
+        expect(LEVEL_BENCHMARKS.staff_plus).toBe(80);
+      });
+
+      it("defaults to mid level (70) when level is unspecified", () => {
+        expect(getBenchmarkForLevel(null)).toBe(70);
+        expect(getBenchmarkForLevel(undefined)).toBe(70);
+        expect(getBenchmarkForLevel("senior")).toBe(75);
+      });
+    });
+
+    describe("Multi-selection: Weakest & Strongest Skills (FR-015)", () => {
+      const stats = [
+        {
+          skillId: "dsa",
+          score: 85,
+          n: 10,
+          confidence: "high" as const,
+          lastPracticedAt: "2026-10-15T00:00:00Z",
+          taxonomyVersion: 1,
+        },
+        {
+          skillId: "system_design",
+          score: 45,
+          n: 5,
+          confidence: "medium" as const,
+          lastPracticedAt: "2026-10-14T00:00:00Z",
+          taxonomyVersion: 1,
+        },
+        {
+          skillId: "communication",
+          score: 92,
+          n: 6,
+          confidence: "medium" as const,
+          lastPracticedAt: "2026-10-16T00:00:00Z",
+          taxonomyVersion: 1,
+        },
+        {
+          skillId: "databases",
+          score: 55,
+          n: 4,
+          confidence: "medium" as const,
+          lastPracticedAt: "2026-10-10T00:00:00Z",
+          taxonomyVersion: 1,
+        },
+        {
+          skillId: "ml_ai",
+          score: 30,
+          n: 1,
+          confidence: "low" as const,
+          lastPracticedAt: "2026-10-01T00:00:00Z",
+          taxonomyVersion: 1,
+        },
+      ];
+
+      it("selects top N weakest prioritizing medium/high confidence first", () => {
+        // If there are 2 medium/high skills and 1 low-confidence skill, low confidence fills the 3rd slot
+        const testStats = [
+          {
+            skillId: "system_design",
+            score: 45,
+            n: 5,
+            confidence: "medium" as const,
+            lastPracticedAt: "2026-10-14T00:00:00Z",
+            taxonomyVersion: 1,
+          },
+          {
+            skillId: "databases",
+            score: 55,
+            n: 4,
+            confidence: "medium" as const,
+            lastPracticedAt: "2026-10-10T00:00:00Z",
+            taxonomyVersion: 1,
+          },
+          {
+            skillId: "ml_ai",
+            score: 30,
+            n: 1,
+            confidence: "low" as const,
+            lastPracticedAt: "2026-10-01T00:00:00Z",
+            taxonomyVersion: 1,
+          },
+        ];
+
+        const weakest = selectWeakestSkills(testStats, 3);
+        expect(weakest).toHaveLength(3);
+        expect(weakest[0]?.skillId).toBe("system_design"); // 45 (medium)
+        expect(weakest[1]?.skillId).toBe("databases"); // 55 (medium)
+        expect(weakest[2]?.skillId).toBe("ml_ai"); // 30 (low)
+      });
+
+      it("selects top N strongest among medium/high confidence", () => {
+        const strongest = selectStrongestSkills(stats, 2);
+        expect(strongest).toHaveLength(2);
+        expect(strongest[0]?.skillId).toBe("communication"); // 92
+        expect(strongest[1]?.skillId).toBe("dsa"); // 85
+      });
+    });
+
+    describe("Skill History Points (FR-015)", () => {
+      it("extracts chronological scores for a given skill", () => {
+        const session: SessionRow = {
+          id: "s-1",
+          startedAt: "2026-10-16T10:00:00.000Z",
+          endedAt: "2026-10-16T10:15:00.000Z",
+          status: "completed",
+          plan: { sessionId: "s-1", targetRole: "Eng", level: "mid", type: "technical" },
+          modality: "voice",
+          level: "mid",
+          providerId: "openai-compatible",
+          modelId: "gpt-4o",
+          schemaVersion: 1,
+        };
+
+        const turns: TurnRow[] = [
+          {
+            id: "t-1",
+            sessionId: "s-1",
+            index: 0,
+            questionId: "q-1",
+            questionText: "DSA question 1",
+            answerText: "Answer 1",
+            isUnverifiedQuestion: false,
+            skillTags: ["dsa"],
+            difficulty: 0.5,
+            status: "scored",
+            evaluation: mockEvaluation(4, { dsa: 75 }),
+          },
+          {
+            id: "t-2",
+            sessionId: "s-1",
+            index: 1,
+            questionId: "q-2",
+            questionText: "DSA question 2",
+            answerText: "Answer 2",
+            isUnverifiedQuestion: false,
+            skillTags: ["dsa"],
+            difficulty: 0.6,
+            status: "scored",
+            evaluation: mockEvaluation(5, { dsa: 95 }),
+          },
+        ];
+
+        const history = computeSkillHistory(turns, [session], "dsa");
+        expect(history).toHaveLength(2);
+        expect(history[0]?.score).toBe(75);
+        expect(history[1]?.score).toBe(95);
+      });
     });
   });
 });

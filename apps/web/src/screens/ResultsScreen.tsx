@@ -18,6 +18,7 @@ interface ResultsScreenProps {
   sessionId: string;
   onRetryQuestion?: (questionId: string) => void;
   onPracticeSkill?: (skillId: string) => void;
+  onNavigateSkills?: () => void;
   onFinish: () => void;
   onNavigateHome: () => void;
 }
@@ -27,6 +28,7 @@ export function ResultsScreen({
   sessionId,
   onRetryQuestion,
   onPracticeSkill,
+  onNavigateSkills,
   onFinish,
   onNavigateHome,
 }: ResultsScreenProps) {
@@ -514,6 +516,11 @@ export function ResultsScreen({
             {onPracticeSkill && weakestSkill && (
               <Button variant="secondary" onClick={() => onPracticeSkill(weakestSkill.skillId)}>
                 Practice Weakest Skill ({weakestSkill.skillId.replace(/_/g, " ")})
+              </Button>
+            )}
+            {onNavigateSkills && (
+              <Button variant="secondary" onClick={onNavigateSkills}>
+                Skills Dashboard
               </Button>
             )}
           </div>

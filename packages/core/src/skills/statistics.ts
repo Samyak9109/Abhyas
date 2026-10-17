@@ -1,6 +1,7 @@
 // FR-014, architecture.md 14: Pure deterministic skill statistics engine.
 import type { SkillStatRow } from "../schemas/storage-rows.schema.js";
 import type { SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
+import type { ExperienceLevel } from "../schemas/profile.schema.js";
 import { calculateTurnScore } from "../evaluation/rubric-evaluator.js";
 
 /** Default half-life in turns for recency weighting (architecture.md 14) */
@@ -272,4 +273,182 @@ export function recomputeSkillStats(
   stats.sort((a, b) => a.skillId.localeCompare(b.skillId));
 
   return stats;
+}
+
+// ---------------------------------------------------------------------------
+// FR-015: Dashboard Visualization & Calibration Helpers
+// ---------------------------------------------------------------------------
+
+export type ScoreBand = "strong" | "developing" | "needs_work";
+
+/**
+ * Returns score band according to design.md section 9:
+ * - 75 to 100: "Strong"
+ * - 50 to 74: "Developing"
+ * - below 50: "Needs work" (uses --warning, not --danger)
+ */
+export function getScoreBand(score: number): ScoreBand {
+  if (score >= 75) return "strong";
+  if (score >= 50) return "developing";
+  return "needs_work";
+}
+
+export function getScoreBandLabel(band: ScoreBand): string {
+  switch (band) {
+    case "strong":
+      return "Strong";
+    case "developing":
+      return "Developing";
+    case "needs_work":
+      return "Needs work";
+  }
+}
+
+/** Default threshold in days after which a skill is marked stale (needs refresh) */
+export const STALE_SKILL_THRESHOLD_DAYS = 14;
+
+/**
+ * Checks whether a skill has not been practiced within thresholdDays (FR-015 / design.md 8).
+ */
+export function isSkillStale(
+  lastPracticedAt: string,
+  now: Date | string = new Date(),
+  thresholdDays = STALE_SKILL_THRESHOLD_DAYS
+): boolean {
+  const lastTime = new Date(lastPracticedAt).getTime();
+  const currentTime = typeof now === "string" ? new Date(now).getTime() : now.getTime();
+  if (Number.isNaN(lastTime) || Number.isNaN(currentTime)) return false;
+  const elapsedDays = (currentTime - lastTime) / (1000 * 60 * 60 * 24);
+  return elapsedDays >= thresholdDays;
+}
+
+/**
+ * Level benchmark score targets (FR-015: "benchmark against level").
+ */
+export const LEVEL_BENCHMARKS: Record<ExperienceLevel, number> = {
+  intern_fresher: 60,
+  junior: 65,
+  mid: 70,
+  senior: 75,
+  staff_plus: 80,
+};
+
+/**
+ * Returns the target benchmark score for a given level (defaults to mid: 70).
+ */
+export function getBenchmarkForLevel(level?: ExperienceLevel | null): number {
+  if (!level || !(level in LEVEL_BENCHMARKS)) {
+    return LEVEL_BENCHMARKS.mid;
+  }
+  return LEVEL_BENCHMARKS[level];
+}
+
+/**
+ * Selects the top N weakest skills (FR-015):
+ * - Prioritizes skills with at least medium confidence (n >= 3) sorted by lowest score.
+ * - Followed by low-confidence skills sorted by lowest sample count then score.
+ */
+export function selectWeakestSkills(
+  stats: SkillStatRow[],
+  limit = 3,
+  allKnownSkillIds?: readonly string[]
+): SkillStatRow[] {
+  if (stats.length === 0 && (!allKnownSkillIds || allKnownSkillIds.length === 0)) {
+    return [];
+  }
+
+  // 1. Medium and high confidence
+  const mediumOrHigh = stats.filter((s) => s.confidence === "medium" || s.confidence === "high");
+  mediumOrHigh.sort((a, b) => {
+    if (a.score !== b.score) return a.score - b.score;
+    if (a.n !== b.n) return a.n - b.n;
+    return a.skillId.localeCompare(b.skillId);
+  });
+
+  // 2. Low confidence
+  const lowConfidence = stats.filter((s) => s.confidence === "low");
+  lowConfidence.sort((a, b) => {
+    if (a.n !== b.n) return a.n - b.n;
+    if (a.score !== b.score) return a.score - b.score;
+    return a.skillId.localeCompare(b.skillId);
+  });
+
+  // Combine
+  const combined = [...mediumOrHigh, ...lowConfidence];
+  return combined.slice(0, limit);
+}
+
+/**
+ * Selects the top N strongest skills (FR-015):
+ * - Only skills with at least medium confidence (n >= 3) qualify as true strengths.
+ * - Sorted by highest score descending.
+ */
+export function selectStrongestSkills(stats: SkillStatRow[], limit = 3): SkillStatRow[] {
+  const eligible = stats.filter((s) => s.confidence === "medium" || s.confidence === "high");
+  eligible.sort((a, b) => {
+    if (a.score !== b.score) return b.score - a.score;
+    if (a.n !== b.n) return b.n - a.n;
+    return a.skillId.localeCompare(b.skillId);
+  });
+  return eligible.slice(0, limit);
+}
+
+export interface SkillHistoryPoint {
+  turnId: string;
+  score: number;
+  timestamp: string;
+}
+
+/**
+ * Extracts chronological score history points for a specific skill (for trend lines / sparklines).
+ */
+export function computeSkillHistory(
+  turns: TurnRow[],
+  sessions: SessionRow[] = [],
+  skillId: string
+): SkillHistoryPoint[] {
+  const sessionMap = new Map<string, SessionRow>(sessions.map((s) => [s.id, s]));
+  const scoredTurns = turns.filter(
+    (t) => t.status === "scored" && t.evaluation !== undefined && t.skillTags.includes(skillId)
+  );
+
+  const sortedTurns = [...scoredTurns].sort((a, b) => {
+    const sessionA = sessionMap.get(a.sessionId);
+    const sessionB = sessionMap.get(b.sessionId);
+    const timeA = sessionA?.startedAt ?? a.id;
+    const timeB = sessionB?.startedAt ?? b.id;
+    if (timeA !== timeB) return timeA.localeCompare(timeB);
+    if (a.sessionId !== b.sessionId) return a.sessionId.localeCompare(b.sessionId);
+    if (a.index !== b.index) return a.index - b.index;
+    return a.id.localeCompare(b.id);
+  });
+
+  const isDelivery = DEFAULT_DELIVERY_SKILL_IDS.includes(skillId);
+  const history: SkillHistoryPoint[] = [];
+
+  for (const turn of sortedTurns) {
+    const session = sessionMap.get(turn.sessionId);
+    if (session?.modality === "text" && isDelivery) {
+      continue;
+    }
+    const timestamp =
+      session?.endedAt ??
+      session?.startedAt ??
+      new Date(1700000000000 + turn.index * 60000).toISOString();
+
+    let score: number;
+    if (
+      turn.evaluation?.skillScores &&
+      typeof turn.evaluation.skillScores[skillId] === "number" &&
+      Number.isFinite(turn.evaluation.skillScores[skillId])
+    ) {
+      score = turn.evaluation.skillScores[skillId]!;
+    } else {
+      score = calculateTurnScore(turn.evaluation!);
+    }
+
+    history.push({ turnId: turn.id, score, timestamp });
+  }
+
+  return history;
 }

@@ -46,6 +46,9 @@ const LiveInterviewScreen = lazy(() =>
 const ResultsScreen = lazy(() =>
   import("./screens/ResultsScreen").then((m) => ({ default: m.ResultsScreen }))
 );
+const SkillsDashboardScreen = lazy(() =>
+  import("./screens/SkillsDashboardScreen").then((m) => ({ default: m.SkillsDashboardScreen }))
+);
 const SettingsScreen = lazy(() =>
   import("./screens/SettingsScreen").then((m) => ({ default: m.SettingsScreen }))
 );
@@ -58,6 +61,7 @@ type AppRoute =
   | "/help"
   | "/404"
   | "/app/home"
+  | "/app/skills"
   | "/app/settings"
   | "/app/setup/ai"
   | "/app/setup/profile"
@@ -91,6 +95,9 @@ function getInitialRoute(): AppRoute {
     }
     if (path.includes("results") || window.location.hash.includes("results")) {
       return "/app/results";
+    }
+    if (path.includes("skills") || window.location.hash.includes("skills")) {
+      return "/app/skills";
     }
     if (path.includes("setup/session") || window.location.hash.includes("setup/session")) {
       return "/app/setup/session";
@@ -297,6 +304,96 @@ export function App() {
     </div>
   );
 
+  const renderAppNav = (currentRoute: AppRoute) => (
+    <aside className="abh-app-nav">
+      <span className="abh-wordmark" aria-hidden="true">
+        Abhyas
+      </span>
+      <nav aria-label="App">
+        <ul className="abh-app-nav-list">
+          <li>
+            <a
+              className="abh-app-nav-item"
+              href="/app/home"
+              aria-current={currentRoute === "/app/home" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/home");
+              }}
+            >
+              Home
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
+              href="/app/skills"
+              aria-current={currentRoute === "/app/skills" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/skills");
+              }}
+            >
+              Skills
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
+              href="/app/setup/ai"
+              aria-current={currentRoute === "/app/setup/ai" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/setup/ai");
+              }}
+            >
+              AI Setup
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
+              href="/app/setup/profile"
+              aria-current={currentRoute === "/app/setup/profile" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/setup/profile");
+              }}
+            >
+              Profile
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
+              href="/app/setup/session"
+              aria-current={currentRoute === "/app/setup/session" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/setup/session");
+              }}
+            >
+              Session
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
+              href="/app/settings"
+              aria-current={currentRoute === "/app/settings" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/settings");
+              }}
+            >
+              Settings
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+  );
+
   if (route === "/app/setup/ai") {
     return (
       <div className="abh-app">
@@ -394,82 +491,15 @@ export function App() {
     return (
       <div className="abh-app">
         {renderOfflineBanner()}
-        <aside className="abh-app-nav">
-          <span className="abh-wordmark" aria-hidden="true">
-            Abhyas
-          </span>
-          <nav aria-label="App">
-            <ul className="abh-app-nav-list">
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/home"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/home");
-                  }}
-                >
-                  Home
-                </a>
-              </li>
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/setup/ai"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/setup/ai");
-                  }}
-                >
-                  AI Setup
-                </a>
-              </li>
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/setup/profile"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/setup/profile");
-                  }}
-                >
-                  Profile
-                </a>
-              </li>
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/setup/session"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/setup/session");
-                  }}
-                >
-                  Session
-                </a>
-              </li>
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/settings"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/settings");
-                  }}
-                >
-                  Settings
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </aside>
+        {renderAppNav(route)}
         <main className="abh-app-main">
           <Suspense fallback={screenLoading}>
             <ResultsScreen
               storage={init.storage}
               sessionId={resultsSessionId ?? ""}
               onRetryQuestion={() => navigateTo("/app/setup/session")}
-              onPracticeSkill={() => navigateTo("/app/setup/session")}
+              onPracticeSkill={() => navigateTo("/app/skills")}
+              onNavigateSkills={() => navigateTo("/app/skills")}
               onFinish={() => {
                 setResultsSessionId(null);
                 navigateTo("/app/home");
@@ -485,80 +515,32 @@ export function App() {
     );
   }
 
+  if (route === "/app/skills") {
+    return (
+      <div className="abh-app">
+        {renderOfflineBanner()}
+        {renderAppNav(route)}
+        <main className="abh-app-main">
+          <Suspense fallback={screenLoading}>
+            <SkillsDashboardScreen
+              storage={init.storage}
+              onPracticeSkill={(_skillId) => {
+                navigateTo("/app/setup/session");
+              }}
+              onStartSession={() => navigateTo("/app/setup/session")}
+              onNavigateHome={() => navigateTo("/app/home")}
+            />
+          </Suspense>
+        </main>
+      </div>
+    );
+  }
+
   if (route === "/app/home") {
     return (
       <div className="abh-app">
         {renderOfflineBanner()}
-        <aside className="abh-app-nav">
-          <span className="abh-wordmark" aria-hidden="true">
-            Abhyas
-          </span>
-          <nav aria-label="App">
-            <ul className="abh-app-nav-list">
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/home"
-                  aria-current="page"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/home");
-                  }}
-                >
-                  Home
-                </a>
-              </li>
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/setup/ai"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/setup/ai");
-                  }}
-                >
-                  AI Setup
-                </a>
-              </li>
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/setup/profile"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/setup/profile");
-                  }}
-                >
-                  Profile
-                </a>
-              </li>
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/setup/session"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/setup/session");
-                  }}
-                >
-                  Session
-                </a>
-              </li>
-              <li>
-                <a
-                  className="abh-app-nav-item"
-                  href="/app/settings"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo("/app/settings");
-                  }}
-                >
-                  Settings
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </aside>
+        {renderAppNav(route)}
         <main className="abh-app-main">
           <HomeScreen
             storage={init.storage}
@@ -569,6 +551,7 @@ export function App() {
             }}
             onNavigateSettings={() => navigateTo("/app/settings")}
             onNavigateProfile={() => navigateTo("/app/setup/profile")}
+            onNavigateSkills={() => navigateTo("/app/skills")}
           />
         </main>
       </div>
@@ -578,76 +561,7 @@ export function App() {
   return (
     <div className="abh-app">
       {renderOfflineBanner()}
-      <aside className="abh-app-nav">
-        <span className="abh-wordmark" aria-hidden="true">
-          Abhyas
-        </span>
-        <nav aria-label="App">
-          <ul className="abh-app-nav-list">
-            <li>
-              <a
-                className="abh-app-nav-item"
-                href="/app/home"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo("/app/home");
-                }}
-              >
-                Home
-              </a>
-            </li>
-            <li>
-              <a
-                className="abh-app-nav-item"
-                href="/app/setup/ai"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo("/app/setup/ai");
-                }}
-              >
-                AI Setup
-              </a>
-            </li>
-            <li>
-              <a
-                className="abh-app-nav-item"
-                href="/app/setup/profile"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo("/app/setup/profile");
-                }}
-              >
-                Profile
-              </a>
-            </li>
-            <li>
-              <a
-                className="abh-app-nav-item"
-                href="/app/setup/session"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo("/app/setup/session");
-                }}
-              >
-                Session
-              </a>
-            </li>
-            <li>
-              <a
-                className="abh-app-nav-item"
-                href="/app/settings"
-                aria-current="page"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo("/app/settings");
-                }}
-              >
-                Settings
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      {renderAppNav(route)}
       <main className="abh-app-main">
         <Suspense fallback={screenLoading}>
           <SettingsScreen

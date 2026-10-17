@@ -15,6 +15,7 @@ interface HomeScreenProps {
   onViewResults: (sessionId: string) => void;
   onNavigateSettings?: () => void;
   onNavigateProfile?: () => void;
+  onNavigateSkills?: () => void;
 }
 
 interface SessionSummaryItem {
@@ -30,6 +31,7 @@ export function HomeScreen({
   onViewResults,
   onNavigateSettings,
   onNavigateProfile,
+  onNavigateSkills,
 }: HomeScreenProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -194,9 +196,16 @@ export function HomeScreen({
                   Practice with adaptive follow-up questioning and canonical rubric scoring.
                 </p>
               </div>
-              <Button variant="primary" onClick={onStartSession}>
-                Start Practice Session
-              </Button>
+              <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+                <Button variant="primary" onClick={onStartSession}>
+                  Start Practice Session
+                </Button>
+                {onNavigateSkills && (
+                  <Button variant="secondary" onClick={onNavigateSkills}>
+                    Skills Dashboard
+                  </Button>
+                )}
+              </div>
             </section>
 
             {/* Recent Sessions List */}

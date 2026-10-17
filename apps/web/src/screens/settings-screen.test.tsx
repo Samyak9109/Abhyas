@@ -340,4 +340,79 @@ describe("M1.1: Settings screen", () => {
       expect(await axe(container)).toHaveNoViolations();
     });
   });
+
+  describe("M2.5: Import Flow (FR-020)", () => {
+    it("renders Import data button and processes valid backup file", async () => {
+      const storage = new MemoryStorageAdapter();
+      renderScreen({ storage });
+
+      const importBtn = screen.getByRole("button", { name: "Import data" });
+      expect(importBtn).toBeTruthy();
+
+      const fileInput = screen.getByLabelText("Upload backup JSON file") as HTMLInputElement;
+      expect(fileInput).toBeTruthy();
+
+      const validBackup = {
+        app: "abhyas",
+        schemaVersion: 1,
+        exportedAt: "2026-10-17T12:00:00.000Z",
+        tables: {
+          profile: [],
+          documents: [],
+          structuredProfiles: [],
+          providers: [],
+          sessions: [
+            {
+              id: "s_imp_1",
+              startedAt: "2026-10-17T10:00:00.000Z",
+              status: "completed",
+              plan: null,
+              modality: "text",
+              level: "mid",
+              providerId: "gemini",
+              modelId: "m1",
+              schemaVersion: 1,
+            },
+          ],
+          turns: [],
+          skillStats: [],
+          reviewQueue: [],
+          settings: [],
+          companyCache: [],
+          models: [],
+        },
+      };
+
+      const file = new File([JSON.stringify(validBackup)], "backup.json", {
+        type: "application/json",
+      });
+
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByRole("dialog", { name: "Import backup data?" })).toBeTruthy();
+        expect(screen.getByText("1 session(s)")).toBeTruthy();
+      });
+
+      const confirmBtn = screen.getByRole("button", { name: "Confirm & merge" });
+      fireEvent.click(confirmBtn);
+
+      await waitFor(async () => {
+        const storedSessions = await storage.getAll("sessions");
+        expect(storedSessions.length).toBe(1);
+      });
+    });
+
+    it("displays error Callout when an invalid file is selected", async () => {
+      renderScreen();
+      const fileInput = screen.getByLabelText("Upload backup JSON file") as HTMLInputElement;
+
+      const badFile = new File(["{ malformed json"], "bad.json", { type: "application/json" });
+      fireEvent.change(fileInput, { target: { files: [badFile] } });
+
+      await waitFor(() => {
+        expect(screen.getByText("The file is not valid JSON.")).toBeTruthy();
+      });
+    });
+  });
 });

@@ -6,3 +6,4 @@ export * from "./table-registry";
 export * from "./memory-storage";
 export * from "./dexie-storage";
 export * from "./export-format";
+export * from "./import-service";

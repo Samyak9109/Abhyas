@@ -52,6 +52,9 @@ const SkillsDashboardScreen = lazy(() =>
 const SkillPracticeScreen = lazy(() =>
   import("./screens/SkillPracticeScreen").then((m) => ({ default: m.SkillPracticeScreen }))
 );
+const HistoryScreen = lazy(() =>
+  import("./screens/HistoryScreen").then((m) => ({ default: m.HistoryScreen }))
+);
 const SettingsScreen = lazy(() =>
   import("./screens/SettingsScreen").then((m) => ({ default: m.SettingsScreen }))
 );
@@ -66,6 +69,7 @@ type AppRoute =
   | "/app/home"
   | "/app/skills"
   | "/app/practice"
+  | "/app/history"
   | "/app/settings"
   | "/app/setup/ai"
   | "/app/setup/profile"
@@ -106,6 +110,9 @@ function getInitialRoute(): AppRoute {
     if (path.includes("practice") || window.location.hash.includes("practice")) {
       return "/app/practice";
     }
+    if (path.includes("history") || window.location.hash.includes("history")) {
+      return "/app/history";
+    }
     if (path.includes("setup/session") || window.location.hash.includes("setup/session")) {
       return "/app/setup/session";
     }
@@ -134,6 +141,7 @@ export function App() {
   const [route, setRoute] = useState<AppRoute>(getInitialRoute);
   const [resultsSessionId, setResultsSessionId] = useState<string | null>(null);
   const [practiceSkillId, setPracticeSkillId] = useState<string | null>(null);
+  const [historySessionId, setHistorySessionId] = useState<string | null>(null);
   const [init, setInit] = useState<InitState>({ status: "loading" });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -361,6 +369,20 @@ export function App() {
           <li>
             <a
               className="abh-app-nav-item"
+              href="/app/history"
+              aria-current={currentRoute === "/app/history" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                setHistorySessionId(null);
+                navigateTo("/app/history");
+              }}
+            >
+              History
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
               href="/app/setup/ai"
               aria-current={currentRoute === "/app/setup/ai" ? "page" : undefined}
               onClick={(e) => {
@@ -575,6 +597,32 @@ export function App() {
               onStartSession={() => navigateTo("/app/setup/session")}
               onNavigateSkills={() => navigateTo("/app/skills")}
               onNavigateHome={() => navigateTo("/app/home")}
+            />
+          </Suspense>
+        </main>
+      </div>
+    );
+  }
+
+  if (route === "/app/history") {
+    return (
+      <div className="abh-app">
+        {renderOfflineBanner()}
+        {renderAppNav(route)}
+        <main className="abh-app-main">
+          <Suspense fallback={screenLoading}>
+            <HistoryScreen
+              storage={init.storage}
+              initialSessionId={historySessionId}
+              onSelectSession={(sid) => setHistorySessionId(sid)}
+              onStartSession={() => navigateTo("/app/setup/session")}
+              onPracticeSkill={(skillId) => {
+                setPracticeSkillId(skillId);
+                navigateTo("/app/practice");
+              }}
+              onRetryQuestion={(_qid) => {
+                navigateTo("/app/setup/session");
+              }}
             />
           </Suspense>
         </main>

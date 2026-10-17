@@ -7,6 +7,9 @@ import {
   loadVoiceSettings,
   saveSubtitleSettings,
   saveVoiceSettings,
+  executeImport,
+  validateImport,
+  type ImportValidationReport,
   type ProviderRow,
   type StorageAdapter,
   type SubtitleSettings,
@@ -125,6 +128,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importReport, setImportReport] = useState<ImportValidationReport | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const themeGroupRef = useRef<HTMLDivElement>(null);
 
   // Voice & Subtitle settings
@@ -271,6 +279,67 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       setActionError("Export failed. Please try again.");
     } finally {
       setExporting(false);
+    }
+  };
+
+  async function readFileAsText(file: File): Promise<string> {
+    if (typeof file.text === "function") {
+      try {
+        return await file.text();
+      } catch {
+        // fallback
+      }
+    }
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string) || "");
+      reader.onerror = () => reject(reader.error || new Error("Failed to read file"));
+      reader.readAsText(file);
+    });
+  }
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    setImportError(null);
+    try {
+      const text = await readFileAsText(file);
+      const report = await validateImport(text, storage);
+      if (!report.valid) {
+        setImportError(report.errorMessage || "Invalid backup file format.");
+      } else {
+        setImportReport(report);
+        setImportDialogOpen(true);
+      }
+    } catch {
+      setImportError("Failed to read the backup file.");
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!importReport?.data) return;
+    setImporting(true);
+    setImportError(null);
+    try {
+      const result = await executeImport(storage, importReport.data);
+      setImportDialogOpen(false);
+      setImportReport(null);
+      setToast(`Import completed: ${result.importedSessions} session(s) restored.`);
+      if (typeof navigator !== "undefined" && navigator.storage?.estimate) {
+        const est = await navigator.storage.estimate();
+        if (est.usage !== undefined && est.quota !== undefined) {
+          setUsage({ usage: est.usage, quota: est.quota });
+        }
+      }
+    } catch (error) {
+      onWriteError(error);
+      setImportError("Import failed during execution.");
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -548,10 +617,35 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   : "Estimate unavailable"}
             </p>
           </div>
-          <Button variant="secondary" isLoading={exporting} onClick={() => void handleExport()}>
-            Export data
-          </Button>
+          <div style={{ display: "flex", gap: "var(--space-2)" }}>
+            <Button variant="secondary" isLoading={exporting} onClick={() => void handleExport()}>
+              Export data
+            </Button>
+            <Button
+              variant="secondary"
+              isLoading={importing}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Import data
+            </Button>
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".json,application/json"
+            aria-label="Upload backup JSON file"
+            onChange={(e) => void handleFileSelected(e)}
+            style={{ display: "none" }}
+          />
         </div>
+
+        {importError && (
+          <div style={{ marginTop: "var(--space-2)" }}>
+            <Callout variant="danger" title="Import refused">
+              {importError}
+            </Callout>
+          </div>
+        )}
 
         {actionError && (
           <Callout variant="danger" title="Something went wrong">
@@ -609,6 +703,95 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             autoComplete="off"
           />
         </div>
+      </Dialog>
+
+      <Dialog
+        isOpen={importDialogOpen}
+        onClose={() => {
+          setImportDialogOpen(false);
+          setImportReport(null);
+        }}
+        title="Import backup data?"
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setImportDialogOpen(false);
+                setImportReport(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              isLoading={importing}
+              onClick={() => void handleConfirmImport()}
+            >
+              Confirm &amp; merge
+            </Button>
+          </>
+        }
+      >
+        <p className="abh-panel-helper">
+          Review the backup contents below. Existing sessions with matching IDs will be updated; new
+          sessions will be added.
+        </p>
+        {importReport && (
+          <div
+            style={{
+              marginTop: "var(--space-3)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-2)",
+            }}
+          >
+            <div className="abh-data-row">
+              <div>
+                <p className="abh-data-label">Exported Date</p>
+                <p className="abh-data-value">
+                  {importReport.exportedAt
+                    ? new Date(importReport.exportedAt).toLocaleString()
+                    : "Unknown date"}
+                </p>
+              </div>
+              <div>
+                <p className="abh-data-label">Schema Version</p>
+                <p className="abh-data-value">v{importReport.schemaVersion}</p>
+              </div>
+            </div>
+            <div className="abh-data-row">
+              <div>
+                <p className="abh-data-label">Sessions</p>
+                <p className="abh-data-value">
+                  {importReport.summary.sessionsCount} session(s)
+                  {importReport.conflicts.duplicateSessions > 0 &&
+                    ` (${importReport.conflicts.newSessions} new, ${importReport.conflicts.duplicateSessions} update)`}
+                </p>
+              </div>
+              <div>
+                <p className="abh-data-label">Recorded Answers</p>
+                <p className="abh-data-value">{importReport.summary.turnsCount} turn(s)</p>
+              </div>
+            </div>
+            <div className="abh-data-row">
+              <div>
+                <p className="abh-data-label">Profile &amp; Documents</p>
+                <p className="abh-data-value">
+                  {importReport.summary.hasProfile
+                    ? `Included (${importReport.summary.documentsCount} doc(s))`
+                    : "None"}
+                </p>
+              </div>
+              <div>
+                <p className="abh-data-label">Settings</p>
+                <p className="abh-data-value">
+                  {importReport.summary.hasSettings ? "Included" : "None"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </Dialog>
 
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}

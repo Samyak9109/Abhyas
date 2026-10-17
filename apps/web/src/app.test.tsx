@@ -96,6 +96,16 @@ describe("M1.1: App shell", () => {
     expect(await screen.findByRole("heading", { name: "Skill Practice_" })).toBeTruthy();
   });
 
+  it("navigates to History screen via aside navigation link", async () => {
+    render(<App />);
+    await screen.findByText(/running in memory/i);
+
+    const historyLink = screen.getByRole("link", { name: /^history/i });
+    fireEvent.click(historyLink);
+
+    expect(await screen.findByRole("heading", { name: "History & Transcripts" })).toBeTruthy();
+  });
+
   it("renders Results screen when navigating to /app/results", async () => {
     window.history.pushState({}, "", "/app/results");
     render(<App />);

@@ -17,6 +17,7 @@ import {
 } from "./services/storage";
 import { applyResolvedTheme, loadThemePreference, mirrorThemePreference } from "./services/theme";
 import { useTheme } from "./services/use-theme";
+import { registerPwa } from "./services/pwa";
 import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/app.css";
@@ -152,6 +153,17 @@ export function App() {
   const [isOffline, setIsOffline] = useState(
     () => typeof navigator !== "undefined" && !navigator.onLine
   );
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [reloadUpdate, setReloadUpdate] = useState<(() => void) | null>(null);
+
+  useEffect(() => {
+    registerPwa({
+      onUpdateAvailable: (reload) => {
+        setReloadUpdate(() => reload);
+        setUpdateAvailable(true);
+      },
+    });
+  }, []);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -304,6 +316,23 @@ export function App() {
     );
   }
 
+  const renderPwaUpdateBanner = () =>
+    updateAvailable && reloadUpdate ? (
+      <div className="abh-pwa-update-banner" role="status" aria-live="polite">
+        <div className="abh-pwa-update-content">
+          <span>A new version of Abhyas is available.</span>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              reloadUpdate();
+            }}
+          >
+            Reload &amp; Update
+          </Button>
+        </div>
+      </div>
+    ) : null;
+
   const renderOfflineBanner = () =>
     isOffline ? (
       <Banner
@@ -311,6 +340,13 @@ export function App() {
         message="You are currently offline. Local data, review, and settings are available; cloud AI connections require network access."
       />
     ) : null;
+
+  const renderTopBanners = () => (
+    <>
+      {renderPwaUpdateBanner()}
+      {renderOfflineBanner()}
+    </>
+  );
 
   const screenLoading = (
     <div className="abh-app-loading" role="status" aria-label="Loading view">
@@ -440,7 +476,7 @@ export function App() {
   if (route === "/app/setup/ai") {
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         <Suspense fallback={screenLoading}>
           <AISetupScreen
             storage={init.storage}
@@ -455,7 +491,7 @@ export function App() {
   if (route === "/app/setup/profile") {
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         <Suspense fallback={screenLoading}>
           <ProfileScreen
             storage={init.storage}
@@ -471,7 +507,7 @@ export function App() {
   if (route === "/app/setup/session") {
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         <Suspense fallback={screenLoading}>
           <SessionSetupScreen
             storage={init.storage}
@@ -505,7 +541,7 @@ export function App() {
 
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         <Suspense fallback={screenLoading}>
           <LiveInterviewScreen
             storage={init.storage}
@@ -533,7 +569,7 @@ export function App() {
   if (route === "/app/results") {
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         {renderAppNav(route)}
         <main className="abh-app-main">
           <Suspense fallback={screenLoading}>
@@ -561,7 +597,7 @@ export function App() {
   if (route === "/app/skills") {
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         {renderAppNav(route)}
         <main className="abh-app-main">
           <Suspense fallback={screenLoading}>
@@ -583,7 +619,7 @@ export function App() {
   if (route === "/app/practice") {
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         {renderAppNav(route)}
         <main className="abh-app-main">
           <Suspense fallback={screenLoading}>
@@ -607,7 +643,7 @@ export function App() {
   if (route === "/app/history") {
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         {renderAppNav(route)}
         <main className="abh-app-main">
           <Suspense fallback={screenLoading}>
@@ -633,7 +669,7 @@ export function App() {
   if (route === "/app/home") {
     return (
       <div className="abh-app">
-        {renderOfflineBanner()}
+        {renderTopBanners()}
         {renderAppNav(route)}
         <main className="abh-app-main">
           <HomeScreen
@@ -659,7 +695,7 @@ export function App() {
 
   return (
     <div className="abh-app">
-      {renderOfflineBanner()}
+      {renderTopBanners()}
       {renderAppNav(route)}
       <main className="abh-app-main">
         <Suspense fallback={screenLoading}>

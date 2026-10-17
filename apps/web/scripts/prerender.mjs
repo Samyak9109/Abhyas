@@ -40,6 +40,7 @@ async function main() {
     root: webDir,
     server: { middlewareMode: true },
     appType: "custom",
+    optimizeDeps: { noDiscovery: true },
   });
 
   try {
@@ -58,10 +59,13 @@ async function main() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; worker-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self';"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self';"
     />
     <title>${page.title}</title>
     <meta name="description" content="${page.description}" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <meta name="theme-color" content="#121110" />
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${url}" />

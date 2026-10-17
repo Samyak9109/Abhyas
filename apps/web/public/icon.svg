@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="36" fill="#121110" />
+  <!-- Monitor Outer Body -->
+  <rect x="28" y="24" width="136" height="106" rx="6" fill="#24211E" stroke="#3D3730" stroke-width="4" />
+  <!-- Monitor Bezel Inset -->
+  <rect x="38" y="34" width="116" height="86" rx="2" fill="#181614" />
+  <!-- Monitor Screen -->
+  <rect x="44" y="40" width="104" height="74" fill="#0E0D0C" />
+  <!-- Pixel Face in signature #FF6A2B accent -->
+  <!-- Left Eye: tall 8x16 -->
+  <rect x="68" y="62" width="14" height="20" fill="#FF6A2B" />
+  <!-- Right Eye: tall 8x16 -->
+  <rect x="110" y="62" width="14" height="20" fill="#FF6A2B" />
+  <!-- Smile: curved pixel smile -->
+  <rect x="76" y="90" width="8" height="8" fill="#FF6A2B" />
+  <rect x="84" y="94" width="24" height="8" fill="#FF6A2B" />
+  <rect x="108" y="90" width="8" height="8" fill="#FF6A2B" />
+  <!-- Monitor Stand / Neck -->
+  <rect x="82" y="130" width="28" height="14" fill="#1C1A18" stroke="#3D3730" stroke-width="3" />
+  <rect x="64" y="144" width="64" height="12" rx="2" fill="#24211E" stroke="#3D3730" stroke-width="3" />
+</svg>

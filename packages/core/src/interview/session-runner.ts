@@ -311,6 +311,12 @@ export class SessionRunner {
     followUpCount: number,
     plan: SessionPlan
   ): Promise<void> {
+    // In quick-fire drill format, do not ask follow-ups (short rapid answers per FR-016)
+    if (plan.drillFormat === "quick_fire") {
+      await this.dispatch({ type: "NEXT" });
+      return;
+    }
+
     // Only ask follow-up if count < 2 (FR-008 cap)
     const shouldProbe =
       followUpCount < 2 &&

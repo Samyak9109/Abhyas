@@ -565,4 +565,76 @@ describe("M2.1: Skill Statistics Engine (FR-014, architecture.md 14)", () => {
       });
     });
   });
+
+  describe("M2.4: Skill Practice Drill Isolation (FR-016)", () => {
+    it("updates only targeted skill statistics from a drill session", () => {
+      const drillSession: SessionRow = {
+        id: "session-drill-1",
+        startedAt: "2026-10-17T10:00:00Z",
+        endedAt: "2026-10-17T10:15:00Z",
+        status: "completed",
+        modality: "voice",
+        level: "mid",
+        providerId: "mock",
+        modelId: "mock",
+        plan: {
+          sessionId: "session-drill-1",
+          isDrill: true,
+          targetSkillId: "dsa",
+          drillFormat: "quick_fire",
+          length: 5,
+        },
+        schemaVersion: 1,
+      };
+
+      // Multi-tag turns: question had dsa, communication, and clarity
+      const turns: TurnRow[] = [
+        {
+          id: "turn-d-1",
+          sessionId: "session-drill-1",
+          index: 0,
+          isUnverifiedQuestion: false,
+          skillTags: ["dsa", "communication", "clarity"],
+          difficulty: 0.5,
+          questionText: "Explain tree traversal.",
+          answerText: "In-order, pre-order, post-order.",
+          evaluation: mockEvaluation(4, { dsa: 80, communication: 85, clarity: 90 }),
+          status: "scored",
+        },
+        {
+          id: "turn-d-2",
+          sessionId: "session-drill-1",
+          index: 1,
+          isUnverifiedQuestion: false,
+          skillTags: ["dsa", "communication", "clarity"],
+          difficulty: 0.5,
+          questionText: "What is topological sort?",
+          answerText: "Linear ordering of vertices in a DAG.",
+          evaluation: mockEvaluation(5, { dsa: 90, communication: 95, clarity: 85 }),
+          status: "scored",
+        },
+      ];
+
+      const stats = recomputeSkillStats(turns, [drillSession]);
+      const dsaStat = stats.find((s) => s.skillId === "dsa");
+      const commStat = stats.find((s) => s.skillId === "communication");
+      const clarityStat = stats.find((s) => s.skillId === "clarity");
+
+      // DSA was the target skill -> updated
+      expect(dsaStat).toBeDefined();
+      expect(dsaStat?.n).toBe(2);
+      expect(dsaStat?.score).toBeGreaterThan(0);
+
+      // Other skills were NOT targeted -> completely isolated
+      expect(commStat).toBeUndefined();
+      expect(clarityStat).toBeUndefined();
+
+      // computeSkillHistory isolation
+      const dsaHistory = computeSkillHistory(turns, [drillSession], "dsa");
+      expect(dsaHistory).toHaveLength(2);
+
+      const commHistory = computeSkillHistory(turns, [drillSession], "communication");
+      expect(commHistory).toHaveLength(0);
+    });
+  });
 });

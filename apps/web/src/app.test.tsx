@@ -86,6 +86,16 @@ describe("M1.1: App shell", () => {
     expect(screen.getByText("No interview data yet")).toBeTruthy();
   });
 
+  it("navigates to Practice screen via aside navigation link", async () => {
+    render(<App />);
+    await screen.findByText(/running in memory/i);
+
+    const practiceLink = screen.getByRole("link", { name: /^practice/i });
+    fireEvent.click(practiceLink);
+
+    expect(await screen.findByRole("heading", { name: "Skill Practice_" })).toBeTruthy();
+  });
+
   it("renders Results screen when navigating to /app/results", async () => {
     window.history.pushState({}, "", "/app/results");
     render(<App />);

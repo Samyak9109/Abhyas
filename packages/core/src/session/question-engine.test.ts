@@ -4,7 +4,7 @@
 // proportional distribution.
 import { describe, expect, it } from "vitest";
 import type { QuestionBank, SessionPlan } from "../schemas/index.js";
-import { selectQuestions } from "./question-engine.js";
+import { getBankSkillStats, selectDrillQuestions, selectQuestions } from "./question-engine.js";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -552,6 +552,98 @@ describe("selectQuestions", () => {
         expect(q.difficulty).toBeGreaterThanOrEqual(0);
         expect(q.difficulty).toBeLessThanOrEqual(1);
       }
+    });
+  });
+
+  describe("M2.4: Skill-wise practice drills (FR-016)", () => {
+    it("getBankSkillStats returns accurate question counts across bank and level", () => {
+      const stats = getBankSkillStats(BANK, "intern_fresher");
+      expect(stats["dsa"]?.total).toBe(4);
+      expect(stats["dsa"]?.atLevel).toBe(1);
+      expect(stats["dsa"]?.available).toBe(true);
+      expect(stats["non_existent"]).toBeUndefined();
+    });
+
+    it("selects questions targeted specifically to the requested skill", async () => {
+      const plan = makePlan({
+        level: "mid",
+        length: 5,
+        type: "dsa_verbal",
+        isDrill: true,
+        targetSkillId: "dsa",
+        drillFormat: "quick_fire",
+      });
+
+      const result = await selectDrillQuestions({
+        plan,
+        bank: BANK,
+        targetSkillId: "dsa",
+      });
+
+      expect(result.isBankEmpty).toBe(false);
+      expect(result.questions.length).toBeGreaterThan(0);
+      expect(result.bankTracedCount).toBe(result.questions.length);
+      for (const q of result.questions) {
+        expect(q.skillTags).toContain("dsa");
+        // Quick fire strips follow-ups
+        expect(q.followUps).toEqual([]);
+      }
+    });
+
+    it("deep-dive drill format preserves follow-ups", async () => {
+      const bankWithFollowUps: QuestionBank = [
+        {
+          id: "q-dsa-fu",
+          text: "Explain segment tree.",
+          type: "dsa_verbal",
+          skillTags: ["dsa"],
+          level: "senior",
+          difficulty: 4,
+          followUps: ["How do you handle lazy propagation?"],
+          rubricHints: [],
+          source: "test",
+          license: "MIT",
+        },
+      ];
+
+      const plan = makePlan({
+        level: "senior",
+        length: 5,
+        type: "dsa_verbal",
+        isDrill: true,
+        targetSkillId: "dsa",
+        drillFormat: "deep_dive",
+      });
+
+      const result = await selectDrillQuestions({
+        plan,
+        bank: bankWithFollowUps,
+        targetSkillId: "dsa",
+      });
+
+      expect(result.questions[0]?.followUps).toEqual(["How do you handle lazy propagation?"]);
+    });
+
+    it("handles missing bank questions gracefully (empty bank for skill)", async () => {
+      const plan = makePlan({
+        level: "mid",
+        length: 5,
+        type: "behavioral",
+        isDrill: true,
+        targetSkillId: "quantum_algorithms",
+        drillFormat: "quick_fire",
+      });
+
+      const result = await selectDrillQuestions({
+        plan,
+        bank: BANK,
+        targetSkillId: "quantum_algorithms",
+      });
+
+      expect(result.isBankEmpty).toBe(true);
+      expect(result.questions).toEqual([]);
+      expect(result.bankTracedCount).toBe(0);
+      expect(result.availableInBank).toBe(0);
     });
   });
 });

@@ -18,7 +18,7 @@ import {
   type SelectedQuestion,
   SelectedQuestionSchema,
 } from "../schemas/index.js";
-import type { StructuredProfile } from "../schemas/profile.schema.js";
+import type { ExperienceLevel, StructuredProfile } from "../schemas/profile.schema.js";
 import type { ProviderAdapter } from "../providers/types.js";
 
 // ---------------------------------------------------------------------------
@@ -403,4 +403,159 @@ function weightedSample<T>(items: T[], weights: number[], count: number, rng: ()
   }
 
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Skill-wise Drill Question Selection (FR-016, PG-16)
+// ---------------------------------------------------------------------------
+
+export interface BankSkillStat {
+  total: number;
+  atLevel: number;
+  available: boolean;
+}
+
+/**
+ * Computes question availability for each skill across the question bank and
+ * at the user's specific experience level.
+ */
+export function getBankSkillStats(
+  bank: QuestionBank,
+  level: ExperienceLevel
+): Record<string, BankSkillStat> {
+  const band = LEVEL_BANDS[level] ?? LEVEL_BANDS.mid;
+  const [minD, maxD] = band.difficultyRange;
+  const result: Record<string, BankSkillStat> = {};
+
+  for (const q of bank) {
+    if (!q.skillTags) continue;
+    const isAtLevel =
+      typeof q.difficulty === "number" && q.difficulty >= minD && q.difficulty <= maxD;
+
+    for (const tag of q.skillTags) {
+      if (!result[tag]) {
+        result[tag] = { total: 0, atLevel: 0, available: false };
+      }
+      result[tag].total += 1;
+      if (isAtLevel) {
+        result[tag].atLevel += 1;
+        result[tag].available = true;
+      }
+    }
+  }
+
+  return result;
+}
+
+export interface SelectDrillQuestionsOptions {
+  plan: SessionPlan;
+  bank: QuestionBank;
+  targetSkillId: string;
+  profile?: StructuredProfile | null;
+  recentQuestionIds?: string[];
+  adapter?: ProviderAdapter;
+  rng?: (seed: number) => () => number;
+}
+
+export interface SelectDrillQuestionsResult {
+  questions: SelectedQuestion[];
+  bankTracedCount: number;
+  availableInBank: number;
+  availableAtLevel: number;
+  isBankEmpty: boolean;
+}
+
+/**
+ * Selects questions specifically targeted to a single skill for a practice drill (FR-016).
+ *
+ * Rules:
+ * 1. Filters bank questions tagged with targetSkillId.
+ * 2. Matches questions at the candidate's level band (supplementing with nearest band if needed).
+ * 3. Gracefully reports empty bank if no questions exist for that skill.
+ * 4. Deduplicates against recent sessions when possible.
+ * 5. Bypasses follow-ups if drill format is "quick_fire".
+ */
+export async function selectDrillQuestions(
+  opts: SelectDrillQuestionsOptions
+): Promise<SelectDrillQuestionsResult> {
+  const { plan, bank, targetSkillId, adapter, profile } = opts;
+  const recentIds = new Set(opts.recentQuestionIds ?? []);
+  const rngFactory = opts.rng ?? mulberry32;
+  const rng = rngFactory(seedFromString(plan.sessionId));
+
+  const skillQuestions = bank.filter((q) => q.skillTags?.includes(targetSkillId));
+  const availableInBank = skillQuestions.length;
+
+  if (availableInBank === 0) {
+    return {
+      questions: [],
+      bankTracedCount: 0,
+      availableInBank: 0,
+      availableAtLevel: 0,
+      isBankEmpty: true,
+    };
+  }
+
+  const band = LEVEL_BANDS[plan.level] ?? LEVEL_BANDS.mid;
+  const [minD, maxD] = band.difficultyRange;
+  const bandCenter = (minD + maxD) / 2;
+
+  const levelMatching = skillQuestions.filter(
+    (q) => typeof q.difficulty === "number" && q.difficulty >= minD && q.difficulty <= maxD
+  );
+  const availableAtLevel = levelMatching.length;
+
+  // Build eligible pool: prefer level matching questions; if pool smaller than requested length,
+  // supplement with other questions tagged with the target skill closest to band center.
+  let pool: Question[];
+  if (levelMatching.length >= plan.length) {
+    pool = levelMatching;
+  } else if (levelMatching.length > 0) {
+    const remaining = skillQuestions
+      .filter((q) => !levelMatching.includes(q))
+      .sort((a, b) => Math.abs(a.difficulty - bandCenter) - Math.abs(b.difficulty - bandCenter));
+    pool = [...levelMatching, ...remaining];
+  } else {
+    pool = [...skillQuestions].sort(
+      (a, b) => Math.abs(a.difficulty - bandCenter) - Math.abs(b.difficulty - bandCenter)
+    );
+  }
+
+  // Deduplicate against recent questions if remaining pool is sufficient
+  const nonRecent = pool.filter((q) => !recentIds.has(q.id));
+  const candidatePool = nonRecent.length >= plan.length ? nonRecent : pool;
+
+  // Shuffle candidate pool deterministically
+  const shuffled = shuffle(candidatePool, rng);
+  const picked = shuffled.slice(0, Math.min(plan.length, shuffled.length));
+
+  // AI personalization (AI-002) if provider adapter available
+  const finalQuestions: SelectedQuestion[] = [];
+  for (const q of picked) {
+    let text = q.text;
+    if (adapter) {
+      text = await personalizeQuestion(q.text, plan, profile ?? null, adapter);
+    }
+
+    finalQuestions.push(
+      SelectedQuestionSchema.parse({
+        id: q.id,
+        text,
+        skillTags: q.skillTags,
+        difficulty: difficultyBankToNorm(q.difficulty),
+        bankId: q.id,
+        isUnverified: false,
+        followUps: plan.drillFormat === "quick_fire" ? [] : (q.followUps ?? []),
+        rubricHints: q.rubricHints,
+      })
+    );
+  }
+
+  return {
+    questions: finalQuestions,
+    bankTracedCount: finalQuestions.length,
+    availableInBank,
+    availableAtLevel,
+    isBankEmpty: false,
+  };
 }

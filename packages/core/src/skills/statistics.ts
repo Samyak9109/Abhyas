@@ -209,6 +209,9 @@ export function recomputeSkillStats(
   for (const turn of sortedTurns) {
     const session = sessionMap.get(turn.sessionId);
     const isTextModality = session?.modality === "text";
+    const sessionPlan = session?.plan as { isDrill?: boolean; targetSkillId?: string } | undefined;
+    const isDrill = sessionPlan?.isDrill === true;
+    const targetSkillId = sessionPlan?.targetSkillId;
 
     // Fallback ISO timestamp
     const timestamp =
@@ -217,6 +220,11 @@ export function recomputeSkillStats(
       new Date(1700000000000 + turn.index * 60000).toISOString();
 
     for (const tag of turn.skillTags) {
+      // Drill isolation: drills only update the targeted skill's statistics (FR-016)
+      if (isDrill && targetSkillId && tag !== targetSkillId) {
+        continue;
+      }
+
       // Unknown tag handling: turn kept, excluded from stats (FR-014)
       if (knownSkillIds && !knownSkillIds.has(tag)) {
         continue;
@@ -428,6 +436,14 @@ export function computeSkillHistory(
 
   for (const turn of sortedTurns) {
     const session = sessionMap.get(turn.sessionId);
+    const sessionPlan = session?.plan as { isDrill?: boolean; targetSkillId?: string } | undefined;
+    if (
+      sessionPlan?.isDrill &&
+      sessionPlan?.targetSkillId &&
+      sessionPlan.targetSkillId !== skillId
+    ) {
+      continue;
+    }
     if (session?.modality === "text" && isDelivery) {
       continue;
     }

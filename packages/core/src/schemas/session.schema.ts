@@ -20,6 +20,9 @@ export type SessionLength = z.infer<typeof SessionLengthSchema>;
 export const SessionTypeSchema = z.union([QuestionTypeSchema, z.literal("mixed")]);
 export type SessionType = z.infer<typeof SessionTypeSchema>;
 
+export const DrillFormatSchema = z.enum(["quick_fire", "deep_dive"]);
+export type DrillFormat = z.infer<typeof DrillFormatSchema>;
+
 // --- Session plan (the output of FR-006) ------------------------------------
 
 /**
@@ -51,6 +54,15 @@ export const SessionPlanSchema = z.object({
 
   /** ISO 8601 timestamp when the plan was created. */
   createdAt: z.string().datetime(),
+
+  /** Whether this session is a focused skill drill (FR-016). */
+  isDrill: z.boolean().optional(),
+
+  /** Skill ID targeted by this drill (FR-016). */
+  targetSkillId: z.string().optional(),
+
+  /** Drill format: "quick_fire" (short answers) or "deep_dive" (follow-up chains). */
+  drillFormat: DrillFormatSchema.optional(),
 });
 
 export type SessionPlan = z.infer<typeof SessionPlanSchema>;
@@ -87,6 +99,9 @@ export const SelectedQuestionSchema = z.object({
 
   /** Rubric hints from the bank question for live hints and evaluation. */
   rubricHints: z.array(z.string()).optional(),
+
+  /** Pre-authored follow-up questions from the bank question (if applicable). */
+  followUps: z.array(z.string()).optional(),
 
   /** Reason this question was selected (for debugging and future analytics). */
   rationale: z.string().optional(),

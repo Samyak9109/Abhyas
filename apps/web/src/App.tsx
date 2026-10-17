@@ -49,6 +49,9 @@ const ResultsScreen = lazy(() =>
 const SkillsDashboardScreen = lazy(() =>
   import("./screens/SkillsDashboardScreen").then((m) => ({ default: m.SkillsDashboardScreen }))
 );
+const SkillPracticeScreen = lazy(() =>
+  import("./screens/SkillPracticeScreen").then((m) => ({ default: m.SkillPracticeScreen }))
+);
 const SettingsScreen = lazy(() =>
   import("./screens/SettingsScreen").then((m) => ({ default: m.SettingsScreen }))
 );
@@ -62,6 +65,7 @@ type AppRoute =
   | "/404"
   | "/app/home"
   | "/app/skills"
+  | "/app/practice"
   | "/app/settings"
   | "/app/setup/ai"
   | "/app/setup/profile"
@@ -99,6 +103,9 @@ function getInitialRoute(): AppRoute {
     if (path.includes("skills") || window.location.hash.includes("skills")) {
       return "/app/skills";
     }
+    if (path.includes("practice") || window.location.hash.includes("practice")) {
+      return "/app/practice";
+    }
     if (path.includes("setup/session") || window.location.hash.includes("setup/session")) {
       return "/app/setup/session";
     }
@@ -126,6 +133,7 @@ type InitState =
 export function App() {
   const [route, setRoute] = useState<AppRoute>(getInitialRoute);
   const [resultsSessionId, setResultsSessionId] = useState<string | null>(null);
+  const [practiceSkillId, setPracticeSkillId] = useState<string | null>(null);
   const [init, setInit] = useState<InitState>({ status: "loading" });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -340,6 +348,19 @@ export function App() {
           <li>
             <a
               className="abh-app-nav-item"
+              href="/app/practice"
+              aria-current={currentRoute === "/app/practice" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/practice");
+              }}
+            >
+              Practice
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
               href="/app/setup/ai"
               aria-current={currentRoute === "/app/setup/ai" ? "page" : undefined}
               onClick={(e) => {
@@ -498,7 +519,7 @@ export function App() {
               storage={init.storage}
               sessionId={resultsSessionId ?? ""}
               onRetryQuestion={() => navigateTo("/app/setup/session")}
-              onPracticeSkill={() => navigateTo("/app/skills")}
+              onPracticeSkill={() => navigateTo("/app/practice")}
               onNavigateSkills={() => navigateTo("/app/skills")}
               onFinish={() => {
                 setResultsSessionId(null);
@@ -524,10 +545,35 @@ export function App() {
           <Suspense fallback={screenLoading}>
             <SkillsDashboardScreen
               storage={init.storage}
-              onPracticeSkill={(_skillId) => {
-                navigateTo("/app/setup/session");
+              onPracticeSkill={(skillId) => {
+                setPracticeSkillId(skillId);
+                navigateTo("/app/practice");
               }}
               onStartSession={() => navigateTo("/app/setup/session")}
+              onNavigateHome={() => navigateTo("/app/home")}
+            />
+          </Suspense>
+        </main>
+      </div>
+    );
+  }
+
+  if (route === "/app/practice") {
+    return (
+      <div className="abh-app">
+        {renderOfflineBanner()}
+        {renderAppNav(route)}
+        <main className="abh-app-main">
+          <Suspense fallback={screenLoading}>
+            <SkillPracticeScreen
+              storage={init.storage}
+              initialSkillId={practiceSkillId}
+              onStartDrill={(plan, questions) => {
+                setActiveSession({ plan, questions });
+                navigateTo("/app/interview");
+              }}
+              onStartSession={() => navigateTo("/app/setup/session")}
+              onNavigateSkills={() => navigateTo("/app/skills")}
               onNavigateHome={() => navigateTo("/app/home")}
             />
           </Suspense>

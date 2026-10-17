@@ -2594,3 +2594,409 @@
   align-items: center;
   gap: var(--space-3);
 }
+
+/* ==========================================================================
+   PG-16 Skill Practice Screen (FR-016)
+   ========================================================================== */
+
+.abh-drill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px 8px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.abh-drill-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.abh-drill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.abh-drill-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.abh-drill-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* "Fix My Weakest" Banner */
+.abh-weakest-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background-color: var(--surface);
+  border: 1px solid var(--accent);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+
+.abh-weakest-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 700px;
+}
+
+.abh-weakest-badge-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.abh-weakest-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--warning);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.abh-target-level-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.abh-weakest-banner-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--text);
+}
+
+.abh-weakest-banner-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.abh-weakest-banner-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* Config Grid (Format + Mode) */
+.abh-drill-config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+.abh-drill-config-card {
+  padding: var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-drill-section-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text);
+}
+
+.abh-drill-format-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-drill-format-btn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+  color: var(--text);
+}
+
+.abh-drill-format-btn:hover {
+  border-color: var(--text-muted);
+}
+
+.abh-drill-format-btn.selected {
+  border-color: var(--accent);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.abh-drill-format-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.abh-drill-format-name {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.abh-drill-format-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.abh-drill-format-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* Skills Selection Section */
+.abh-drill-skills-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.abh-drill-skills-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.abh-drill-selected-pill {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.abh-drill-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-3);
+}
+
+.abh-drill-skill-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  color: var(--text);
+}
+
+.abh-drill-skill-card:hover {
+  border-color: var(--text-muted);
+}
+
+.abh-drill-skill-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.abh-drill-skill-card.missing-bank {
+  opacity: 0.85;
+}
+
+.abh-drill-skill-top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.abh-drill-skill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  background-color: var(--surface-2);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.abh-drill-skill-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.abh-drill-skill-name {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.abh-drill-skill-category {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.abh-drill-skill-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.abh-drill-skill-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.abh-drill-skill-score {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.abh-drill-score-num {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.abh-drill-score-band {
+  color: var(--text-muted);
+}
+
+.abh-drill-conf-tag {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.abh-drill-unpracticed {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.abh-bank-avail-pill {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.abh-bank-empty-pill {
+  color: var(--warning);
+  font-weight: 500;
+}
+
+/* Footer / Action Bar */
+.abh-drill-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  position: sticky;
+  bottom: var(--space-4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  flex-wrap: wrap;
+  z-index: 10;
+}
+
+.abh-drill-footer-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.abh-drill-footer-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .abh-drill-container {
+    padding: var(--space-4);
+  }
+
+  .abh-drill-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .abh-drill-footer-buttons {
+    flex-direction: column;
+  }
+}

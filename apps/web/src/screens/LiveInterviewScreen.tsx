@@ -493,6 +493,11 @@ export function LiveInterviewScreen({
         <div className="abh-interview-topbar-inner">
           <div className="abh-topbar-left">
             <span className="abh-wordmark">Abhyas</span>
+            {plan.isDrill && (
+              <span className="abh-drill-badge" role="status">
+                🎯 {plan.drillFormat === "quick_fire" ? "Quick-Fire Drill" : "Deep-Dive Drill"}
+              </span>
+            )}
             <span
               className="abh-topbar-badge"
               aria-label={`Question ${currentNum} of ${totalQuestions}`}

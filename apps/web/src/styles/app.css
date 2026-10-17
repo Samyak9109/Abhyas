@@ -3304,3 +3304,100 @@
   color: var(--warning);
   border: 1px solid var(--warning);
 }
+
+/* M2.6 Habit, streak, and daily drill styles */
+.abh-home-habit-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.abh-home-habit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.abh-home-habit-card {
+  padding: var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-home-habit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.abh-home-streak-display {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.abh-home-streak-num {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent-text);
+  line-height: 1;
+}
+
+.abh-home-streak-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.abh-home-habit-pills {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.abh-home-daily-card {
+  padding: var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: relative;
+}
+
+.abh-home-daily-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.abh-home-daily-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--text);
+}
+
+.abh-home-daily-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.abh-home-daily-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}

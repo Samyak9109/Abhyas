@@ -1,14 +1,21 @@
-// FR-018, design.md 8 (PG-14): Tests for HomeScreen.
+// FR-018, design.md 8 (PG-14 full): Comprehensive tests for HomeScreen.
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
-import { MemoryStorageAdapter, type SessionRow, type TurnRow } from "@abhyas/core";
+import {
+  MemoryStorageAdapter,
+  type SessionRow,
+  type SkillStatRow,
+  type TurnRow,
+} from "@abhyas/core";
 import { HomeScreen } from "./HomeScreen";
 
 function createMockSession(
   id: string,
   startedAt: string,
-  modality: "voice" | "text" = "voice"
+  modality: "voice" | "text" = "voice",
+  isDrill = false,
+  skillId?: string
 ): {
   session: SessionRow;
   turns: TurnRow[];
@@ -23,6 +30,8 @@ function createMockSession(
       targetRole: "Backend Engineer",
       level: "mid",
       type: "technical",
+      isDrill,
+      targetSkillId: skillId,
     },
     modality,
     level: "mid",
@@ -62,8 +71,8 @@ function createMockSession(
   return { session, turns };
 }
 
-describe("M1.7: HomeScreen (PG-14 minimal)", () => {
-  it("renders first-time guided start state when no sessions exist", async () => {
+describe("M2.6: HomeScreen (PG-14 full)", () => {
+  it("renders first-time guided start state with mascot when no sessions exist", async () => {
     const storage = new MemoryStorageAdapter();
     const onStart = vi.fn();
     const onSettings = vi.fn();
@@ -80,6 +89,7 @@ describe("M1.7: HomeScreen (PG-14 minimal)", () => {
     // Header & Mascot Welcome
     expect(await screen.findByRole("heading", { name: "Abhyas" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: /welcome to your practice studio/i })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Abhyas pixel interviewer mascot" })).toBeTruthy();
 
     // 3 Guided Steps
     expect(screen.getByText("Step 1")).toBeTruthy();
@@ -97,36 +107,117 @@ describe("M1.7: HomeScreen (PG-14 minimal)", () => {
     expect(onSettings).toHaveBeenCalledTimes(1);
   });
 
-  it("renders returning user state with recent sessions list", async () => {
+  it("renders returning user state with habit streak, daily drill card, and recent sessions", async () => {
     const storage = new MemoryStorageAdapter();
-    const { session, turns } = createMockSession("session-1", "2026-10-16T12:00:00Z", "voice");
+    const todayISO = new Date().toISOString();
+    const { session, turns } = createMockSession("session-1", todayISO, "voice");
 
     await storage.put("sessions", session);
     for (const t of turns) {
       await storage.put("turns", t);
     }
 
-    const onViewResults = vi.fn();
+    // Add calibrated skill stats with databases as weakest
+    const stats: SkillStatRow[] = [
+      {
+        skillId: "system_design",
+        score: 80,
+        n: 6,
+        confidence: "medium",
+        lastPracticedAt: todayISO,
+        taxonomyVersion: 1,
+      },
+      {
+        skillId: "databases",
+        score: 45,
+        n: 4,
+        confidence: "medium",
+        lastPracticedAt: todayISO,
+        taxonomyVersion: 1,
+      },
+    ];
+    for (const s of stats) {
+      await storage.put("skillStats", s);
+    }
 
-    render(<HomeScreen storage={storage} onStartSession={vi.fn()} onViewResults={onViewResults} />);
+    const onViewResults = vi.fn();
+    const onStartDailyDrill = vi.fn();
+    const onNavigateHistory = vi.fn();
+
+    render(
+      <HomeScreen
+        storage={storage}
+        onStartSession={vi.fn()}
+        onViewResults={onViewResults}
+        onStartDailyDrill={onStartDailyDrill}
+        onNavigateHistory={onNavigateHistory}
+      />
+    );
 
     expect(await screen.findByRole("heading", { name: "Abhyas" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: /ready for your next session\?/i })).toBeTruthy();
+
+    // Habit Streak & Goals
+    expect(screen.getByText("Daily Habit")).toBeTruthy();
+    expect(screen.getByText("Day streak")).toBeTruthy();
+    expect(screen.getByText(/🛡️ 2 freezes left/)).toBeTruthy();
+    expect(screen.getByText(/🛋️ Weekends off/)).toBeTruthy();
+    expect(screen.getByText("Practiced today ✓")).toBeTruthy();
+    expect(screen.getByText(/Weekly goal:/)).toBeTruthy();
+
+    // Today's Daily Drill Card (Targeting calibrated weakest skill: databases)
+    expect(screen.getByText(/Today's Daily Drill/)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Databases & Storage" })).toBeTruthy();
+    expect(screen.getByText(/Targets your calibrated weakest skill \(45% score\)/)).toBeTruthy();
+
+    const drillBtn = screen.getByRole("button", { name: /start today's drill/i });
+    fireEvent.click(drillBtn);
+    expect(onStartDailyDrill).toHaveBeenCalledWith("databases");
+
+    // Full Session Action Banner
+    expect(screen.getByRole("heading", { name: /ready for a full interview\?/i })).toBeTruthy();
 
     // Recent Sessions Section
     expect(screen.getByRole("heading", { name: /recent practice sessions/i })).toBeTruthy();
     expect(screen.getByText("Backend Engineer")).toBeTruthy();
     expect(screen.getByText("Mid")).toBeTruthy();
     expect(screen.getByText("🎙 Voice")).toBeTruthy();
+    expect(screen.getByText("75")).toBeTruthy(); // 4/5 converted -> 75%
 
-    // Score chip
-    expect(screen.getByText("75")).toBeTruthy(); // 4/5 converted -> ((4-1)/4)*100 = 75%
+    // View All in History
+    const historyBtn = screen.getByRole("button", { name: /view all in history →/i });
+    fireEvent.click(historyBtn);
+    expect(onNavigateHistory).toHaveBeenCalledTimes(1);
 
     // Click View Results
     const viewBtn = screen.getByRole("button", { name: /view results/i });
     fireEvent.click(viewBtn);
-
     expect(onViewResults).toHaveBeenCalledWith("session-1");
+  });
+
+  it("displays completed badge when daily drill was already finished today", async () => {
+    const storage = new MemoryStorageAdapter();
+    const todayISO = new Date().toISOString();
+    const { session } = createMockSession("drill-1", todayISO, "text", true, "databases");
+
+    await storage.put("sessions", session);
+
+    const onStartDailyDrill = vi.fn();
+
+    render(
+      <HomeScreen
+        storage={storage}
+        onStartSession={vi.fn()}
+        onViewResults={vi.fn()}
+        onStartDailyDrill={onStartDailyDrill}
+      />
+    );
+
+    expect(await screen.findByRole("heading", { name: "Abhyas" })).toBeTruthy();
+    expect(screen.getAllByText("Completed today ✓").length).toBeGreaterThan(0);
+
+    const againBtn = screen.getByRole("button", { name: /practice again/i });
+    fireEvent.click(againBtn);
+    expect(onStartDailyDrill).toHaveBeenCalledWith("system_design");
   });
 
   describe("Accessibility (axe)", () => {
@@ -146,7 +237,8 @@ describe("M1.7: HomeScreen (PG-14 minimal)", () => {
 
     it("has zero axe violations under Paper theme (Returning state)", async () => {
       const storage = new MemoryStorageAdapter();
-      const { session, turns } = createMockSession("session-1", "2026-10-16T12:00:00Z", "text");
+      const todayISO = new Date().toISOString();
+      const { session, turns } = createMockSession("session-1", todayISO, "text");
 
       await storage.put("sessions", session);
       for (const t of turns) {
@@ -155,7 +247,13 @@ describe("M1.7: HomeScreen (PG-14 minimal)", () => {
 
       const { container } = render(
         <div data-theme="paper">
-          <HomeScreen storage={storage} onStartSession={vi.fn()} onViewResults={vi.fn()} />
+          <HomeScreen
+            storage={storage}
+            onStartSession={vi.fn()}
+            onViewResults={vi.fn()}
+            onStartDailyDrill={vi.fn()}
+            onNavigateHistory={vi.fn()}
+          />
         </div>
       );
 

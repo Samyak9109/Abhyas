@@ -643,6 +643,11 @@ export function App() {
               setResultsSessionId(sid);
               navigateTo("/app/results");
             }}
+            onStartDailyDrill={(skillId) => {
+              setPracticeSkillId(skillId);
+              navigateTo("/app/practice");
+            }}
+            onNavigateHistory={() => navigateTo("/app/history")}
             onNavigateSettings={() => navigateTo("/app/settings")}
             onNavigateProfile={() => navigateTo("/app/setup/profile")}
             onNavigateSkills={() => navigateTo("/app/skills")}

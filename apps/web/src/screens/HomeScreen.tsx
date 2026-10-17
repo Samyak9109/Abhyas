@@ -1,18 +1,26 @@
-// FR-018, design.md 8 (PG-14): Home screen (minimal P1 implementation).
-import { useEffect, useState } from "react";
+// FR-018, design.md 8 (PG-14): Home screen (full implementation with habit, streaks, daily drill).
+import React, { useEffect, useState } from "react";
 import {
   computeSessionScorecard,
+  computeStreak,
+  getDailyDrillRecommendation,
+  type DailyDrillRecommendation,
   type SessionRow,
+  type SkillStatRow,
   type StorageAdapter,
+  type StreakState,
   type StructuredProfile,
   type TurnRow,
 } from "@abhyas/core";
-import { Button, Skeleton } from "../components";
+import { getSkillDefinition } from "@abhyas/content";
+import { Button, Mascot, Progress, Skeleton } from "../components";
 
 interface HomeScreenProps {
   storage: StorageAdapter;
   onStartSession: () => void;
   onViewResults: (sessionId: string) => void;
+  onStartDailyDrill?: (skillId: string) => void;
+  onNavigateHistory?: () => void;
   onNavigateSettings?: () => void;
   onNavigateProfile?: () => void;
   onNavigateSkills?: () => void;
@@ -25,28 +33,33 @@ interface SessionSummaryItem {
   targetRole: string;
 }
 
-export function HomeScreen({
+export const HomeScreen: React.FC<HomeScreenProps> = ({
   storage,
   onStartSession,
   onViewResults,
+  onStartDailyDrill,
+  onNavigateHistory,
   onNavigateSettings,
   onNavigateProfile,
   onNavigateSkills,
-}: HomeScreenProps) {
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [summaries, setSummaries] = useState<SessionSummaryItem[]>([]);
   const [hasProfile, setHasProfile] = useState(false);
+  const [streak, setStreak] = useState<StreakState | null>(null);
+  const [dailyDrill, setDailyDrill] = useState<DailyDrillRecommendation | null>(null);
 
   useEffect(() => {
     let active = true;
     void (async () => {
       try {
         setIsLoading(true);
-        const [allSessions, allTurns, allProfiles] = await Promise.all([
+        const [allSessions, allTurns, allProfiles, allSkillStats] = await Promise.all([
           storage.getAll<SessionRow>("sessions"),
           storage.getAll<TurnRow>("turns"),
           storage.getAll<StructuredProfile>("structuredProfiles"),
+          storage.getAll<SkillStatRow>("skillStats"),
         ]);
 
         if (!active) return;
@@ -57,6 +70,13 @@ export function HomeScreen({
         );
         setSessions(sortedSessions);
         setHasProfile(allProfiles.length > 0);
+
+        // Compute habit streak and daily drill recommendation
+        const computedStreak = computeStreak(allSessions);
+        const computedDrill = getDailyDrillRecommendation(allSessions, allSkillStats);
+
+        setStreak(computedStreak);
+        setDailyDrill(computedDrill);
 
         // Precompute session score summaries
         const items: SessionSummaryItem[] = sortedSessions.map((s) => {
@@ -110,6 +130,10 @@ export function HomeScreen({
   }
 
   const isFirstTime = sessions.length === 0;
+  const drillSkillDef = dailyDrill ? getSkillDefinition(dailyDrill.skillId) : null;
+  const drillCategory = drillSkillDef?.category ?? "technical";
+  const drillCategoryIcon =
+    drillCategory === "technical" ? "💻" : drillCategory === "behavioral" ? "🤝" : "🎙️";
 
   return (
     <div className="abh-home">
@@ -127,9 +151,9 @@ export function HomeScreen({
         {isFirstTime ? (
           <section className="abh-home-first-time-card" aria-labelledby="first-time-heading">
             <div className="abh-home-first-time-header">
-              <span className="abh-home-mascot" role="img" aria-label="Abhyas owl mascot">
-                🦉
-              </span>
+              <div style={{ flexShrink: 0 }}>
+                <Mascot size="card" face="ready" alt="Abhyas pixel interviewer mascot" />
+              </div>
               <div>
                 <h2 id="first-time-heading" className="abh-home-first-time-title">
                   Welcome to Your Practice Studio
@@ -185,20 +209,125 @@ export function HomeScreen({
             </div>
           </section>
         ) : (
-          /* Returning User State */
+          /* Returning User State: PG-14 Full */
           <>
+            {/* Section 1: Daily Habit & Drill Row */}
+            {streak && dailyDrill && (
+              <section className="abh-home-habit-section" aria-label="Daily habit and practice">
+                <div className="abh-home-habit-grid">
+                  {/* Streak Card */}
+                  <div className="abh-home-habit-card">
+                    <div className="abh-home-habit-header">
+                      <span className="abh-data-label">Daily Habit</span>
+                      <span className="abh-form-hint">Best: {streak.longestStreak}d</span>
+                    </div>
+
+                    <div className="abh-home-streak-display">
+                      <span className="abh-home-streak-num">
+                        {streak.currentStreak > 0 ? `🔥 ${streak.currentStreak}` : "🌱 0"}
+                      </span>
+                      <span className="abh-home-streak-label">
+                        {streak.currentStreak === 1
+                          ? "Day streak"
+                          : streak.currentStreak > 1
+                            ? "Days streak"
+                            : "Start your streak"}
+                      </span>
+                    </div>
+
+                    <div className="abh-home-habit-pills">
+                      <span className="abh-badge-muted">
+                        🛡️ {streak.freezesAvailable} freeze
+                        {streak.freezesAvailable === 1 ? "" : "s"} left
+                      </span>
+                      <span className="abh-badge-muted">🛋️ Weekends off</span>
+                      {streak.todayPracticed && (
+                        <span className="abh-badge abh-badge-strong">Practiced today ✓</span>
+                      )}
+                    </div>
+
+                    <div>
+                      <Progress
+                        label={`Weekly goal: ${streak.weeklyProgress.completedDays}/${streak.weeklyProgress.target} days`}
+                        value={Math.min(
+                          100,
+                          (streak.weeklyProgress.completedDays / streak.weeklyProgress.target) * 100
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Today's Daily Drill Card */}
+                  <div className="abh-home-daily-card">
+                    <div className="abh-home-daily-header">
+                      <div>
+                        <span className="abh-data-label">Today&apos;s Daily Drill</span>
+                        <h2 className="abh-home-daily-title">
+                          {drillSkillDef?.name || "System Design & Architecture"}
+                        </h2>
+                      </div>
+                      <span
+                        className="abh-badge-muted"
+                        style={{ color: `var(--cat-${drillCategory})` }}
+                      >
+                        {drillCategoryIcon} {drillCategory.toUpperCase()}
+                      </span>
+                    </div>
+
+                    <p className="abh-home-daily-desc">
+                      {dailyDrill.reason === "weakest_calibrated"
+                        ? `Targets your calibrated weakest skill (${dailyDrill.score}% score). 5 questions · ~10 mins.`
+                        : dailyDrill.reason === "uncalibrated_focus"
+                          ? `Focus area based on preliminary practice (${dailyDrill.score}% score). 5 questions · ~10 mins.`
+                          : "Recommended bite-sized practice to establish your calibration baseline. 5 questions · ~10 mins."}
+                    </p>
+
+                    <div className="abh-home-daily-footer">
+                      {dailyDrill.isCompletedToday ? (
+                        <>
+                          <span className="abh-badge abh-badge-strong">Completed today ✓</span>
+                          {onStartDailyDrill && (
+                            <Button
+                              variant="secondary"
+                              onClick={() => onStartDailyDrill(dailyDrill.skillId)}
+                            >
+                              Practice Again
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <span className="abh-badge-muted">Ready · Quick-fire</span>
+                          {onStartDailyDrill && (
+                            <Button
+                              variant="primary"
+                              onClick={() => onStartDailyDrill(dailyDrill.skillId)}
+                            >
+                              Start Today&apos;s Drill
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Section 2: Full Session Start Action Banner */}
             <section className="abh-home-action-banner" aria-labelledby="start-practice-heading">
               <div className="abh-home-action-text">
                 <h2 id="start-practice-heading" className="abh-home-action-title">
-                  Ready for Your Next Session?
+                  Ready for a Full Interview?
                 </h2>
                 <p className="abh-home-action-subtitle">
-                  Practice with adaptive follow-up questioning and canonical rubric scoring.
+                  Practice with adaptive follow-up questioning, rubric calibration, and grounded
+                  feedback.
                 </p>
               </div>
               <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
                 <Button variant="primary" onClick={onStartSession}>
-                  Start Practice Session
+                  Start Full Session
                 </Button>
                 {onNavigateSkills && (
                   <Button variant="secondary" onClick={onNavigateSkills}>
@@ -208,21 +337,34 @@ export function HomeScreen({
               </div>
             </section>
 
-            {/* Recent Sessions List */}
+            {/* Section 3: Recent Practice Sessions */}
             <section className="abh-panel" aria-labelledby="recent-sessions-heading">
               <div
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "var(--space-2)",
+                }}
               >
-                <h2 id="recent-sessions-heading" className="abh-panel-title">
-                  Recent Practice Sessions
-                </h2>
-                <span className="abh-form-hint">
-                  {sessions.length} session{sessions.length === 1 ? "" : "s"} recorded
-                </span>
+                <div>
+                  <h2 id="recent-sessions-heading" className="abh-panel-title">
+                    Recent Practice Sessions
+                  </h2>
+                  <span className="abh-form-hint">
+                    {sessions.length} session{sessions.length === 1 ? "" : "s"} recorded
+                  </span>
+                </div>
+                {onNavigateHistory && (
+                  <Button variant="ghost" onClick={onNavigateHistory}>
+                    View All in History →
+                  </Button>
+                )}
               </div>
 
-              <div className="abh-recent-sessions-list">
-                {summaries.map(({ session, turnsCount, overallScore, targetRole }) => {
+              <div className="abh-recent-sessions-list" style={{ marginTop: "var(--space-3)" }}>
+                {summaries.slice(0, 5).map(({ session, turnsCount, overallScore, targetRole }) => {
                   const dateStr = new Date(session.startedAt).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
@@ -289,4 +431,4 @@ export function HomeScreen({
       </div>
     </div>
   );
-}
+};

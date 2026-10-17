@@ -331,10 +331,15 @@ export function createRuleBasedEvaluation(
     "then",
     "finally",
     "because",
+    "since",
     "trade-off",
     "however",
     "therefore",
     "for example",
+    "approach",
+    "algorithm",
+    "step",
+    "initialize",
   ];
   const matchedMarkers = structureMarkers.filter((m) => lower.includes(m)).length;
   let structureScore = 2;
@@ -366,10 +371,48 @@ export function createRuleBasedEvaluation(
   else if (wordCount > 350) clarityScore = 3;
   else if (wordCount < 15) clarityScore = 2;
 
-  // 5. Level fit score
+  // 5. Level fit score and level calibration (FR-017)
   let levelFitScore = Math.round((structureScore + depthScore + relevanceScore) / 3);
-  if (rubric.level === "senior" || rubric.level === "staff_plus") {
-    if (depthScore < 3) levelFitScore = Math.max(1, levelFitScore - 1);
+
+  // Calibrate depth and levelFit against experience level expectations (FR-017)
+  if (rubric.level === "intern_fresher") {
+    // Foundational expectations: core fundamentals, learning attitude
+    if (relevanceScore >= 3 && structureScore >= 3) {
+      levelFitScore = Math.max(levelFitScore, 4);
+    }
+  } else if (rubric.level === "junior") {
+    // Junior expectations: working code, basic implementation
+    if (depthScore >= 3 && structureScore >= 3) {
+      levelFitScore = Math.max(levelFitScore, 3);
+    }
+  } else if (rubric.level === "mid") {
+    // Mid expectations: trade-offs, edge cases, schema/API durability
+    const hasTradeoffs = /\b(trade-off|alternative|edge case|index|retry|idempotent|cache)\b/i.test(
+      answerText
+    );
+    if (!hasTradeoffs && depthScore < 4) {
+      levelFitScore = Math.min(levelFitScore, 3);
+    }
+  } else if (rubric.level === "senior") {
+    // Senior expectations: distributed trade-offs, blast radius, failure modes, concurrency, scale
+    const hasSeniorDepth =
+      /\b(trade-off|architecture|scale|concurrency|distributed|failure|blast radius|resilien|monitoring|latency|bottleneck|partition)\b/i.test(
+        answerText
+      );
+    if (!hasSeniorDepth) {
+      depthScore = Math.min(depthScore, 2);
+      levelFitScore = Math.min(levelFitScore, 2);
+    }
+  } else if (rubric.level === "staff_plus") {
+    // Staff+ expectations: organizational leverage, multi-year strategy, platform durability, Conway's Law
+    const hasStaffDepth =
+      /\b(strategy|organizational|culture|conway|governance|multi-year|platform|leverage|cross-team|portfolio|roi)\b/i.test(
+        answerText
+      );
+    if (!hasStaffDepth) {
+      depthScore = Math.min(depthScore, 2);
+      levelFitScore = 1;
+    }
   }
 
   const excerpt = answerText.slice(0, 160).trim();

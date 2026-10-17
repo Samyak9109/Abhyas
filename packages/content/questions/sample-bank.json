@@ -1,6 +1,6 @@
 [
   {
-    "id": "q-tech-dsa-001",
+    "id": "q-inf-dsa-001",
     "text": "Explain how you would determine whether a linked list contains a cycle, and what the time and space complexity of your approach would be.",
     "type": "dsa_verbal",
     "skillTags": ["dsa", "communication"],
@@ -19,7 +19,216 @@
     "license": "MIT"
   },
   {
-    "id": "q-tech-dsa-002",
+    "id": "q-inf-dsa-002",
+    "text": "How would you implement a queue using two stacks, and what is the amortized time complexity of the enqueue and dequeue operations?",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "language_specific"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "Why is the dequeue operation O(1) amortized even if a transfer takes O(n)?",
+      "How would you handle concurrent access to the queue?"
+    ],
+    "rubricHints": [
+      "In-stack for push, out-stack for pop/peek",
+      "Lazy transfer from in-stack to out-stack only when out-stack is empty",
+      "Amortized aggregate analysis: each element moved at most twice"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-dsa-003",
+    "text": "Walk me through how binary search works on a sorted array, including how you avoid integer overflow when calculating the midpoint.",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "clarity"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "What changes if the array contains duplicate elements and you need the first occurrence?",
+      "Can binary search be applied to a monotonic function rather than an array?"
+    ],
+    "rubricHints": [
+      "Divide-and-conquer discarding half the search space per iteration",
+      "Midpoint calculation: low + (high - low) / 2 to prevent (low + high) overflow",
+      "Logarithmic O(log n) time complexity"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-dsa-004",
+    "text": "Explain the difference between Breadth-First Search (BFS) and Depth-First Search (DFS) on a binary tree, and when you would choose one over the other.",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "communication"],
+    "level": "intern_fresher",
+    "difficulty": 2,
+    "followUps": [
+      "What are the space complexity characteristics of BFS on a balanced tree versus DFS?",
+      "How would you find the shortest path in an unweighted graph using these traversals?"
+    ],
+    "rubricHints": [
+      "BFS uses a queue (level-order); DFS uses recursion or a stack (pre/in/post-order)",
+      "Space complexity: BFS O(w) where w is maximum width; DFS O(h) where h is tree height",
+      "BFS guarantees shortest path in unweighted graphs"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-fe-001",
+    "text": "What happens in the browser from the moment a user types a URL into the address bar and presses Enter until the HTML is fully rendered on screen?",
+    "type": "technical",
+    "skillTags": ["frontend", "communication"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "What is the difference between the DOMContentLoaded and window load events?",
+      "How do async and defer attributes on script tags affect HTML parsing?"
+    ],
+    "rubricHints": [
+      "DNS resolution, TCP three-way handshake, TLS negotiation, HTTP GET request/response",
+      "Critical rendering path: HTML tokenizer -> DOM tree, CSSOM tree, Render tree, Layout/Reflow, Paint",
+      "Render-blocking vs non-blocking resources"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-fe-002",
+    "text": "Explain the difference between null and undefined in JavaScript, and what the strict equality operator (===) checks compared to loose equality (==).",
+    "type": "technical",
+    "skillTags": ["frontend", "language_specific"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "Why does typeof null return 'object'?",
+      "How does JavaScript coerce types when using loose equality?"
+    ],
+    "rubricHints": [
+      "undefined means declared but unassigned; null represents deliberate absence of an object value",
+      "Strict equality checks value and type without implicit type coercion",
+      "Legacy JS bug: typeof null === 'object' due to 32-bit type tag representation"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-be-001",
+    "text": "Explain what HTTP status codes 200, 201, 400, 401, 403, 404, and 500 indicate, and what distinguishes 401 Unauthorized from 403 Forbidden.",
+    "type": "technical",
+    "skillTags": ["backend_apis", "clarity"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "When would an API return a 204 No Content response?",
+      "What should an API return if a client sends invalid JSON payload syntax?"
+    ],
+    "rubricHints": [
+      "2xx success, 4xx client errors, 5xx server errors",
+      "401 means unauthenticated (missing or invalid credentials); 403 means authenticated but lacking permission",
+      "Semantic HTTP semantics for idempotent vs non-idempotent operations"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-be-002",
+    "text": "What is a primary key and a foreign key in a relational database, and why are foreign key constraints used?",
+    "type": "technical",
+    "skillTags": ["databases", "backend_apis"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "What is referential integrity and what happens during a CASCADE DELETE?",
+      "Can a table have multiple foreign keys pointing to different tables?"
+    ],
+    "rubricHints": [
+      "Primary key uniquely identifies a row (NOT NULL and UNIQUE)",
+      "Foreign key enforces referential integrity between tables",
+      "Orphaned record prevention and foreign key indexing considerations"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-sys-001",
+    "text": "If a web application starts getting slow when 100 users visit at the same time, what are the first three places you would inspect to identify the bottleneck?",
+    "type": "system_design",
+    "skillTags": ["system_design", "databases", "backend_apis"],
+    "level": "intern_fresher",
+    "difficulty": 2,
+    "followUps": [
+      "How would you determine whether the issue is CPU-bound or I/O-bound?",
+      "What role would adding a database index play if queries are taking too long?"
+    ],
+    "rubricHints": [
+      "Database query execution time and unindexed table scans",
+      "Server resource utilization (CPU, memory, thread pool exhaustion)",
+      "Network round-trips and uncompressed payload transfers"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-beh-001",
+    "text": "Tell me about a time you had to learn a completely new programming language or framework quickly to build a project. How did you approach learning it?",
+    "type": "behavioral",
+    "skillTags": ["ownership", "communication"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "How did you know when you understood enough to start writing production code?",
+      "What resources did you find most effective when you got stuck?"
+    ],
+    "rubricHints": [
+      "Structured learning strategy (official docs, minimal toy prototype, building small increments)",
+      "Curiosity, humility, and willingness to ask questions or consult documentation",
+      "Clear STAR structure describing context, actions taken, and the project outcome"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-beh-002",
+    "text": "Describe a situation in a team project where you received critical constructive feedback on your code or contribution. How did you react and what changes did you make?",
+    "type": "behavioral",
+    "skillTags": ["communication", "ownership"],
+    "level": "intern_fresher",
+    "difficulty": 1,
+    "followUps": [
+      "Did you disagree with any part of the feedback, and how did you resolve it?",
+      "How has that feedback influenced your habits in subsequent projects?"
+    ],
+    "rubricHints": [
+      "Humility, coachability, and depersonalizing code review feedback",
+      "Specific concrete actions taken to rectify the issue and verify improvement",
+      "Long-term adoption of improved engineering standards"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-inf-beh-003",
+    "text": "Tell me about a bug in a school or personal project that took you a long time to track down. How did you systematically debug it?",
+    "type": "behavioral",
+    "skillTags": ["ownership", "language_specific"],
+    "level": "intern_fresher",
+    "difficulty": 2,
+    "followUps": [
+      "What assumptions did you make initially that turned out to be wrong?",
+      "What test or guard did you add afterward to prevent the bug from recurring?"
+    ],
+    "rubricHints": [
+      "Scientific method of debugging: isolate variables, reproduce reliably, inspect logs",
+      "Accountability rather than externalizing blame to libraries or tools",
+      "Regression testing and documentation of the root cause"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-jun-dsa-001",
     "text": "Given a stream of integers arriving continuously, how would you efficiently maintain and retrieve the median at any point in time?",
     "type": "dsa_verbal",
     "skillTags": ["dsa", "language_specific"],
@@ -38,7 +247,45 @@
     "license": "MIT"
   },
   {
-    "id": "q-tech-fe-001",
+    "id": "q-jun-dsa-002",
+    "text": "How would you implement an LRU (Least Recently Used) cache with O(1) time complexity for both get and put operations?",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "backend_apis"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "Why is a singly-linked list insufficient for O(1) removal of an arbitrary node?",
+      "How would you ensure thread safety if multiple threads read and write to the cache?"
+    ],
+    "rubricHints": [
+      "Hash map combined with a doubly-linked list",
+      "Hash map provides O(1) key-to-node lookup; doubly-linked list provides O(1) removal and head insertion",
+      "Eviction of tail node when capacity is exceeded"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-jun-dsa-003",
+    "text": "Explain how topological sort works on a Directed Acyclic Graph (DAG), and how you would detect if a cycle exists in the dependencies.",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "cloud_devops"],
+    "level": "junior",
+    "difficulty": 3,
+    "followUps": [
+      "How does Kahn's algorithm (indegree-based BFS) differ from DFS post-order traversal?",
+      "What real-world engineering systems rely directly on topological sorting?"
+    ],
+    "rubricHints": [
+      "Kahn's algorithm: queue nodes with in-degree 0; decrement neighbor in-degrees",
+      "Cycle detection: if sorted output length is less than number of vertices, a cycle exists",
+      "Build systems (make/bazel), task runners, and package manager dependency resolution"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-jun-fe-001",
     "text": "When a web page experiences poor Interaction to Next Paint (INP) during heavy user interactions, how do you diagnose and resolve the bottleneck in the browser rendering pipeline?",
     "type": "technical",
     "skillTags": ["frontend", "clarity"],
@@ -57,64 +304,102 @@
     "license": "MIT"
   },
   {
-    "id": "q-tech-be-001",
-    "text": "How do you design a payment processing API endpoint to guarantee strict idempotency even if clients retry requests during network timeouts?",
+    "id": "q-jun-fe-002",
+    "text": "How does React's virtual DOM reconciliation algorithm decide when to re-render, unmount, or update a DOM node, and why are stable keys essential in list rendering?",
     "type": "technical",
-    "skillTags": ["backend_apis", "databases"],
-    "level": "mid",
+    "skillTags": ["frontend", "language_specific"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "What bugs occur when array indices are used as React keys in dynamic lists?",
+      "How do useMemo and useCallback interact with referential equality to avoid unnecessary re-renders?"
+    ],
+    "rubricHints": [
+      "Diffing heuristic: different element types tear down the tree; identical types update props",
+      "Keys provide persistent identity across renders to match existing DOM nodes",
+      "Index keys cause state detachment when items are reordered, inserted, or deleted"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-jun-be-001",
+    "text": "Explain the difference between SQL transactions using ACID properties versus eventual consistency, and give a scenario where each is appropriate.",
+    "type": "technical",
+    "skillTags": ["databases", "backend_apis"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "What is a dirty read versus a non-repeatable read?",
+      "How does database transaction isolation level (Read Committed vs Serializable) prevent anomalies?"
+    ],
+    "rubricHints": [
+      "ACID: Atomicity, Consistency, Isolation, Durability",
+      "Strong consistency for ledger/payment balances; eventual consistency for social media counters/feeds",
+      "Isolation level performance trade-offs vs concurrency anomalies"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-jun-be-002",
+    "text": "How do you securely handle user authentication in a REST API? Compare session cookies with JSON Web Tokens (JWTs) stored in localStorage or HTTP-only cookies.",
+    "type": "technical",
+    "skillTags": ["backend_apis", "frontend"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "How do you protect against Cross-Site Scripting (XSS) and Cross-Site Request Forgery (CSRF)?",
+      "What is the risk of putting sensitive user data in a JWT payload?"
+    ],
+    "rubricHints": [
+      "HTTP-only, Secure, SameSite cookies protect against client-side XSS token theft",
+      "CSRF mitigation: anti-CSRF tokens or SameSite=Strict/Lax headers",
+      "JWT payloads are Base64Url-encoded and unencrypted; never store secrets in claims"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-jun-sys-001",
+    "text": "Design a rate limiter for an API endpoint to prevent individual clients from overwhelming the service with more than 100 requests per minute.",
+    "type": "system_design",
+    "skillTags": ["system_design", "backend_apis"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "Compare the Token Bucket algorithm with the Sliding Window Counter algorithm.",
+      "How would you share rate limit state across multiple load-balanced backend instances?"
+    ],
+    "rubricHints": [
+      "Redis INCR with EXPIRE or sliding log algorithm using sorted sets (ZREMRANGEBYSCORE)",
+      "HTTP 429 Too Many Requests response with Retry-After header",
+      "Token Bucket vs Leaky Bucket vs Sliding Window trade-offs"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-jun-sys-002",
+    "text": "How would you design a webhook delivery service that notifies external customer URLs when events occur in your application, handling failing endpoints reliably?",
+    "type": "system_design",
+    "skillTags": ["system_design", "backend_apis", "cloud_devops"],
+    "level": "junior",
     "difficulty": 3,
     "followUps": [
-      "What happens if two concurrent requests arrive with the exact same idempotency key at the same millisecond?",
-      "How long should idempotency records be stored and how are expired keys purged?"
+      "How do you prevent a slow customer server from tying up your worker threads?",
+      "What exponential backoff and dead-letter queue (DLQ) policy would you configure?"
     ],
     "rubricHints": [
-      "Unique idempotency keys stored in an ACID database with unique constraints",
-      "Atomic conditional write (INSERT ON CONFLICT or Redis SET NX with TTL)",
-      "Returning cached response payloads for previously completed operations"
+      "Asynchronous message queue (SQS, RabbitMQ) decoupling producers from delivery workers",
+      "Strict HTTP request timeouts (e.g. 5 seconds) and retry with jittered exponential backoff",
+      "HMAC signature header (e.g. X-Signature-256) allowing customer verification"
     ],
     "source": "Abhyas Core Bank",
     "license": "MIT"
   },
   {
-    "id": "q-sys-001",
-    "text": "Design a globally distributed URL shortening service (like Bitly) handling 100 million new URLs created per month and 10 billion redirects per month.",
-    "type": "system_design",
-    "skillTags": ["system_design", "databases", "backend_apis"],
-    "level": "mid",
-    "difficulty": 3,
-    "followUps": [
-      "How do you generate short keys without collision across multiple distributed application nodes?",
-      "What is your caching strategy for hot redirects (80/20 rule)?"
-    ],
-    "rubricHints": [
-      "Base62 encoding of 64-bit auto-increment IDs using a coordinated counter (e.g. range allocation in ZooKeeper/Redis)",
-      "Distributed cache (Redis/Memcached) with LRU eviction for top 20% URLs",
-      "Read-heavy database replication with CDN edge caching for 301 vs 302 redirects"
-    ],
-    "source": "Abhyas Core Bank",
-    "license": "MIT"
-  },
-  {
-    "id": "q-sys-002",
-    "text": "Design a real-time collaborative document editing service (similar to Google Docs or Figma) supporting concurrent edits across users on high-latency networks.",
-    "type": "system_design",
-    "skillTags": ["system_design", "cloud_devops"],
-    "level": "senior",
-    "difficulty": 4,
-    "followUps": [
-      "Compare Conflict-free Replicated Data Types (CRDTs) with Operational Transformation (OT) for this use case.",
-      "How do you maintain document history snapshots and handle disconnected offline editing?"
-    ],
-    "rubricHints": [
-      "WebSocket connections with central gateway or P2P WebRTC fallback",
-      "CRDT (e.g., Yjs, Automerge) vs central OT server trade-offs",
-      "Periodic compacting snapshots in durable blob storage"
-    ],
-    "source": "Abhyas Core Bank",
-    "license": "MIT"
-  },
-  {
-    "id": "q-beh-own-001",
+    "id": "q-jun-beh-001",
     "text": "Tell me about a time when a critical production bug occurred in an area you were responsible for. How did you handle the immediate triage, communication, and long-term resolution?",
     "type": "behavioral",
     "skillTags": ["ownership", "communication"],
@@ -133,7 +418,216 @@
     "license": "MIT"
   },
   {
-    "id": "q-beh-conf-001",
+    "id": "q-jun-beh-002",
+    "text": "Describe a situation where you had to work with poorly documented legacy code or an unclear library to deliver a feature. How did you build confidence in your changes?",
+    "type": "behavioral",
+    "skillTags": ["ownership", "clarity"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "How did you ensure you didn't break existing undocumented behavior?",
+      "Did you document or refactor the code for the next engineer who touches it?"
+    ],
+    "rubricHints": [
+      "Characterization testing to capture existing behavior before making modifications",
+      "Small incremental changes with thorough manual and automated verification",
+      "Leaving the codebase cleaner than found (Boy Scout rule)"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-jun-beh-003",
+    "text": "Tell me about a time you noticed an engineering inefficiency or missed edge case in a peer's pull request. How did you communicate your feedback constructively?",
+    "type": "behavioral",
+    "skillTags": ["conflict", "communication"],
+    "level": "junior",
+    "difficulty": 2,
+    "followUps": [
+      "What if the author pushed back strongly against your comment?",
+      "How do you differentiate blocking bugs from non-blocking stylistic suggestions in reviews?"
+    ],
+    "rubricHints": [
+      "Framing code review feedback around principles, test evidence, and user impact rather than ego",
+      "Using conventional review prefixes (e.g., 'nit:', 'suggestion:', 'blocking:')",
+      "Offer to pair or discuss synchronously when text comments create misunderstanding"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-dsa-001",
+    "text": "Explain how you would find the lowest common ancestor (LCA) of two nodes in a binary tree, first in a Binary Search Tree (BST) and then in an arbitrary binary tree.",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "language_specific"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "What if parent pointers are available in each node?",
+      "How does the binary lifting technique preprocess trees to answer LCA queries in O(log n) time?"
+    ],
+    "rubricHints": [
+      "BST property allows simple O(h) directional traversal based on node values",
+      "Arbitrary tree requires post-order DFS checking if left and right subtrees return non-null",
+      "Binary lifting (Euler tour + sparse table) for repeated queries in dynamic/large trees"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-dsa-002",
+    "text": "Describe how you would design an autocomplete system that suggests the top 5 most frequent search queries matching a given prefix in under 10ms.",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "system_design"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "How would you optimize the Trie structure to avoid traversing all leaf nodes at query time?",
+      "How do you handle memory constraints when storing millions of prefix keys?"
+    ],
+    "rubricHints": [
+      "Trie where each node caches the top 5 query IDs or strings directly",
+      "O(k) retrieval where k is the prefix length",
+      "Ternary Search Tree or Radix/Patricia tree to optimize memory overhead"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-be-001",
+    "text": "How do you design a payment processing API endpoint to guarantee strict idempotency even if clients retry requests during network timeouts?",
+    "type": "technical",
+    "skillTags": ["backend_apis", "databases"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "What happens if two concurrent requests arrive with the exact same idempotency key at the same millisecond?",
+      "How long should idempotency records be stored and how are expired keys purged?"
+    ],
+    "rubricHints": [
+      "Unique idempotency keys stored in an ACID database with unique constraints",
+      "Atomic conditional write (INSERT ON CONFLICT or Redis SET NX with TTL)",
+      "Returning cached response payloads for previously completed operations"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-be-002",
+    "text": "Explain how database indexing works under the hood (B-Trees vs LSM-Trees), and how you analyze a query execution plan to diagnose a slow query.",
+    "type": "technical",
+    "skillTags": ["databases", "backend_apis"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "When is a composite index (A, B) not used by a query filtering only on B?",
+      "Why are LSM-Trees preferred for write-heavy workloads over traditional B-Trees?"
+    ],
+    "rubricHints": [
+      "B-Tree balanced pages optimized for random reads; LSM-Tree append-only memtable + SSTables with compaction for high write throughput",
+      "Leftmost prefix rule in composite indexing",
+      "EXPLAIN ANALYZE: sequential scan vs index scan, buffer hits vs disk reads"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-be-003",
+    "text": "How do you handle distributed transactions across independent microservices without distributed locks? Compare the Saga pattern (choreography vs orchestration).",
+    "type": "technical",
+    "skillTags": ["backend_apis", "system_design", "cloud_devops"],
+    "level": "mid",
+    "difficulty": 4,
+    "followUps": [
+      "How do you implement compensating transactions when a step fails mid-saga?",
+      "What happens if a compensating transaction itself fails?"
+    ],
+    "rubricHints": [
+      "Two-Phase Commit (2PC) blocking drawbacks in distributed cloud environments",
+      "Saga pattern: sequence of local transactions each updating local state and publishing events",
+      "Orchestrator state machine vs choreographic event publishing trade-offs"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-fe-001",
+    "text": "How do you architect a frontend state management layer in a complex web application to balance local component state, server cache state, and global UI state?",
+    "type": "technical",
+    "skillTags": ["frontend", "clarity"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "Why is server state (TanStack Query, SWR) distinct from client UI state (Zustand, Redux)?",
+      "How do you prevent state synchronization bugs during optimistic UI updates when requests fail?"
+    ],
+    "rubricHints": [
+      "Separation of server cache (stale-while-revalidate) from ephemeral UI state",
+      "Optimistic updates: snapshot previous state, render optimistic response, rollback on error",
+      "Avoiding over-centralized global stores that cause excessive re-renders"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-sys-001",
+    "text": "Design a globally distributed URL shortening service (like Bitly) handling 100 million new URLs created per month and 10 billion redirects per month.",
+    "type": "system_design",
+    "skillTags": ["system_design", "databases", "backend_apis"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "How do you generate short keys without collision across multiple distributed application nodes?",
+      "What is your caching strategy for hot redirects (80/20 rule)?"
+    ],
+    "rubricHints": [
+      "Base62 encoding of 64-bit auto-increment IDs using a coordinated counter (e.g. range allocation in ZooKeeper/Redis)",
+      "Distributed cache (Redis/Memcached) with LRU eviction for top 20% URLs",
+      "Read-heavy database replication with CDN edge caching for 301 vs 302 redirects"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-sys-002",
+    "text": "Design a notification system capable of sending billions of push notifications, SMS messages, and emails daily with priority tiers and rate limiting per user.",
+    "type": "system_design",
+    "skillTags": ["system_design", "backend_apis", "cloud_devops"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "How do you ensure marketing notifications never starve critical security or OTP alerts?",
+      "How do you handle third-party provider outages (e.g., Twilio or APNs downtime)?"
+    ],
+    "rubricHints": [
+      "Separate priority queues (high-priority transactional vs batch marketing)",
+      "Worker pools with concurrency throttles per notification channel",
+      "User preference service and multi-vendor fallback routing"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-sys-003",
+    "text": "Design an analytics ingestion pipeline that ingests 50,000 clickstream events per second from mobile and web clients, aggregates hourly metrics, and supports real-time dashboards.",
+    "type": "system_design",
+    "skillTags": ["system_design", "cloud_devops", "databases"],
+    "level": "mid",
+    "difficulty": 4,
+    "followUps": [
+      "How do you handle late-arriving events or out-of-order data in streaming windows?",
+      "What storage engine would you choose for real-time aggregation queries vs cold historical analysis?"
+    ],
+    "rubricHints": [
+      "Distributed log (Kafka, Kinesis) with partitioned topic buffers",
+      "Stream processing (Flink, Spark Streaming) with watermarking for out-of-order events",
+      "Columnar database (ClickHouse, Snowflake) for OLAP vs warm aggregate cache in Redis"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-beh-001",
     "text": "Describe a situation where you had a strong technical disagreement with a team lead or architect regarding system design. How did you navigate the conversation and what was the outcome?",
     "type": "behavioral",
     "skillTags": ["conflict", "communication", "leadership"],
@@ -152,7 +646,197 @@
     "license": "MIT"
   },
   {
-    "id": "q-beh-lead-001",
+    "id": "q-mid-beh-002",
+    "text": "Tell me about a project where you recognized that technical debt was significantly slowing down feature delivery. How did you advocate for paying it down to leadership?",
+    "type": "behavioral",
+    "skillTags": ["ownership", "leadership", "clarity"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "How did you quantify the business cost of the technical debt to non-technical stakeholders?",
+      "How did you balance shipping critical product features while executing the refactor?"
+    ],
+    "rubricHints": [
+      "Framing technical debt in business terms: developer velocity, incident MTTR, and cloud cost",
+      "Incremental refactoring embedded into regular sprint work (Boy Scout rule)",
+      "Measurable before-and-after metrics (build time, bug frequency, deployment cycle)"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-mid-beh-003",
+    "text": "Describe a time when you were mentoring an intern or junior engineer who was struggling to deliver tasks or understand the codebase. How did you support them?",
+    "type": "behavioral",
+    "skillTags": ["leadership", "communication"],
+    "level": "mid",
+    "difficulty": 3,
+    "followUps": [
+      "How did you help them become independent rather than relying on you for every answer?",
+      "How did you calibrate task scope to build their confidence without risking sprint deadlines?"
+    ],
+    "rubricHints": [
+      "Empathetic listening, diagnostic pairing, and breaking complex problems into manageable milestones",
+      "Teaching debugging heuristics and where to look rather than directly dictating code",
+      "Celebrating their incremental wins and fostering autonomy"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-dsa-001",
+    "text": "Explain how you would implement a distributed lock service or consistent hashing ring. How does consistent hashing minimize remapping when nodes are added or removed?",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "system_design"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "How do virtual nodes prevent hot spots and uneven key distributions in consistent hashing?",
+      "What are the trade-offs between Redis Redlock and consensus-backed locks like ZooKeeper or etcd?"
+    ],
+    "rubricHints": [
+      "Hash ring mapping keys and servers to a 32/64-bit integer space",
+      "Virtual nodes (vnodes) ensuring balanced statistical load across heterogeneous servers",
+      "Fencing tokens to prevent split-brain issues caused by GC pauses in distributed locking"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-dsa-002",
+    "text": "Describe an algorithm to detect deadlocks in a distributed database system where transactions hold locks across multiple independent shards.",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "databases", "system_design"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "Compare edge-chasing algorithms (e.g., Mitchell-Merritt) with centralized wait-for graph analyzers.",
+      "How do wait-die and wound-wait timestamp schemes prevent deadlocks without cycle detection?"
+    ],
+    "rubricHints": [
+      "Distributed wait-for graph (WFG) cycle detection",
+      "Wait-Die (non-preemptive) vs Wound-Wait (preemptive) timestamp ordering schemes",
+      "False deadlock risk in distributed edge-chasing due to message propagation delays"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-sys-001",
+    "text": "Design a real-time collaborative document editing service (similar to Google Docs or Figma) supporting concurrent edits across users on high-latency networks.",
+    "type": "system_design",
+    "skillTags": ["system_design", "cloud_devops"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "Compare Conflict-free Replicated Data Types (CRDTs) with Operational Transformation (OT) for this use case.",
+      "How do you maintain document history snapshots and handle disconnected offline editing?"
+    ],
+    "rubricHints": [
+      "WebSocket connections with central gateway or P2P WebRTC fallback",
+      "CRDT (e.g., Yjs, Automerge) vs central OT server trade-offs",
+      "Periodic compacting snapshots in durable blob storage"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-sys-002",
+    "text": "Design a global distributed cache invalidation architecture across 10 regions that ensures cache updates propagate in under 500ms while preventing thundering herd problems on cache misses.",
+    "type": "system_design",
+    "skillTags": ["system_design", "databases", "cloud_devops"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "How do probabilistic early expiration (XFetch) or mutex locking mitigate cache stampedes?",
+      "What is your strategy if a network partition isolates one region from invalidation events?"
+    ],
+    "rubricHints": [
+      "Pub/sub invalidation bus (Kafka, Redis streams) with CDC (Debezium) from primary database",
+      "Single-flight or mutex locking on cache miss to collapse concurrent backend requests",
+      "Stale-while-revalidate with soft TTLs to serve reads during recomputation"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-sys-003",
+    "text": "Design a multi-tenant SaaS architecture supporting strict tenant data isolation, variable tenant workloads (noisy neighbor mitigation), and custom per-tenant schema extensions.",
+    "type": "system_design",
+    "skillTags": ["system_design", "databases", "cloud_devops"],
+    "level": "senior",
+    "difficulty": 5,
+    "followUps": [
+      "Compare shared database with tenant_id discriminator column vs schema-per-tenant vs database-per-tenant.",
+      "How do you enforce compute quotas and rate limits so a massive tenant does not exhaust pool resources?"
+    ],
+    "rubricHints": [
+      "Row-level security (RLS) policies vs separate schemas/databases trade-offs",
+      "Hierarchical rate limiting and tenant priority queues with fair-share scheduling",
+      "Encryption at rest with tenant-managed keys (BYOK via AWS KMS / HashiCorp Vault)"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-tech-001",
+    "text": "How do you evaluate and implement zero-downtime database schema migrations for a high-traffic table with 500 million rows and 10,000 writes per second?",
+    "type": "technical",
+    "skillTags": ["databases", "backend_apis"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "Explain the expand-contract pattern for renaming a column or changing a data type.",
+      "How do online schema migration tools like gh-ost or pt-online-schema-change avoid table lockouts?"
+    ],
+    "rubricHints": [
+      "Expand-and-contract: add nullable column -> dual writing -> backfill in batches -> cut over reads -> drop old column",
+      "Online DDL tools using binlog tailing and ghost tables to avoid table locks",
+      "Index creation using CREATE INDEX CONCURRENTLY to prevent locking writes"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-tech-002",
+    "text": "How do you architect observability across 50 microservices to troubleshoot 99th-percentile tail latency spikes that occur intermittently under peak load?",
+    "type": "technical",
+    "skillTags": ["cloud_devops", "system_design"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "What are the overhead and sampling trade-offs of distributed tracing (e.g. OpenTelemetry)?",
+      "How do you distinguish GC pause spikes from database connection pool starvation in latency distributions?"
+    ],
+    "rubricHints": [
+      "Distributed tracing with trace context propagation (W3C TraceContext)",
+      "Head-based vs tail-based sampling to capture outlier slow traces without overwhelming storage",
+      "High-cardinality metrics (histograms with exponential buckets) over simple averages"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-tech-003",
+    "text": "When integrating a Large Language Model into a core customer-facing feature, how do you architect guardrails against prompt injection, hallucination, and latency unpredictability?",
+    "type": "technical",
+    "skillTags": ["ml_ai", "backend_apis"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "How do you implement deterministic output schema validation with graceful fallbacks?",
+      "What caching and semantic deduplication layers reduce token cost and response latency?"
+    ],
+    "rubricHints": [
+      "Delimited data blocks, input sanitization, and secondary classifier guardrail models",
+      "Retrieval-Augmented Generation (RAG) with strict grounding verification against retrieved context",
+      "Semantic caching via embedding similarity and schema enforcement with retry bounds"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-beh-001",
     "text": "Describe a multi-quarter engineering initiative where you had to drive alignment across several cross-functional teams with conflicting roadmaps and technical priorities.",
     "type": "behavioral",
     "skillTags": ["leadership", "ownership", "communication"],
@@ -171,7 +855,45 @@
     "license": "MIT"
   },
   {
-    "id": "q-strat-001",
+    "id": "q-sen-beh-002",
+    "text": "Tell me about a high-severity production outage where you acted as the incident commander or primary technical responder. How did you coordinate triage, resolution, and post-mortem?",
+    "type": "behavioral",
+    "skillTags": ["ownership", "cloud_devops", "communication"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "How did you keep panic low and prevent well-meaning engineers from making concurrent changes?",
+      "What concrete structural improvements came out of the blameless post-mortem?"
+    ],
+    "rubricHints": [
+      "Clear incident command protocols: establish single source of truth, mitigate first, debug later",
+      "Calm, transparent communication on status channels to leadership and customers",
+      "Blameless post-mortem focusing on systemic failure modes, alerts, and automated safeguards"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-sen-beh-003",
+    "text": "Describe a time when you made a significant architectural decision that you later realized was wrong. How did you acknowledge it, what was the impact, and how did you pivot?",
+    "type": "behavioral",
+    "skillTags": ["ownership", "leadership", "clarity"],
+    "level": "senior",
+    "difficulty": 4,
+    "followUps": [
+      "What early signals or metrics alerted you that the original design was failing?",
+      "How did you maintain team trust and morale while reversing course?"
+    ],
+    "rubricHints": [
+      "Intellectual honesty and owning the outcome without defensive rationalization",
+      "Data-driven post-mortem explaining the divergence between design assumptions and production reality",
+      "Decisive mitigation plan executed smoothly without finger-pointing"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-stf-tech-001",
     "text": "Your organization is evaluating migrating a critical legacy monolith to microservices or modern modular architecture. How would you formulate the multi-year strategy, evaluate the ROI, and choose the migration path?",
     "type": "technical",
     "skillTags": ["system_design", "leadership", "cloud_devops"],
@@ -185,6 +907,120 @@
       "Strangler Fig pattern over big-bang rewrites",
       "Domain-Driven Design (bounded contexts) mapping to team ownership",
       "Rigorous business ROI analysis considering operational complexity, latency overhead, and cloud costs"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-stf-tech-002",
+    "text": "How do you establish engineering-wide technical standards, RFC processes, and architectural review boards across 300+ engineers without creating bureaucratic bottlenecks?",
+    "type": "technical",
+    "skillTags": ["leadership", "ownership", "communication"],
+    "level": "staff_plus",
+    "difficulty": 5,
+    "followUps": [
+      "How do you empower autonomous product teams while maintaining company-wide platform coherence?",
+      "How do you handle teams that routinely bypass the RFC process to ship rapid hacks?"
+    ],
+    "rubricHints": [
+      "Lightweight RFC templates focusing on trade-offs, security, and data durability",
+      "Tiered review gates: local team sign-off for low blast radius, principal review for cross-domain protocols",
+      "Paved-path golden templates making the right architectural choice the easiest choice"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-stf-sys-001",
+    "text": "Design a multi-region active-active database replication architecture with deterministic conflict resolution, capable of handling regional cloud failure without data loss (RPO=0, RTO<30s).",
+    "type": "system_design",
+    "skillTags": ["system_design", "databases", "cloud_devops"],
+    "level": "staff_plus",
+    "difficulty": 5,
+    "followUps": [
+      "How do you navigate the CAP theorem trade-offs between cross-region synchronous consensus (e.g. Raft/Spanner) and write latency?",
+      "How do you handle split-brain detection and reconciliation when two regions lose interconnection?"
+    ],
+    "rubricHints": [
+      "TrueTime API with GPS/atomic clocks or Paxos/Raft consensus across 3+ availability regions",
+      "CRDTs or last-write-wins with logical vector clocks for asynchronous multi-master topologies",
+      "Automated DNS/BGP routing failover and health checking with strict quorum guarantees"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-stf-sys-002",
+    "text": "Design an enterprise-wide Generative AI platform serving 50 internal product engineering teams, managing LLM provider orchestration, fine-tuning pipelines, cost quotas, and strict DLP compliance.",
+    "type": "system_design",
+    "skillTags": ["ml_ai", "system_design", "cloud_devops"],
+    "level": "staff_plus",
+    "difficulty": 5,
+    "followUps": [
+      "How do you ensure zero tenant cross-contamination when caching embeddings and prompt results?",
+      "What dynamic model routing and fallback strategy optimizes for cost, quality, and rate limits?"
+    ],
+    "rubricHints": [
+      "Unified gateway abstraction layer with provider failover and token-bucket budget enforcement",
+      "PII/DLP scrubbing middleware before sending prompts to external providers",
+      "Evaluation harness benchmarking model quality across standardized company golden sets"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-stf-dsa-001",
+    "text": "Explain how distributed consensus algorithms (Raft and Paxos) handle leader election, log replication, and split-vote scenarios during network partitions.",
+    "type": "dsa_verbal",
+    "skillTags": ["dsa", "system_design"],
+    "level": "staff_plus",
+    "difficulty": 5,
+    "followUps": [
+      "How do randomized election timeouts in Raft prevent split-vote deadlocks?",
+      "What is joint consensus and how is dynamic membership reconfiguration executed safely without downtime?"
+    ],
+    "rubricHints": [
+      "Quorum requirements (majority n/2 + 1) to guarantee overlapping log entries across terms",
+      "Log matching property and leader completeness theorem in Raft",
+      "Linearizable read leases without round-trip Paxos consensus"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-stf-beh-001",
+    "text": "How do you identify, mentor, and sponsor senior engineers to help them grow into Staff and Principal engineering roles across the organization?",
+    "type": "behavioral",
+    "skillTags": ["leadership", "communication"],
+    "level": "staff_plus",
+    "difficulty": 5,
+    "followUps": [
+      "How do you help senior engineers shift from individual execution excellence to organizational leverage?",
+      "How do you create visibility for high-performing engineers from underrepresented backgrounds?"
+    ],
+    "rubricHints": [
+      "Distinction between mentorship (advice) and sponsorship (creating high-impact project opportunities)",
+      "Coaching engineers to communicate at executive levels and author persuasive strategic RFCs",
+      "Fostering psychological safety and multiplying engineering talent across team boundaries"
+    ],
+    "source": "Abhyas Core Bank",
+    "license": "MIT"
+  },
+  {
+    "id": "q-stf-beh-002",
+    "text": "Describe a situation where executive leadership proposed a high-risk technical direction or unrealistic timeline that threatened core platform reliability. How did you manage up and influence the outcome?",
+    "type": "behavioral",
+    "skillTags": ["leadership", "conflict", "communication"],
+    "level": "staff_plus",
+    "difficulty": 5,
+    "followUps": [
+      "What data, trade-off models, or prototype evidence did you present to C-level executives?",
+      "How did you propose an alternative that still achieved the company's business goals?"
+    ],
+    "rubricHints": [
+      "Speaking the language of business risk, customer trust, and financial exposure rather than purely technical purity",
+      "Offering viable phased alternatives with clearly delineated milestones and trade-offs",
+      "Maintaining executive trust and professional composure under intense commercial pressure"
     ],
     "source": "Abhyas Core Bank",
     "license": "MIT"

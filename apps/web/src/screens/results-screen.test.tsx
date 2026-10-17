@@ -323,6 +323,49 @@ describe("M1.7: ResultsScreen (PG-13)", () => {
       expect(results.violations).toEqual([]);
     });
 
+    it("renders Experience Calibration Note when selected level differs from resume profile (FR-004, FR-017)", async () => {
+      const storage = new MemoryStorageAdapter();
+      const { session, turns } = createSeedData("text");
+      // Session level is "senior", but profile is intern
+      const seniorSession: SessionRow = {
+        ...session,
+        level: "senior",
+      };
+      const internProfile: StructuredProfile = {
+        id: "prof-intern",
+        inputHash: "hash-intern",
+        condensed: "Intern student developer.",
+        skills: ["HTML", "CSS"],
+        experiences: [
+          {
+            role: "Software Engineering Intern",
+            company: "College Lab",
+            highlights: ["Student course project"],
+          },
+        ],
+        promptVersion: 1,
+      };
+
+      await storage.put("sessions", seniorSession);
+      for (const turn of turns) {
+        await storage.put("turns", turn);
+      }
+      await storage.put("structuredProfiles", internProfile);
+
+      render(
+        <ResultsScreen
+          storage={storage}
+          sessionId={seniorSession.id}
+          onFinish={vi.fn()}
+          onNavigateHome={vi.fn()}
+        />
+      );
+
+      await screen.findByRole("heading", { name: /interview scorecard/i });
+      expect(screen.getByText(/Experience Calibration Note/i)).toBeDefined();
+      expect(screen.getByText(/Senior.*level/i)).toBeDefined();
+    });
+
     it("has zero axe violations under Paper theme", async () => {
       const storage = new MemoryStorageAdapter();
       const { session, turns } = createSeedData("voice");

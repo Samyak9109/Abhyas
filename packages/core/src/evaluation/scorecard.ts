@@ -1,7 +1,8 @@
-// FR-012, FR-013, FR-014, ADR-006: Session scorecard computation, level fit analysis, and top fix extraction.
+// FR-012, FR-013, FR-014, FR-017, ADR-006: Session scorecard computation, level fit analysis, and top fix extraction.
 import type { DeliveryMetrics } from "../schemas/evaluation.schema.js";
-import type { ExperienceLevel } from "../schemas/profile.schema.js";
+import type { ExperienceLevel, StructuredProfile } from "../schemas/profile.schema.js";
 import type { SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
+import { generateResumeVersusLevelNote } from "../calibration/index.js";
 import { calculateTurnScore } from "./rubric-evaluator.js";
 
 export interface CriterionAverage {
@@ -38,12 +39,17 @@ export interface SessionScorecard {
       }
     | undefined;
   levelFitNote?: string | undefined;
+  resumeVersusLevelNote?: string | undefined;
 }
 
 /**
  * Computes the full scorecard for a completed or partial session.
  */
-export function computeSessionScorecard(session: SessionRow, turns: TurnRow[]): SessionScorecard {
+export function computeSessionScorecard(
+  session: SessionRow,
+  turns: TurnRow[],
+  profile?: StructuredProfile | null | undefined
+): SessionScorecard {
   const scoredTurns = turns.filter((t) => t.status === "scored" && t.evaluation !== undefined);
   const unscoredTurnsCount = turns.filter((t) => t.status === "unscored").length;
   const scoredTurnsCount = scoredTurns.length;
@@ -225,6 +231,11 @@ export function computeSessionScorecard(session: SessionRow, turns: TurnRow[]): 
     }
   }
 
+  // 7. Resume-versus-Level Note (FR-004, FR-017)
+  const resumeVersusLevelNote = profile
+    ? (generateResumeVersusLevelNote(session.level, profile) ?? undefined)
+    : undefined;
+
   return {
     sessionId: session.id,
     overallScore,
@@ -239,5 +250,6 @@ export function computeSessionScorecard(session: SessionRow, turns: TurnRow[]): 
     skillSummaries,
     deliveryAverages,
     levelFitNote,
+    ...(resumeVersusLevelNote ? { resumeVersusLevelNote } : {}),
   };
 }

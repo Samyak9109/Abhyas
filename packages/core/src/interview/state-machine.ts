@@ -19,6 +19,11 @@
 
 import type { Evaluation } from "../schemas/evaluation.schema.js";
 import type { SelectedQuestion, SessionPlan } from "../schemas/session.schema.js";
+import {
+  computeAdaptiveDifficulty,
+  difficultyBankToNorm,
+  LEVEL_BANDS,
+} from "../calibration/index.js";
 
 // --- Types -----------------------------------------------------------------
 
@@ -77,6 +82,8 @@ export interface InterviewContext {
   hintText?: string | undefined;
   repeatRequested?: boolean | undefined;
   recoverableError?: RecoverableError | undefined;
+  /** Current target difficulty (1-5 integer scale), adapted per FR-017 / architecture.md 8 */
+  currentDifficulty?: number | undefined;
 }
 
 export interface InterviewState {
@@ -136,6 +143,7 @@ export function createInitialInterviewState(
   plan: SessionPlan,
   questions: SelectedQuestion[]
 ): InterviewState {
+  const initialDifficulty = LEVEL_BANDS[plan.level]?.defaultDifficulty ?? 3;
   return {
     status: "setup",
     context: {
@@ -144,6 +152,7 @@ export function createInitialInterviewState(
       currentQuestionIndex: 0,
       currentQuestion: null,
       turns: [],
+      currentDifficulty: initialDifficulty,
     },
   };
 }
@@ -567,7 +576,35 @@ export function interviewReducer(state: InterviewState, event: InterviewEvent): 
       if (event.type === "NEXT") {
         const nextIdx = context.currentQuestionIndex + 1;
         if (nextIdx < context.plan.length && nextIdx < context.questions.length) {
-          const nextSelected = context.questions[nextIdx]!;
+          // FR-017, architecture.md 8: Difficulty for next question = previous difficulty ± 1, clamped to level band
+          const lastTurn = context.turns[context.turns.length - 1];
+          const prevDifficulty =
+            context.currentDifficulty ?? LEVEL_BANDS[context.plan.level]?.defaultDifficulty ?? 3;
+          const targetDifficulty = lastTurn
+            ? computeAdaptiveDifficulty(prevDifficulty, lastTurn, context.plan.level)
+            : prevDifficulty;
+
+          // Select closest question from remaining pool to target adaptive difficulty
+          const questionsCopy = [...context.questions];
+          const targetNorm = difficultyBankToNorm(targetDifficulty);
+          let bestIdx = nextIdx;
+          let minDiff = Math.abs(questionsCopy[nextIdx]!.difficulty - targetNorm);
+
+          for (let i = nextIdx + 1; i < questionsCopy.length; i++) {
+            const diff = Math.abs(questionsCopy[i]!.difficulty - targetNorm);
+            if (diff < minDiff) {
+              minDiff = diff;
+              bestIdx = i;
+            }
+          }
+
+          if (bestIdx !== nextIdx) {
+            const tmp = questionsCopy[nextIdx]!;
+            questionsCopy[nextIdx] = questionsCopy[bestIdx]!;
+            questionsCopy[bestIdx] = tmp;
+          }
+
+          const nextSelected = questionsCopy[nextIdx]!;
           const nextQ: ActiveQuestion = {
             id: nextSelected.id,
             text: nextSelected.text,
@@ -584,8 +621,10 @@ export function interviewReducer(state: InterviewState, event: InterviewEvent): 
               status: "ask",
               context: {
                 ...context,
+                questions: questionsCopy,
                 currentQuestionIndex: nextIdx,
                 currentQuestion: nextQ,
+                currentDifficulty: targetDifficulty,
               },
             },
             effects: [{ type: "LOAD_QUESTION", questionIndex: nextIdx }],

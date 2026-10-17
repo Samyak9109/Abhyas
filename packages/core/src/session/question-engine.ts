@@ -57,29 +57,10 @@ function shuffle<T>(arr: T[], rng: () => number): T[] {
 }
 
 // ---------------------------------------------------------------------------
-// Difficulty mapping helpers
+// Difficulty mapping helpers (FR-017)
 // ---------------------------------------------------------------------------
 
-const LEVEL_DIFFICULTY_RANGE: Record<string, [number, number]> = {
-  intern_fresher: [1, 2],
-  junior: [1, 3],
-  mid: [2, 4],
-  senior: [3, 5],
-  staff_plus: [4, 5],
-};
-
-const LEVEL_DEFAULT_DIFFICULTY: Record<string, number> = {
-  intern_fresher: 1,
-  junior: 2,
-  mid: 3,
-  senior: 4,
-  staff_plus: 5,
-};
-
-function difficultyBankToNorm(d: number): number {
-  // Bank: 1–5 integer → normalized 0–1 for scoring.
-  return (d - 1) / 4;
-}
+import { LEVEL_BANDS, difficultyBankToNorm } from "../calibration/index.js";
 
 // ---------------------------------------------------------------------------
 // Weighting
@@ -89,8 +70,7 @@ function difficultyBankToNorm(d: number): number {
  * Assign a selection weight to a bank question for a given session.
  * Higher weight = more likely to be selected.
  *
- * Weights are intentionally simple: multiply bonus factors rather than
- * computing a complex score. The AI personalizes afterward.
+ * FR-017: Questions missing level or difficulty tags are not selectable (weight 0).
  */
 function computeWeight(
   question: Question,
@@ -98,7 +78,18 @@ function computeWeight(
   gapSkills: Set<string>,
   weakSkills: Set<string>
 ): number {
-  const [minD, maxD] = LEVEL_DIFFICULTY_RANGE[plan.level] ?? [1, 5];
+  // FR-017: missing tags -> question not selectable
+  if (
+    !question.level ||
+    typeof question.difficulty !== "number" ||
+    question.difficulty < 1 ||
+    question.difficulty > 5
+  ) {
+    return 0;
+  }
+
+  const band = LEVEL_BANDS[plan.level] ?? LEVEL_BANDS.mid;
+  const [minD, maxD] = band.difficultyRange;
 
   // Questions outside the level difficulty window score 0 (not eligible).
   if (question.difficulty < minD || question.difficulty > maxD) return 0;
@@ -366,7 +357,7 @@ export async function selectQuestions(
           [...gapSkills].slice(0, 1).length > 0
             ? [[...gapSkills][0]!]
             : [plan.targetRole.toLowerCase().replace(/\s+/g, "_")],
-        difficulty: difficultyBankToNorm(LEVEL_DEFAULT_DIFFICULTY[plan.level] ?? 3),
+        difficulty: difficultyBankToNorm(LEVEL_BANDS[plan.level]?.defaultDifficulty ?? 3),
         text: unverifiedTexts[i]!,
         rationale: "AI-generated: no bank question matched required skill",
       })

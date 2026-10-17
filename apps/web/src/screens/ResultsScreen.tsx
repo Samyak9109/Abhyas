@@ -63,7 +63,7 @@ export function ResultsScreen({
           setTurns(sessionTurns);
           setProfile(activeProfile);
 
-          const card = computeSessionScorecard(loadedSession, sessionTurns);
+          const card = computeSessionScorecard(loadedSession, sessionTurns, activeProfile);
           setScorecard(card);
 
           // FR-014: Automatically update skill statistics cache in storage
@@ -472,6 +472,15 @@ export function ResultsScreen({
           <div className="abh-results-banner">
             <Callout variant="info" title="Level Calibration Note">
               {scorecard.levelFitNote}
+            </Callout>
+          </div>
+        )}
+
+        {/* Resume-versus-Level Calibration Callout (FR-004, FR-017) */}
+        {scorecard.resumeVersusLevelNote && (
+          <div className="abh-results-banner">
+            <Callout variant="info" title="Experience Calibration Note">
+              {scorecard.resumeVersusLevelNote}
             </Callout>
           </div>
         )}

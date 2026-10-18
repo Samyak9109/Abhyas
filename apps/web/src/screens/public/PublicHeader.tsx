@@ -1,5 +1,6 @@
 // FR-033, ADR-019, design.md section 8: Public header with brand lockup, navigation, theme toggle and CTA.
 import { useState, useEffect } from "react";
+import { mirrorThemePreference } from "../../services/theme";
 
 interface PublicHeaderProps {
   currentPath?: string;
@@ -41,11 +42,7 @@ export function PublicHeader({
       const nextTheme =
         document.documentElement.getAttribute("data-theme") === "paper" ? "ink" : "paper";
       document.documentElement.setAttribute("data-theme", nextTheme);
-      try {
-        localStorage.setItem("abhyas_theme", nextTheme);
-      } catch {
-        // Safe fallback
-      }
+      mirrorThemePreference(nextTheme);
     }
   };
 

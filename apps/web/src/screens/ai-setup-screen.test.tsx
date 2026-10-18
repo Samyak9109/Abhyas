@@ -243,6 +243,54 @@ describe("M1.2: AISetupScreen (PG-09)", () => {
     expect(screen.getByText("NVIDIA RTX 4070")).toBeDefined();
   });
 
+  it("selects Local model (WebLLM), verifies without API key, and saves provider (M3.2)", async () => {
+    const storage = new MemoryStorageAdapter();
+    const onComplete = vi.fn();
+    const mockRuntime = {
+      hasWebGpu: vi.fn().mockResolvedValue(true),
+      isMobileDevice: vi.fn().mockReturnValue(false),
+      getConcurrency: vi.fn().mockReturnValue(8),
+      getDeviceMemoryGb: vi.fn().mockReturnValue(16),
+      getStorageQuotaMb: vi.fn().mockResolvedValue(50000),
+      runComputeBenchmark: vi.fn().mockResolvedValue({ tokensPerSecond: 20, latencyMs: 50 }),
+    };
+
+    render(
+      <AISetupScreen storage={storage} onComplete={onComplete} hardwareRuntime={mockRuntime} />
+    );
+
+    // Click Local model (WebLLM) radio card
+    const localRadio = screen.getByRole("radio", { name: /local model \(webllm\)/i });
+    fireEvent.click(localRadio);
+
+    await waitFor(() => {
+      expect(screen.getByText("In-Browser Local Model (WebLLM)")).toBeDefined();
+      expect(screen.getByText(/Text-Only Interview Mode/i)).toBeDefined();
+    });
+
+    // Verify local model button
+    const verifyBtn = screen.getByRole("button", { name: /verify local model/i });
+    fireEvent.click(verifyBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Local model verified")).toBeDefined();
+    });
+
+    // Save and continue
+    const nextBtn = screen.getByRole("button", { name: /next: add your profile/i });
+    expect(nextBtn).toHaveProperty("disabled", false);
+    fireEvent.click(nextBtn);
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalled();
+    });
+
+    const providers = (await storage.getAll("providers")) as ProviderRow[];
+    expect(providers.length).toBe(1);
+    expect(providers[0]?.kind).toBe("webllm");
+    expect(providers[0]?.key).toBeUndefined();
+  });
+
   describe("Accessibility (axe)", () => {
     it("has no axe violations in default state under Ink theme", async () => {
       document.documentElement.setAttribute("data-theme", "ink");

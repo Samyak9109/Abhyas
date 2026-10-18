@@ -59,6 +59,9 @@ const HistoryScreen = lazy(() =>
 const SettingsScreen = lazy(() =>
   import("./screens/SettingsScreen").then((m) => ({ default: m.SettingsScreen }))
 );
+const ModelManagerScreen = lazy(() =>
+  import("./screens/ModelManagerScreen").then((m) => ({ default: m.ModelManagerScreen }))
+);
 
 type AppRoute =
   | "/"
@@ -72,6 +75,7 @@ type AppRoute =
   | "/app/practice"
   | "/app/history"
   | "/app/settings"
+  | "/app/models"
   | "/app/setup/ai"
   | "/app/setup/profile"
   | "/app/setup/session"
@@ -125,6 +129,9 @@ function getInitialRoute(): AppRoute {
     }
     if (path.includes("settings") || window.location.hash.includes("settings")) {
       return "/app/settings";
+    }
+    if (path.includes("models") || window.location.hash.includes("models")) {
+      return "/app/models";
     }
     if (path.includes("home") || window.location.hash.includes("home")) {
       return "/app/home";
@@ -458,6 +465,19 @@ export function App() {
           <li>
             <a
               className="abh-app-nav-item"
+              href="/app/models"
+              aria-current={currentRoute === "/app/models" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/models");
+              }}
+            >
+              Models
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
               href="/app/settings"
               aria-current={currentRoute === "/app/settings" ? "page" : undefined}
               onClick={(e) => {
@@ -482,6 +502,7 @@ export function App() {
             storage={init.storage}
             onComplete={() => navigateTo("/app/setup/profile")}
             onNavigateSettings={() => navigateTo("/app/settings")}
+            onNavigateModelManager={() => navigateTo("/app/models")}
           />
         </Suspense>
       </div>
@@ -688,6 +709,24 @@ export function App() {
             onNavigateProfile={() => navigateTo("/app/setup/profile")}
             onNavigateSkills={() => navigateTo("/app/skills")}
           />
+        </main>
+      </div>
+    );
+  }
+
+  if (route === "/app/models") {
+    return (
+      <div className="abh-app">
+        {renderTopBanners()}
+        {renderAppNav(route)}
+        <main className="abh-app-main">
+          <Suspense fallback={screenLoading}>
+            <ModelManagerScreen
+              storage={init.storage}
+              onNavigateBack={() => navigateTo("/app/settings")}
+              onNavigateAISetup={() => navigateTo("/app/setup/ai")}
+            />
+          </Suspense>
         </main>
       </div>
     );

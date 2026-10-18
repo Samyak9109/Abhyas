@@ -97,27 +97,9 @@ export function selectWeakestSkill(
   stats: SkillStatRow[],
   allKnownSkillIds?: readonly string[]
 ): string | undefined {
-  if (stats.length === 0 && (!allKnownSkillIds || allKnownSkillIds.length === 0)) {
-    return undefined;
-  }
-
-  const statMap = new Map<string, SkillStatRow>(stats.map((s) => [s.skillId, s]));
-
-  // 1. Look for skills with at least medium confidence (n >= 3)
-  const eligibleStats = stats.filter((s) => s.confidence === "medium" || s.confidence === "high");
-  if (eligibleStats.length > 0) {
-    // Sort by lowest score; tie-break by lowest n, then alphabetical skillId
-    eligibleStats.sort((a, b) => {
-      if (a.score !== b.score) return a.score - b.score;
-      if (a.n !== b.n) return a.n - b.n;
-      return a.skillId.localeCompare(b.skillId);
-    });
-    return eligibleStats[0]?.skillId;
-  }
-
-  // 2. Fallback: least-practiced skill
-  if (allKnownSkillIds && allKnownSkillIds.length > 0) {
-    // Check if any known skill has n = 0 (never practiced)
+  const hasConfident = stats.some((s) => s.confidence === "medium" || s.confidence === "high");
+  if (!hasConfident && allKnownSkillIds && allKnownSkillIds.length > 0) {
+    const statMap = new Map<string, SkillStatRow>(stats.map((s) => [s.skillId, s]));
     const unpracticed = allKnownSkillIds
       .filter((id) => !statMap.has(id) || statMap.get(id)!.n === 0)
       .sort((a, b) => a.localeCompare(b));
@@ -127,15 +109,7 @@ export function selectWeakestSkill(
     }
   }
 
-  if (stats.length === 0) return undefined;
-
-  // Pick lowest n among low-confidence skills
-  const sorted = [...stats].sort((a, b) => {
-    if (a.n !== b.n) return a.n - b.n;
-    if (a.score !== b.score) return a.score - b.score;
-    return a.skillId.localeCompare(b.skillId);
-  });
-  return sorted[0]?.skillId;
+  return selectWeakestSkills(stats, 1)[0]?.skillId;
 }
 
 /**
@@ -144,15 +118,7 @@ export function selectWeakestSkill(
  * - Returns undefined if no skill has at least medium confidence.
  */
 export function selectStrongestSkill(stats: SkillStatRow[]): string | undefined {
-  const eligibleStats = stats.filter((s) => s.confidence === "medium" || s.confidence === "high");
-  if (eligibleStats.length === 0) return undefined;
-
-  eligibleStats.sort((a, b) => {
-    if (a.score !== b.score) return b.score - a.score;
-    if (a.n !== b.n) return b.n - a.n;
-    return a.skillId.localeCompare(b.skillId);
-  });
-  return eligibleStats[0]?.skillId;
+  return selectStrongestSkills(stats, 1)[0]?.skillId;
 }
 
 /**

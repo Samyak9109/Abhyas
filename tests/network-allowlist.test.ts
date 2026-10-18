@@ -42,6 +42,17 @@ describe("M0.5: Network Allowlist & Egress Protection (NFR-017)", () => {
       expect(isAllowedDestination(fontUrl, CURRENT_APP_ORIGIN)).toBe(true);
       expect(() => assertAllowedDestination(fontUrl, CURRENT_APP_ORIGIN)).not.toThrow();
     });
+
+    it("allows verified model hosts for user-initiated model downloads (architecture.md Section 17)", () => {
+      const hfModelUrl =
+        "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/main/model.safetensors";
+      expect(isAllowedDestination(hfModelUrl)).toBe(true);
+      expect(() => assertAllowedDestination(hfModelUrl)).not.toThrow();
+
+      const hfCdnUrl = "https://cdn-lfs.huggingface.co/repos/123/weights.bin";
+      expect(isAllowedDestination(hfCdnUrl)).toBe(true);
+      expect(() => assertAllowedDestination(hfCdnUrl)).not.toThrow();
+    });
   });
 
   describe("Rejection of Unlisted Destinations (Acceptance Criterion)", () => {

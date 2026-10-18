@@ -25,6 +25,9 @@ export const ALLOWED_ORIGIN_PATTERNS: readonly (string | RegExp)[] = [
   // Local Ollama and local OpenAI-compatible servers (any port)
   /^http:\/\/localhost(:\d+)?$/,
   /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+  // Model host / CDN when user starts a model download (architecture.md Section 17)
+  "https://huggingface.co",
+  "https://cdn-lfs.huggingface.co",
 ];
 
 /**

@@ -21,6 +21,7 @@
         "src/screens/public/prerender.tsx!",
         "src/workers/parser.worker.ts!",
         "src/workers/skills-recompute.worker.ts!",
+        "src/workers/local-engine.worker.ts!",
         "index.html!",
         "vite.config.ts"
       ],

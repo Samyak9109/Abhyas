@@ -16,3 +16,4 @@ export * from "./validator.js";
 export * from "./sample-bank.js";
 export * from "./rubrics.js";
 export * from "./skills.js";
+export * from "./models.js";

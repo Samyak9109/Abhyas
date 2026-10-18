@@ -42,3 +42,57 @@ export interface HardwareRuntime {
     durationMs?: number
   ): Promise<{ tokensPerSecond: number; latencyMs: number }>;
 }
+
+export type ModelFormat = "safetensors" | "gguf" | "onnx";
+
+export type EngineDownloadPhase =
+  | "idle"
+  | "checking_cache"
+  | "downloading"
+  | "paused"
+  | "loading_weights"
+  | "ready"
+  | "error";
+
+export interface EngineProgress {
+  phase: EngineDownloadPhase;
+  bytesLoaded: number;
+  totalBytes: number;
+  percentage: number;
+  text: string;
+  modelId: string;
+}
+
+export interface StorageQuotaReport {
+  usageMb: number;
+  quotaMb: number;
+  usageBytes: number;
+  quotaBytes: number;
+  percentage: number;
+  isNearlyFull: boolean;
+  persisted: boolean;
+}
+
+export interface ModelFormatValidation {
+  valid: boolean;
+  format?: ModelFormat;
+  error?: string;
+}
+
+export type LocalWorkerRequest =
+  | { type: "INIT_ENGINE"; id: string; modelId: string }
+  | { type: "LOAD_MODEL"; id: string; modelId: string }
+  | { type: "PAUSE_DOWNLOAD"; id: string; modelId: string }
+  | { type: "RESUME_DOWNLOAD"; id: string; modelId: string }
+  | { type: "CANCEL"; id: string }
+  | { type: "UNLOAD_MODEL"; id: string }
+  | { type: "DELETE_CACHE"; id: string; modelId: string }
+  | { type: "STREAM_CHAT"; id: string; messages: unknown[]; options: unknown }
+  | { type: "GET_STORAGE_USAGE"; id: string };
+
+export type LocalWorkerResponse =
+  | { type: "PROGRESS"; id: string; progress: EngineProgress }
+  | { type: "STREAM_CHUNK"; id: string; delta: string; isComplete: boolean }
+  | { type: "STREAM_DONE"; id: string }
+  | { type: "SUCCESS"; id: string; payload?: unknown }
+  | { type: "ERROR"; id: string; error: { kind: string; message: string; retryable: boolean } };

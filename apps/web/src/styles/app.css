@@ -3676,3 +3676,397 @@
   color: var(--text-muted);
   max-width: 75%;
 }
+
+/* FR-022, FR-023, PG-19: Model Manager Screen Styles */
+.abh-model-manager-screen {
+  min-height: 100vh;
+  padding: var(--space-8) var(--space-4);
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.abh-mm-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.abh-mm-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.abh-mm-header-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.abh-mm-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.abh-mm-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.abh-mm-subtitle {
+  margin: var(--space-1) 0 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.abh-mm-view-toggle {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.abh-mm-alert {
+  margin-top: var(--space-1);
+}
+
+.abh-mm-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .abh-mm-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.abh-mm-metric-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.abh-mm-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.abh-mm-metric-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.abh-mm-metric-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.abh-mm-metric-sub {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.abh-mm-metric-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.abh-mm-storage-pct {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.abh-mm-meter-track {
+  width: 100%;
+  height: 10px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin: var(--space-1) 0;
+}
+
+.abh-mm-meter-fill {
+  height: 100%;
+  background-color: var(--success);
+  transition: width 300ms ease;
+}
+
+.abh-mm-meter-fill--warn {
+  background-color: var(--warning);
+}
+
+.abh-mm-storage-details {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.abh-mm-persist-badge {
+  margin-top: var(--space-1);
+}
+
+.abh-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+}
+
+.abh-badge--tier {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.abh-badge--highlight {
+  background-color: var(--surface-2);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.abh-badge--success {
+  background-color: var(--surface-2);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+
+.abh-badge--active {
+  background-color: var(--surface-2);
+  border: 1px solid var(--info);
+  color: var(--info);
+}
+
+.abh-badge--neutral {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text-muted);
+}
+
+.abh-mm-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.abh-mm-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.abh-mm-section-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--text);
+}
+
+.abh-mm-section-desc {
+  margin: var(--space-1) 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.abh-mm-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 600px) {
+  .abh-mm-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.abh-mm-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-mm-card--recommended {
+  border-color: var(--accent);
+}
+
+.abh-mm-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.abh-mm-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.abh-mm-card-title {
+  margin: 0;
+  font-size: 18px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.abh-mm-card-repo {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.abh-mm-card-size {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.abh-mm-card-notes {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.abh-mm-card-meta {
+  display: flex;
+  gap: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-2);
+}
+
+.abh-mm-progress-wrap,
+.abh-mm-paused-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.abh-mm-paused-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--warning);
+}
+
+.abh-mm-progress-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.abh-mm-card-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.abh-mm-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+}
+
+.abh-mm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background-color: var(--surface);
+}
+
+.abh-mm-table th,
+.abh-mm-table td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.abh-mm-table th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background-color: var(--surface-2);
+}
+
+.abh-mm-table-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.abh-mm-table-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.abh-mm-custom-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-mm-custom-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 680px;
+}
+
+.abh-mm-preflight-status {
+  margin-top: var(--space-1);
+}
+
+.abh-mm-custom-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.abh-mm-loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

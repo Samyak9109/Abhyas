@@ -1,0 +1,46 @@
+[
+  {
+    "id": "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
+    "name": "SmolLM2 1.7B Instruct",
+    "engine": "webllm",
+    "repository": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+    "sizeBytes": 1050000000,
+    "minimumTier": "basic",
+    "contextLength": 2048,
+    "format": "safetensors",
+    "notes": "Fast and compact 1.7B parameter model designed for entry-level laptops and lightweight GPUs."
+  },
+  {
+    "id": "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+    "name": "Qwen2.5 1.5B Instruct",
+    "engine": "webllm",
+    "repository": "Qwen/Qwen2.5-1.5B-Instruct",
+    "sizeBytes": 980000000,
+    "minimumTier": "basic",
+    "contextLength": 2048,
+    "format": "safetensors",
+    "notes": "Efficient 1.5B instruction-tuned model with crisp reasoning and quick response latency."
+  },
+  {
+    "id": "Llama-3.2-3B-Instruct-q4f16_1-MLC",
+    "name": "Llama 3.2 3B Instruct",
+    "engine": "webllm",
+    "repository": "meta-llama/Llama-3.2-3B-Instruct",
+    "sizeBytes": 1950000000,
+    "minimumTier": "standard",
+    "contextLength": 4096,
+    "format": "safetensors",
+    "notes": "Balanced 3B model offering crisp conversational probing and follow-up depth."
+  },
+  {
+    "id": "Llama-3.1-8B-Instruct-q4f16_1-MLC",
+    "name": "Llama 3.1 8B Instruct",
+    "engine": "webllm",
+    "repository": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "sizeBytes": 4500000000,
+    "minimumTier": "advanced",
+    "contextLength": 4096,
+    "format": "safetensors",
+    "notes": "Full-capability 8B model with deep domain reasoning and nuanced evaluation feedback."
+  }
+]

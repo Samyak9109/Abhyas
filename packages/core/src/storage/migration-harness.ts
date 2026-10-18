@@ -2,6 +2,7 @@
 import type { ZodType } from "zod";
 import { IngestedDocumentSchema, ProfileSchema } from "../schemas";
 import type { AbhyasDatabase } from "./dexie-schema";
+import { rowKeyOf } from "./table-registry.js";
 
 export interface MigrationResult {
   migratedCount: number;
@@ -54,11 +55,7 @@ export class MigrationHarness {
           at: new Date().toISOString(),
         });
         // Remove from primary table
-        const key =
-          (record as { id?: string; key?: string; slug?: string; skillId?: string }).id ??
-          (record as { key?: string }).key ??
-          (record as { slug?: string }).slug ??
-          (record as { skillId?: string }).skillId;
+        const key = rowKeyOf(record);
 
         if (key) {
           await table.delete(key);

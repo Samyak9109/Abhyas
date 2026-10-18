@@ -20,6 +20,7 @@ export const EvaluationSchema = z.object({
   skillScores: z.record(z.string(), z.number().min(0).max(100)),
   topFix: z.string().max(240),
   unsupportedClaims: z.array(z.string()).max(5),
+  isBasic: z.boolean().optional(),
 });
 export type Evaluation = z.infer<typeof EvaluationSchema>;
 

@@ -392,5 +392,50 @@ describe("M1.7: ResultsScreen (PG-13)", () => {
       const results = await axe(container);
       expect(results.violations).toEqual([]);
     });
+
+    it("renders Basic Feedback badge and honesty callout for small local model session with zero axe violations (FR-012, AI-014, PG-13)", async () => {
+      const storage = new MemoryStorageAdapter();
+      const { session, turns } = createSeedData("text");
+      const localSession: SessionRow = {
+        ...session,
+        providerId: "webllm",
+        modelId: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+      };
+      const basicTurns: TurnRow[] = turns.map((t) => ({
+        ...t,
+        evaluation: {
+          ...t.evaluation!,
+          isBasic: true,
+        },
+      }));
+
+      await storage.put("sessions", localSession);
+      for (const turn of basicTurns) {
+        await storage.put("turns", turn);
+      }
+      await storage.put("structuredProfiles", mockProfile);
+
+      const { container } = render(
+        <div data-theme="ink">
+          <ResultsScreen
+            storage={storage}
+            sessionId={localSession.id}
+            onFinish={vi.fn()}
+            onNavigateHome={vi.fn()}
+          />
+        </div>
+      );
+
+      await screen.findByRole("heading", { name: /interview scorecard/i });
+
+      // Check Basic Feedback badge and Callout banner
+      expect(screen.getByText("Basic Feedback")).toBeDefined();
+      expect(screen.getByText("Basic Feedback Mode")).toBeDefined();
+      expect(screen.getByText(/deterministic rule-based checks/i)).toBeDefined();
+      expect(screen.getByText("Basic Score")).toBeDefined();
+
+      const results = await axe(container);
+      expect(results.violations).toEqual([]);
+    });
   });
 });

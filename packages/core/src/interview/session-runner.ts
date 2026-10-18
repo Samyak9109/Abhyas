@@ -2,7 +2,8 @@
 // Manages the state machine, executes side-effects (AI provider, storage persistence),
 // and provides reactive subscriptions for the UI.
 
-import { evaluateAnswer } from "../evaluation/rubric-evaluator.js";
+import { calculateTurnScore, evaluateAnswer } from "../evaluation/rubric-evaluator.js";
+import { buildLayeredInterviewContext, type TurnContextItem } from "./context-builder.js";
 import type { ProviderAdapter } from "../providers/types.js";
 import type { StructuredProfile } from "../schemas/profile.schema.js";
 import type { RubricLevel } from "../schemas/rubric.schema.js";
@@ -282,6 +283,9 @@ export class SessionRunner {
 
   private async evaluateTurn(turn: CompletedTurn, plan: SessionPlan): Promise<void> {
     const rubric = this.getEffectiveRubric(plan.level);
+    const isSmallModel =
+      this.provider?.id === "webllm" || Boolean((plan as { isSmallModel?: boolean }).isSmallModel);
+
     const outcome = await evaluateAnswer({
       question: {
         text: turn.questionText,
@@ -294,6 +298,7 @@ export class SessionRunner {
       rubric,
       profile: this.profile,
       provider: this.provider,
+      isSmallModel,
     });
 
     if (outcome.status === "scored") {
@@ -341,6 +346,9 @@ export class SessionRunner {
             parentQuestionId: lastTurn.questionId,
           };
           await this.dispatch({ type: "FOLLOW_UP", question: followUpQ });
+          if (plan.inputMode === "text") {
+            await this.dispatch({ type: "QUESTION_READY", question: followUpQ });
+          }
           return;
         }
       } catch {
@@ -359,20 +367,36 @@ export class SessionRunner {
   ): Promise<string | null> {
     if (!this.provider) return null;
     try {
-      const response = await this.provider.stream(
-        [
-          {
-            role: "system",
-            content: `You are an interviewer conducting a ${plan.style} interview for a ${plan.level} ${plan.targetRole}.
-Ask a focused, 1-sentence follow-up digging deeper into the candidate's last answer. Do not repeat the original question.`,
-          },
-          {
-            role: "user",
-            content: `Question: "${lastTurn.questionText}"\nAnswer: "${lastTurn.answerText}"\nAsk 1 concise follow-up question:`,
-          },
-        ],
-        { signal, maxOutputTokens: 120 }
-      );
+      const isSmall =
+        this.provider.id === "webllm" || Boolean((plan as { isSmallModel?: boolean }).isSmallModel);
+
+      const completedTurnItems: TurnContextItem[] = this.state.context.turns.map((t, idx) => ({
+        index: idx,
+        questionText: t.questionText,
+        answerText: t.answerText,
+        skillTags: t.skillTags,
+        score: t.evaluation ? calculateTurnScore(t.evaluation) : undefined,
+        evaluationTopFix: t.evaluation?.topFix,
+      }));
+
+      // AI-013 & AI-014: Build structured 7-layer context with rolling summary & token budget
+      const context = buildLayeredInterviewContext({
+        targetRole: plan.targetRole,
+        level: plan.level,
+        interviewStyle: plan.style,
+        profile: this.profile,
+        completedTurns: completedTurnItems,
+        currentQuestion: lastTurn.questionText,
+        instruction:
+          "Ask a focused, 1-sentence follow-up digging deeper into the candidate's last answer. Do not repeat the original question.",
+        isSmallModel: isSmall,
+        targetTokenBudget: isSmall ? 3000 : 8000,
+      });
+
+      const response = await this.provider.stream(context.messages, {
+        signal,
+        maxOutputTokens: 120,
+      });
 
       let text = "";
       for await (const chunk of response) {

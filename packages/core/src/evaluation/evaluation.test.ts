@@ -300,6 +300,41 @@ describe("Rubric Evaluator (FR-012, ADR-006)", () => {
       expect(outcome.error).toBeDefined();
     }
   });
+
+  it("falls back to basic feedback without crashing when small model produces invalid JSON (FR-012, AI-014)", async () => {
+    const brokenSmallModel = {
+      id: "webllm",
+      generateObject: async () => {
+        return {
+          ok: false,
+          error: {
+            kind: "invalid_output" as const,
+            message: "Malformed JSON from small 1.5B model",
+            retryable: true,
+          },
+        };
+      },
+    } as unknown as ProviderAdapter;
+
+    const outcome = await evaluateAnswer({
+      question: { text: "Explain caching strategies", skillTags: ["databases"], difficulty: 3 },
+      answerText:
+        "First, I evaluate cache-aside versus write-through. Second, I configure Redis with TTL and LRU eviction. Finally, I measure hit rates to optimize latency by 40%.",
+      level: "mid",
+      targetRole: "Backend Engineer",
+      rubric: MOCK_MID_RUBRIC,
+      provider: brokenSmallModel,
+      isSmallModel: true,
+    });
+
+    expect(outcome.status).toBe("scored");
+    if (outcome.status === "scored") {
+      expect(outcome.isBasic).toBe(true);
+      expect(outcome.evaluation.isBasic).toBe(true);
+      expect(outcome.turnScore).toBeGreaterThan(0);
+      expect(outcome.evaluation.criteria.structure.score).toBeGreaterThanOrEqual(3);
+    }
+  });
 });
 
 describe("Grounded Rewrite Generator (FR-013, AI-005, AI-021)", () => {
@@ -449,5 +484,26 @@ describe("Session Scorecard Aggregator (FR-013, FR-014)", () => {
     const partialTurns = [mockTurns[0]!]; // Only 1 of 2 turns completed
     const partialScorecard = computeSessionScorecard(mockSession, partialTurns);
     expect(partialScorecard.isPartial).toBe(true);
+  });
+
+  it("sets isBasicFeedback true for webllm provider or when turns have basic evaluation (FR-012, AI-014)", () => {
+    const webllmSession: SessionRow = { ...mockSession, providerId: "webllm" };
+    const scorecard1 = computeSessionScorecard(webllmSession, mockTurns);
+    expect(scorecard1.isBasicFeedback).toBe(true);
+
+    const basicTurns: TurnRow[] = [
+      {
+        ...mockTurns[0]!,
+        evaluation: {
+          ...mockTurns[0]!.evaluation!,
+          isBasic: true,
+        },
+      },
+    ];
+    const scorecard2 = computeSessionScorecard(mockSession, basicTurns);
+    expect(scorecard2.isBasicFeedback).toBe(true);
+
+    const standardScorecard = computeSessionScorecard(mockSession, mockTurns);
+    expect(standardScorecard.isBasicFeedback).toBe(false);
   });
 });

@@ -23,6 +23,8 @@ export interface EvaluateAnswerOptions {
   abortSignal?: AbortSignal | undefined;
   /** Force rule-based basic feedback (e.g. for small local models or offline) */
   forceBasic?: boolean | undefined;
+  /** Whether the evaluator is running with a small local model requiring the basic feedback fallback (FR-012, AI-014) */
+  isSmallModel?: boolean | undefined;
 }
 
 export type EvaluationOutcome =
@@ -67,8 +69,10 @@ export async function evaluateAnswer(options: EvaluateAnswerOptions): Promise<Ev
     companyValues,
     abortSignal,
     forceBasic,
+    isSmallModel,
   } = options;
 
+  const isLocalOrSmall = Boolean(isSmallModel || provider?.id === "webllm");
   const trimmed = answerText.trim();
 
   // 1. Handle skipped / empty answers immediately without provider calls
@@ -96,6 +100,7 @@ export async function evaluateAnswer(options: EvaluateAnswerOptions): Promise<Ev
       skillScores: Object.fromEntries(question.skillTags.map((tag) => [tag, 0])),
       topFix: "Attempt to provide at least a high-level summary or outline of your approach.",
       unsupportedClaims: [],
+      isBasic: true,
     };
     return {
       status: "scored",
@@ -146,16 +151,28 @@ export async function evaluateAnswer(options: EvaluateAnswerOptions): Promise<Ev
     } else if (result.error.kind === "invalid_output") {
       // Schema validation failure: retry once per FR-012 below
     } else {
+      if (isLocalOrSmall) {
+        const basicEval = createRuleBasedEvaluation(question, trimmed, rubric);
+        return {
+          status: "scored",
+          evaluation: basicEval,
+          turnScore: calculateTurnScore(basicEval),
+          isBasic: true,
+        };
+      }
       return {
         status: "unscored",
         error: result.error.message || "Provider call failed during evaluation",
       };
     }
   } catch (err: unknown) {
-    return {
-      status: "unscored",
-      error: err instanceof Error ? err.message : "Provider request failed during evaluation",
-    };
+    if (!isLocalOrSmall) {
+      return {
+        status: "unscored",
+        error: err instanceof Error ? err.message : "Provider request failed during evaluation",
+      };
+    }
+    // For small local models, fall through to Attempt 2 retry
   }
 
   // Attempt 2 (Retry once as per FR-012 / architecture.md Section 10)
@@ -185,11 +202,30 @@ export async function evaluateAnswer(options: EvaluateAnswerOptions): Promise<Ev
       };
     }
 
+    if (isLocalOrSmall) {
+      const basicEval = createRuleBasedEvaluation(question, trimmed, rubric);
+      return {
+        status: "scored",
+        evaluation: basicEval,
+        turnScore: calculateTurnScore(basicEval),
+        isBasic: true,
+      };
+    }
+
     return {
       status: "unscored",
       error: retryResult.error.message || "Failed schema validation after retry",
     };
   } catch (err: unknown) {
+    if (isLocalOrSmall) {
+      const basicEval = createRuleBasedEvaluation(question, trimmed, rubric);
+      return {
+        status: "scored",
+        evaluation: basicEval,
+        turnScore: calculateTurnScore(basicEval),
+        isBasic: true,
+      };
+    }
     return {
       status: "unscored",
       error: err instanceof Error ? err.message : "Provider request failed during evaluation",
@@ -463,6 +499,7 @@ export function createRuleBasedEvaluation(
           ? "Structure your response into Context, Action taken, and Business/Technical outcome."
           : "Directly highlight architectural alternatives and operational lessons learned.",
     unsupportedClaims: [],
+    isBasic: true,
   };
 
   const turnScore = calculateTurnScore(evaluation);

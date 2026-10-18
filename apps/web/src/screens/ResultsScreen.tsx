@@ -299,8 +299,13 @@ export function ResultsScreen({
                 </div>
 
                 {turn.status === "scored" ? (
-                  <div className="abh-turn-score-badge">
-                    <span>{turnScore}%</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+                    {turn.evaluation?.isBasic && (
+                      <span className="abh-badge--basic-feedback">Basic</span>
+                    )}
+                    <div className="abh-turn-score-badge">
+                      <span>{turnScore}%</span>
+                    </div>
                   </div>
                 ) : (
                   <span className="abh-badge-muted">Unscored</span>
@@ -444,6 +449,14 @@ export function ResultsScreen({
                 day: "numeric",
                 year: "numeric",
               })}
+              {scorecard.isBasicFeedback && (
+                <span
+                  className="abh-badge--basic-feedback"
+                  style={{ marginLeft: "var(--space-2)" }}
+                >
+                  Basic Feedback
+                </span>
+              )}
             </p>
           </div>
 
@@ -454,9 +467,22 @@ export function ResultsScreen({
           >
             <span className="abh-score-card-number">{scorecard.overallScore}</span>
             <span className="abh-score-card-scale">/ 100</span>
-            <span className="abh-score-card-caption">Overall Score</span>
+            <span className="abh-score-card-caption">
+              {scorecard.isBasicFeedback ? "Basic Score" : "Overall Score"}
+            </span>
           </div>
         </header>
+
+        {/* Basic Feedback Honesty Notice (FR-012, AI-014, PG-13) */}
+        {scorecard.isBasicFeedback && (
+          <div className="abh-results-banner">
+            <Callout variant="info" title="Basic Feedback Mode">
+              Feedback for this session was computed using deterministic rule-based checks and a
+              simplified rubric suited for local models. Scores reflect answer length, structural
+              STAR markers, and keyword specificity.
+            </Callout>
+          </div>
+        )}
 
         {/* Partial Session Warning Banner */}
         {scorecard.isPartial && (

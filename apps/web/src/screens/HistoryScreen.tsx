@@ -41,6 +41,7 @@ interface SessionListItem {
   scoredTurnsCount: number;
   targetRole: string;
   isDrill: boolean;
+  isBasicFeedback: boolean;
   targetSkillId?: string | undefined;
   drillFormat?: "quick_fire" | "deep_dive" | undefined;
   interviewType: string;
@@ -169,6 +170,9 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
           ? plan.interviewType.charAt(0).toUpperCase() + plan.interviewType.slice(1)
           : "Interview";
 
+      const isBasicFeedback =
+        session.providerId === "webllm" || sessionTurns.some((t) => t.evaluation?.isBasic === true);
+
       return {
         session,
         overallScore,
@@ -176,6 +180,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
         scoredTurnsCount: scoredTurns.length,
         targetRole,
         isDrill,
+        isBasicFeedback,
         targetSkillId: plan?.targetSkillId,
         drillFormat: plan?.drillFormat,
         interviewType,
@@ -372,6 +377,17 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
 
     const scorecardContent = (
       <div className="abh-results-tab-content" style={{ marginTop: "var(--space-4)" }}>
+        {/* Basic Feedback Honesty Notice (FR-012, AI-014, PG-17) */}
+        {selectedScorecard.isBasicFeedback && (
+          <div style={{ marginBottom: "var(--space-4)" }}>
+            <Callout variant="info" title="Basic Feedback Mode">
+              Feedback for this session was computed using deterministic rule-based checks and a
+              simplified rubric suited for local models. Scores reflect answer length, structural
+              STAR markers, and keyword specificity.
+            </Callout>
+          </div>
+        )}
+
         {/* Score Overview Panel */}
         <section className="abh-panel" aria-labelledby="detail-score-heading">
           <h2 id="detail-score-heading" className="abh-panel-title">
@@ -652,6 +668,14 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 {new Date(selectedSession.startedAt).toLocaleString()} ·{" "}
                 {formatLevel(selectedSession.level)} ·{" "}
                 {selectedSession.modality === "voice" ? "🎙️ Voice" : "⌨️ Text"}
+                {selectedScorecard.isBasicFeedback && (
+                  <span
+                    className="abh-badge--basic-feedback"
+                    style={{ marginLeft: "var(--space-2)" }}
+                  >
+                    Basic Feedback
+                  </span>
+                )}
               </p>
             </div>
             <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
@@ -930,6 +954,9 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                         <span className="abh-badge-muted">
                           {item.session.modality === "voice" ? "🎙️ Voice" : "⌨️ Text"}
                         </span>
+                        {item.isBasicFeedback && (
+                          <span className="abh-badge--basic-feedback">Basic</span>
+                        )}
                         {item.isDrill ? (
                           <span className="abh-drill-badge">
                             🎯 Drill: {item.targetSkillId || "Practice"}

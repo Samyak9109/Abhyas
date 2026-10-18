@@ -3888,6 +3888,20 @@
   color: var(--danger);
 }
 
+.abh-badge--basic-feedback {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .abh-mm-table-speed {
   font-family: var(--font-mono);
   font-size: var(--text-xs);

@@ -24,6 +24,7 @@ export interface SessionScorecard {
   level: ExperienceLevel;
   modality: "voice" | "text";
   isPartial: boolean;
+  isBasicFeedback: boolean;
   totalTurns: number;
   scoredTurnsCount: number;
   unscoredTurnsCount: number;
@@ -62,6 +63,9 @@ export function computeSessionScorecard(
 
   const isPartial =
     session.status !== "completed" || (plannedLength > 0 && turns.length < plannedLength);
+
+  const isBasicFeedback =
+    session.providerId === "webllm" || scoredTurns.some((t) => t.evaluation?.isBasic === true);
 
   // 1. Calculate overall score (mean of turn scores)
   let overallScore = 0;
@@ -242,6 +246,7 @@ export function computeSessionScorecard(
     level: session.level,
     modality: session.modality,
     isPartial,
+    isBasicFeedback,
     totalTurns: turns.length,
     scoredTurnsCount,
     unscoredTurnsCount,

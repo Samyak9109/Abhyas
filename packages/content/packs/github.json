@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "slug": "github",
+  "name": "GitHub",
+  "domain": "github.com",
+  "aliases": ["GitHub, Inc.", "Git Hub"],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Developer platform for hosting, version controlling, reviewing code, managing projects, and building software with AI-assisted developer tools.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://github.com/about",
+        "title": "About GitHub",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "GitHub Repositories",
+      "GitHub Copilot",
+      "GitHub Actions",
+      "GitHub Codespaces",
+      "GitHub Advanced Security"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://github.com/features",
+        "title": "GitHub Features & Platform",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Ruby on Rails",
+      "Go",
+      "TypeScript",
+      "React",
+      "Rust",
+      "C",
+      "MySQL / Vitess",
+      "Redis",
+      "Kafka",
+      "Kubernetes",
+      "Azure"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://github.blog/category/engineering/",
+        "title": "GitHub Engineering Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Customer Obsessed",
+        "description": "Keep developers and open source communities at the heart of every decision."
+      },
+      {
+        "name": "Ship to Learn",
+        "description": "Release working software incrementally to validate real developer experiences early."
+      },
+      {
+        "name": "Growth Mindset",
+        "description": "Embrace curiosity, cultivate psychological safety, and learn from mistakes."
+      },
+      {
+        "name": "Own the Outcome",
+        "description": "Take responsibility for results from initial architecture to reliable production operation."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://github.com/about/careers",
+        "title": "Working at GitHub & Values",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter screen and cultural exploration",
+      "Technical screen (take-home exercise or live collaborative coding session)",
+      "Virtual onsite interviews (coding, distributed system architecture, and values and collaboration discussions)"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://github.com/about/careers",
+        "title": "GitHub Careers Hiring Process",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Remote-first, asynchronous engineering culture with extensive reliance on markdown discussions, issues, and PR reviews",
+      "Dogfooding: GitHub engineers run and test GitHub on GitHub daily with trunk-based deployment",
+      "Deep commitment to open source communities and robust supply chain security standards"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://github.blog/2021-11-23-how-we-deploy-at-github/",
+        "title": "How We Deploy at GitHub",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

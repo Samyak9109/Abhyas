@@ -12,7 +12,9 @@ export function LocalModelsGuidePage() {
       <main id="main-content" className="abh-band" data-band="ink">
         <div className="abh-public-container">
           <header className="abh-content-hero">
-            <span className="abh-bracket-label">&#123; Local Models &amp; Offline Guide &#125;</span>
+            <span className="abh-bracket-label">
+              &#123; Local Models &amp; Offline Guide &#125;
+            </span>
             <h1 className="abh-content-title">
               LOCAL MODELS &amp; PRIVATE PRACTICE
               <span className="abh-cursor" aria-hidden="true">
@@ -41,7 +43,8 @@ export function LocalModelsGuidePage() {
             <br />
             &gt; In local mode, zero prompts, resumes, answers or transcripts leave your machine.
             <br />
-            &gt; In-browser models are cached in IndexedDB/OPFS; local servers run on loopback (127.0.0.1).
+            &gt; In-browser models are cached in IndexedDB/OPFS; local servers run on loopback
+            (127.0.0.1).
             <br />
             &gt; Completely free and functional offline without an API key.
           </div>
@@ -57,21 +60,21 @@ export function LocalModelsGuidePage() {
             </p>
             <ul className="abh-prose" style={{ lineHeight: "1.8", paddingLeft: "24px" }}>
               <li>
-                <strong>PC Only (Phones Blocked):</strong> Local models are restricted to desktop and
-                laptop PCs (Windows, macOS, Linux). Mobile phones and tablets are blocked (FR-022,
-                ADR-013) due to thermal throttling, mobile OS aggressive background kills, and lack
-                of full WebGPU compute shader pipelines. On phones, please use cloud providers (Gemini
-                free tier) or practice in text mode.
+                <strong>PC Only (Phones Blocked):</strong> Local models are restricted to desktop
+                and laptop PCs (Windows, macOS, Linux). Mobile phones and tablets are blocked
+                (FR-022, ADR-013) due to thermal throttling, mobile OS aggressive background kills,
+                and lack of full WebGPU compute shader pipelines. On phones, please use cloud
+                providers (Gemini free tier) or practice in text mode.
               </li>
               <li>
                 <strong>Strictly Text-Only:</strong> Local model practice is 100% text-only (FR-022,
-                ADR-013). No microphone prompt appears and no speech synthesis services are constructed.
-                This reserves 100% of memory bandwidth and GPU compute for inference without audio
-                chopping or dropped frames.
+                ADR-013). No microphone prompt appears and no speech synthesis services are
+                constructed. This reserves 100% of memory bandwidth and GPU compute for inference
+                without audio chopping or dropped frames.
               </li>
               <li>
-                <strong>WebGPU Browser Support:</strong> For in-browser models, you need a WebGPU-enabled
-                browser such as Google Chrome (113+), Microsoft Edge (113+), or Arc.
+                <strong>WebGPU Browser Support:</strong> For in-browser models, you need a
+                WebGPU-enabled browser such as Google Chrome (113+), Microsoft Edge (113+), or Arc.
               </li>
             </ul>
           </section>
@@ -82,8 +85,8 @@ export function LocalModelsGuidePage() {
               2. Hardware Tiers &amp; Curated Models
             </h2>
             <p className="abh-prose">
-              Abhyas features an automated micro-benchmark that tests token decoding speed on your device
-              to recommend an optimal model tier.
+              Abhyas features an automated micro-benchmark that tests token decoding speed on your
+              device to recommend an optimal model tier.
             </p>
 
             <div className="abh-table-wrap">
@@ -135,9 +138,7 @@ export function LocalModelsGuidePage() {
             <h2 id="paths-heading" className="abh-content-h2">
               3. In-Browser WebGPU vs. Local Servers
             </h2>
-            <p className="abh-prose">
-              Abhyas gives you two ways to practice with local models:
-            </p>
+            <p className="abh-prose">Abhyas gives you two ways to practice with local models:</p>
             <div className="abh-table-wrap">
               <table className="abh-data-table" aria-label="Local Execution Options">
                 <thead>
@@ -149,24 +150,34 @@ export function LocalModelsGuidePage() {
                 </thead>
                 <tbody>
                   <tr>
-                    <td><strong>Installation</strong></td>
+                    <td>
+                      <strong>Installation</strong>
+                    </td>
                     <td>Zero install: 1-click download in browser</td>
                     <td>Requires installing Ollama or LM Studio app</td>
                   </tr>
                   <tr>
-                    <td><strong>Model Formats</strong></td>
+                    <td>
+                      <strong>Model Formats</strong>
+                    </td>
                     <td>Pre-quantized GGUF / MLC weights</td>
                     <td>Any model pulled into Ollama or LM Studio</td>
                   </tr>
                   <tr>
-                    <td><strong>Execution Speed</strong></td>
+                    <td>
+                      <strong>Execution Speed</strong>
+                    </td>
                     <td>WebGPU compute shaders</td>
                     <td>Native C++ / CUDA / Metal (often 20-40% faster)</td>
                   </tr>
                   <tr>
-                    <td><strong>Cross-Origin (CORS)</strong></td>
+                    <td>
+                      <strong>Cross-Origin (CORS)</strong>
+                    </td>
                     <td>Not applicable (runs inside browser tab)</td>
-                    <td>Requires setting <code>OLLAMA_ORIGINS=&quot;*&quot;</code></td>
+                    <td>
+                      Requires setting <code>OLLAMA_ORIGINS=&quot;*&quot;</code>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -180,9 +191,9 @@ export function LocalModelsGuidePage() {
             </h2>
             <p className="abh-prose">
               Ollama is a popular tool for running models locally. Because Abhyas runs as a web
-              application, your browser enforces the <strong>Same-Origin Policy (CORS)</strong>. By default,
-              Ollama blocks web browser connections unless the <code>OLLAMA_ORIGINS</code> environment
-              variable is configured.
+              application, your browser enforces the <strong>Same-Origin Policy (CORS)</strong>. By
+              default, Ollama blocks web browser connections unless the <code>OLLAMA_ORIGINS</code>{" "}
+              environment variable is configured.
             </p>
 
             <div className="abh-stepper-card">
@@ -210,26 +221,26 @@ export function LocalModelsGuidePage() {
               <p className="abh-prose">
                 Open your terminal or command prompt and pull a recommended model:
               </p>
-              <pre
-                className="abh-code-box"
-                style={{ position: "static", margin: "12px 0" }}
-              >
+              <pre className="abh-code-box" style={{ position: "static", margin: "12px 0" }}>
                 <code>ollama pull llama3.2</code>
               </pre>
               <p className="abh-prose" style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-                Tip: For lower memory usage, pull <code>qwen2.5:1.5b</code>. For higher quality, pull <code>llama3.1:8b</code>.
+                Tip: For lower memory usage, pull <code>qwen2.5:1.5b</code>. For higher quality,
+                pull <code>llama3.1:8b</code>.
               </p>
 
               <div className="abh-step-head">
                 <span className="abh-step-badge">3</span>
-                <h3 className="abh-step-head-title">Configure CORS (Cross-Origin Resource Sharing)</h3>
+                <h3 className="abh-step-head-title">
+                  Configure CORS (Cross-Origin Resource Sharing)
+                </h3>
               </div>
-              <p className="abh-prose">
-                Configure Ollama to allow connections from your browser:
-              </p>
+              <p className="abh-prose">Configure Ollama to allow connections from your browser:</p>
 
               <div style={{ margin: "16px 0" }}>
-                <p className="abh-prose"><strong>On Windows:</strong></p>
+                <p className="abh-prose">
+                  <strong>On Windows:</strong>
+                </p>
                 <p className="abh-prose" style={{ fontSize: "14px" }}>
                   Option A: Set in terminal before starting:
                 </p>
@@ -237,20 +248,25 @@ export function LocalModelsGuidePage() {
                   <code>set OLLAMA_ORIGINS=* &amp;&amp; ollama serve</code>
                 </pre>
                 <p className="abh-prose" style={{ fontSize: "14px" }}>
-                  Option B (Permanent): Open <em>System Properties &gt; Environment Variables</em>, add a
-                  User Variable named <code>OLLAMA_ORIGINS</code> with value <code>*</code>, then restart
-                  Ollama from the taskbar tray.
+                  Option B (Permanent): Open <em>System Properties &gt; Environment Variables</em>,
+                  add a User Variable named <code>OLLAMA_ORIGINS</code> with value <code>*</code>,
+                  then restart Ollama from the taskbar tray.
                 </p>
 
-                <p className="abh-prose" style={{ marginTop: "16px" }}><strong>On macOS:</strong></p>
+                <p className="abh-prose" style={{ marginTop: "16px" }}>
+                  <strong>On macOS:</strong>
+                </p>
                 <pre className="abh-code-box" style={{ position: "static", margin: "8px 0" }}>
                   <code>launchctl setenv OLLAMA_ORIGINS &quot;*&quot;</code>
                 </pre>
                 <p className="abh-prose" style={{ fontSize: "14px" }}>
-                  After running the command above, quit and reopen Ollama from your Applications folder.
+                  After running the command above, quit and reopen Ollama from your Applications
+                  folder.
                 </p>
 
-                <p className="abh-prose" style={{ marginTop: "16px" }}><strong>On Linux (systemd):</strong></p>
+                <p className="abh-prose" style={{ marginTop: "16px" }}>
+                  <strong>On Linux (systemd):</strong>
+                </p>
                 <pre className="abh-code-box" style={{ position: "static", margin: "8px 0" }}>
                   <code>sudo systemctl edit ollama.service</code>
                 </pre>
@@ -258,11 +274,12 @@ export function LocalModelsGuidePage() {
                   Add these lines under the <code>[Service]</code> section:
                 </p>
                 <pre className="abh-code-box" style={{ position: "static", margin: "8px 0" }}>
-                  <code>[Service]
-Environment=&quot;OLLAMA_ORIGINS=*&quot;</code>
+                  <code>[Service] Environment=&quot;OLLAMA_ORIGINS=*&quot;</code>
                 </pre>
                 <p className="abh-prose" style={{ fontSize: "14px" }}>
-                  Save and run <code>sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama</code>.
+                  Save and run{" "}
+                  <code>sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama</code>
+                  .
                 </p>
               </div>
 
@@ -271,9 +288,11 @@ Environment=&quot;OLLAMA_ORIGINS=*&quot;</code>
                 <h3 className="abh-step-head-title">Connect in Abhyas</h3>
               </div>
               <p className="abh-prose">
-                Navigate to <strong>AI Setup</strong> in Abhyas, select <strong>&quot;Ollama (local server)&quot;</strong>,
-                verify the URL is <code>http://localhost:11434</code>, and click <strong>&quot;Test connection&quot;</strong>.
-                Your installed models will auto-populate in the model picker!
+                Navigate to <strong>AI Setup</strong> in Abhyas, select{" "}
+                <strong>&quot;Ollama (local server)&quot;</strong>, verify the URL is{" "}
+                <code>http://localhost:11434</code>, and click{" "}
+                <strong>&quot;Test connection&quot;</strong>. Your installed models will
+                auto-populate in the model picker!
               </p>
             </div>
           </section>
@@ -284,22 +303,26 @@ Environment=&quot;OLLAMA_ORIGINS=*&quot;</code>
               5. LM Studio &amp; OpenAI-Compatible Local Servers
             </h2>
             <p className="abh-prose">
-              If you use LM Studio, LocalAI, or llama.cpp server, you can connect them via Abhyas&apos;s
-              OpenAI-compatible adapter:
+              If you use LM Studio, LocalAI, or llama.cpp server, you can connect them via
+              Abhyas&apos;s OpenAI-compatible adapter:
             </p>
             <ol className="abh-prose" style={{ lineHeight: "1.8", paddingLeft: "24px" }}>
               <li>
-                Open LM Studio, click the <strong>&quot;Local Server&quot;</strong> icon in the sidebar.
+                Open LM Studio, click the <strong>&quot;Local Server&quot;</strong> icon in the
+                sidebar.
               </li>
               <li>
-                Load your preferred model and click <strong>&quot;Start Server&quot;</strong> (defaults to port 1234).
+                Load your preferred model and click <strong>&quot;Start Server&quot;</strong>{" "}
+                (defaults to port 1234).
               </li>
               <li>
-                In the Server Settings pane, ensure the <strong>&quot;Enable CORS&quot;</strong> toggle is turned <strong>ON</strong>.
+                In the Server Settings pane, ensure the <strong>&quot;Enable CORS&quot;</strong>{" "}
+                toggle is turned <strong>ON</strong>.
               </li>
               <li>
-                In Abhyas AI Setup, select <strong>&quot;OpenAI-compatible&quot;</strong>, set the Base URL to{" "}
-                <code>http://localhost:1234/v1</code>, leave the API key blank, and click <strong>&quot;Test connection&quot;</strong>.
+                In Abhyas AI Setup, select <strong>&quot;OpenAI-compatible&quot;</strong>, set the
+                Base URL to <code>http://localhost:1234/v1</code>, leave the API key blank, and
+                click <strong>&quot;Test connection&quot;</strong>.
               </li>
             </ol>
           </section>
@@ -312,14 +335,14 @@ Environment=&quot;OLLAMA_ORIGINS=*&quot;</code>
             <p className="abh-prose">
               Abhyas is built on absolute honesty (FR-012, AI-014). Local models under 8 billion
               parameters excel at asking relevant technical questions and checking for keyword-level
-              accuracy, but they cannot perform the subtle, multi-dimensional calibration of frontier
-              cloud models.
+              accuracy, but they cannot perform the subtle, multi-dimensional calibration of
+              frontier cloud models.
             </p>
             <p className="abh-prose">
-              Whenever a session is evaluated by a small local model, your scorecard is clearly labeled
-              with a <strong>&quot;Basic Feedback&quot;</strong> badge. We never pretend a 3B model
-              produces the same depth as a 70B model. It gives you immediate, private practice
-              without misleading claims.
+              Whenever a session is evaluated by a small local model, your scorecard is clearly
+              labeled with a <strong>&quot;Basic Feedback&quot;</strong> badge. We never pretend a
+              3B model produces the same depth as a 70B model. It gives you immediate, private
+              practice without misleading claims.
             </p>
           </section>
         </div>

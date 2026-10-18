@@ -141,7 +141,7 @@ describe("OllamaAdapter", () => {
       model: "llama3.2:latest",
       message: {
         role: "assistant",
-        content: "```json\n{\n  \"score\": 92,\n  \"passed\": true\n}\n```",
+        content: '```json\n{\n  "score": 92,\n  "passed": true\n}\n```',
       },
       done: true,
     };

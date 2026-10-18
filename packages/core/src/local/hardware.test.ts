@@ -219,7 +219,9 @@ describe("Tier Recommendation & Benchmark (phases.md M3.1 Acceptance Criteria)",
       expect(result.valid).toBe(false);
       expect(result.isMobile).toBe(true);
       expect(result.enforcedInputMode).toBe("text");
-      expect(result.error).toContain("Local models are disabled on mobile devices (phones/tablets)");
+      expect(result.error).toContain(
+        "Local models are disabled on mobile devices (phones/tablets)"
+      );
     });
 
     it("enforces text-only mode for local models on PC when voice is attempted", () => {
@@ -237,7 +239,9 @@ describe("Tier Recommendation & Benchmark (phases.md M3.1 Acceptance Criteria)",
       expect(result.valid).toBe(false);
       expect(result.isMobile).toBe(false);
       expect(result.enforcedInputMode).toBe("text");
-      expect(result.error).toContain("Local mode is text-only. Voice input and output are disabled");
+      expect(result.error).toContain(
+        "Local mode is text-only. Voice input and output are disabled"
+      );
     });
 
     it("allows valid text-only local model on PC", () => {
@@ -276,4 +280,3 @@ describe("Tier Recommendation & Benchmark (phases.md M3.1 Acceptance Criteria)",
     });
   });
 });
-

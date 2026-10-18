@@ -146,9 +146,7 @@ export function validateContentDirectory(contentDir: string): ValidationResult {
 
         packsCount++;
       } catch (err) {
-        errors.push(
-          `Company pack "${file}": ${err instanceof Error ? err.message : String(err)}`
-        );
+        errors.push(`Company pack "${file}": ${err instanceof Error ? err.message : String(err)}`);
       }
     }
   }

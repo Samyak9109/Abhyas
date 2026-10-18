@@ -247,7 +247,9 @@ describe("M1.4: SessionSetupScreen (PG-11)", () => {
       expect(voiceRadio).toHaveProperty("disabled", true);
       expect(screen.getByText("TEXT ONLY")).toBeDefined();
       expect(
-        screen.getByText(/Voice is disabled in local mode to dedicate device resources to the model/i)
+        screen.getByText(
+          /Voice is disabled in local mode to dedicate device resources to the model/i
+        )
       ).toBeDefined();
 
       // Start session should produce text plan with isLocalModel and isSmallModel

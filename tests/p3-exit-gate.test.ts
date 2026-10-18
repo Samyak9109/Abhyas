@@ -308,12 +308,21 @@ describe("Phase 3 Exit Gate (phases.md Section 3 & 7)", () => {
           const prompt = messages[messages.length - 1]?.content ?? "";
           return (async function* () {
             if (prompt.includes("array and a linked list")) {
-              yield { delta: "An array stores elements consecutively in contiguous memory. ", isComplete: false };
-              yield { delta: "A linked list uses nodes pointing to next memory locations.", isComplete: true };
+              yield {
+                delta: "An array stores elements consecutively in contiguous memory. ",
+                isComplete: false,
+              };
+              yield {
+                delta: "A linked list uses nodes pointing to next memory locations.",
+                isComplete: true,
+              };
             } else if (prompt.includes("READY")) {
               yield { delta: "READY", isComplete: true };
             } else if (prompt.includes("JSON")) {
-              yield { delta: JSON.stringify({ ready: true, role: "interviewer" }), isComplete: true };
+              yield {
+                delta: JSON.stringify({ ready: true, role: "interviewer" }),
+                isComplete: true,
+              };
             }
           })();
         },
@@ -322,7 +331,10 @@ describe("Phase 3 Exit Gate (phases.md Section 3 & 7)", () => {
         },
       };
 
-      const sanity = await runModelSanityTest(testSanityProvider, "SmolLM2-1.7B-Instruct-q4f16_1-MLC");
+      const sanity = await runModelSanityTest(
+        testSanityProvider,
+        "SmolLM2-1.7B-Instruct-q4f16_1-MLC"
+      );
       expect(sanity.instructionFollowing).toBe(true);
       expect(sanity.jsonValid).toBe(true);
       expect(sanity.status).toBe("interview-ready");

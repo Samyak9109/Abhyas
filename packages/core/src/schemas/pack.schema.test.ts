@@ -1,10 +1,6 @@
 // FR-025, ADR-008: Unit tests for CompanyPackSchema, Evidenced, and EvidenceSourceSchema.
 import { describe, expect, it } from "vitest";
-import {
-  CompanyPackSchema,
-  CompanyPackIndexSchema,
-  type CompanyPack,
-} from "./pack.schema";
+import { CompanyPackSchema, CompanyPackIndexSchema, type CompanyPack } from "./pack.schema";
 
 describe("CompanyPackSchema & Evidenced Contract (FR-025, ADR-008)", () => {
   const validPack: CompanyPack = {

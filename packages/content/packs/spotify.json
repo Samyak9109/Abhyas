@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "slug": "spotify",
+  "name": "Spotify",
+  "domain": "spotify.com",
+  "aliases": ["Spotify Technology S.A.", "Spotify AB", "SPOT"],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Audio streaming and media services provider offering digital copyright restricted recorded music, podcasts, and audiobooks across global platforms.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.spotify.com/about-us/contact/",
+        "title": "About Spotify",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Spotify Free & Premium",
+      "Spotify for Artists",
+      "Spotify for Podcasters",
+      "Backstage developer portal"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.spotify.com/",
+        "title": "Spotify Platforms and Applications",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Java",
+      "Python",
+      "TypeScript",
+      "React",
+      "C++",
+      "Google Cloud Platform",
+      "Apache Beam",
+      "BigQuery",
+      "PostgreSQL",
+      "Kubernetes"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://engineering.atspotify.com/",
+        "title": "Spotify Engineering Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Innovative",
+        "description": "Always keep improving, test boldly, and challenge conventional entertainment paradigms."
+      },
+      {
+        "name": "Collaborative",
+        "description": "Work together openly across squads, celebrating collective wins over individual glory."
+      },
+      {
+        "name": "Sincere",
+        "description": "Communicate candidly with integrity, fairness, and mutual empathy."
+      },
+      {
+        "name": "Passionate",
+        "description": "Bring enthusiasm for music, creators, audio storytelling, and technical excellence."
+      },
+      {
+        "name": "Playful",
+        "description": "Keep work enjoyable, embrace experiments, and maintain a sense of fun."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.lifeatspotify.com/being-here/our-culture",
+        "title": "Spotify Culture & Values",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter screen and values orientation",
+      "Technical phone screen focusing on data structures and practical problem-solving",
+      "Onsite interview loop covering system design, programming, and team collaboration culture fit"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.lifeatspotify.com/how-we-hire",
+        "title": "How We Hire — Life at Spotify",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Originators of the agile Squad/Chapter/Tribe model and developer experience frameworks (Backstage.io)",
+      "Culture of autonomous squads owning end-to-end features with continuous deployment",
+      "Heavy reliance on data pipelines and machine learning for hyper-personalized audio recommendations"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://backstage.io/",
+        "title": "Backstage Open Source Developer Portal by Spotify",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

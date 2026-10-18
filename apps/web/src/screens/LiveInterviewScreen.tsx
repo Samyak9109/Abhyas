@@ -46,8 +46,7 @@ export function LiveInterviewScreen({
   onExit,
 }: LiveInterviewScreenProps) {
   const isLocalMode =
-    provider?.id === "webllm" ||
-    Boolean((plan as { isLocalModel?: boolean }).isLocalModel);
+    provider?.id === "webllm" || Boolean((plan as { isLocalModel?: boolean }).isLocalModel);
 
   // Mode resolution: local mode strictly enforces text-only (FR-022, ADR-013)
   const [effectiveMode, setEffectiveMode] = useState<"text" | "voice">(() => {

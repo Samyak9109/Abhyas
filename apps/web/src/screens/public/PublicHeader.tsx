@@ -163,7 +163,11 @@ export function PublicHeader({
           <a href="/guide/keys" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
             &#123; Key Guide &#125;
           </a>
-          <a href="/guide/local-models" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
+          <a
+            href="/guide/local-models"
+            className="abh-nav-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             &#123; Local Models &#125;
           </a>
           <a href="/help" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>

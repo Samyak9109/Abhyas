@@ -509,95 +509,99 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                 <div className="abh-panel">
                   <Callout variant="danger" title="Local model unavailable on mobile devices">
                     Local models and local servers are disabled on mobile devices (phones/tablets).
-                    Local mode runs only on desktop computers (FR-022, ADR-013). Please select a cloud
-                    provider.
+                    Local mode runs only on desktop computers (FR-022, ADR-013). Please select a
+                    cloud provider.
                   </Callout>
                 </div>
               ) : (
-              <div className="abh-panel">
-                <div className="abh-panel-header">
-                  <span className="abh-panel-monogram" aria-hidden="true">
-                    ⚡
-                  </span>
-                  <div>
-                    <h2 className="abh-panel-title">In-Browser Local Model (WebLLM)</h2>
-                    <p className="abh-panel-helper">
-                      Zero API key required. Runs 100% locally on your computer via WebGPU.
-                    </p>
+                <div className="abh-panel">
+                  <div className="abh-panel-header">
+                    <span className="abh-panel-monogram" aria-hidden="true">
+                      ⚡
+                    </span>
+                    <div>
+                      <h2 className="abh-panel-title">In-Browser Local Model (WebLLM)</h2>
+                      <p className="abh-panel-helper">
+                        Zero API key required. Runs 100% locally on your computer via WebGPU.
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="abh-status-callout">
-                  <Callout variant="info" title="Text-Only Interview Mode">
-                    Local mode runs text-only interviews (ADR-013, FR-022). Speech and voice
-                    recognition are disabled to dedicate device compute to the language model.
-                  </Callout>
-                </div>
+                  <div className="abh-status-callout">
+                    <Callout variant="info" title="Text-Only Interview Mode">
+                      Local mode runs text-only interviews (ADR-013, FR-022). Speech and voice
+                      recognition are disabled to dedicate device compute to the language model.
+                    </Callout>
+                  </div>
 
-                {onNavigateModelManager && (
-                  <div style={{ marginTop: "var(--space-3)" }}>
-                    <Button variant="secondary" onClick={onNavigateModelManager}>
-                      Manage & Download Models (Model Manager) →
+                  {onNavigateModelManager && (
+                    <div style={{ marginTop: "var(--space-3)" }}>
+                      <Button variant="secondary" onClick={onNavigateModelManager}>
+                        Manage & Download Models (Model Manager) →
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="abh-actions-row" style={{ marginTop: "var(--space-4)" }}>
+                    <Button
+                      variant="primary"
+                      onClick={() => void handleTestConnection()}
+                      disabled={testing}
+                    >
+                      {testing ? "Verifying local engine..." : "Verify local model"}
                     </Button>
                   </div>
-                )}
 
-                <div className="abh-actions-row" style={{ marginTop: "var(--space-4)" }}>
-                  <Button
-                    variant="primary"
-                    onClick={() => void handleTestConnection()}
-                    disabled={testing}
-                  >
-                    {testing ? "Verifying local engine..." : "Verify local model"}
-                  </Button>
-                </div>
+                  {testError && (
+                    <div className="abh-status-callout" role="alert">
+                      <Callout variant="danger" title="Local Engine Error">
+                        {testError.message}
+                      </Callout>
+                    </div>
+                  )}
 
-                {testError && (
-                  <div className="abh-status-callout" role="alert">
-                    <Callout variant="danger" title="Local Engine Error">
-                      {testError.message}
-                    </Callout>
+                  {testSuccess && (
+                    <div className="abh-status-callout">
+                      <Callout variant="success" title="Local model verified">
+                        In-browser WebGPU engine is verified and ready for offline interviews.
+                      </Callout>
+
+                      {models.length > 0 && (
+                        <div className="abh-form-field" style={{ marginTop: "var(--space-4)" }}>
+                          <label htmlFor="model-picker-select" className="abh-label">
+                            Choose Local Model
+                          </label>
+                          <select
+                            id="model-picker-select"
+                            className="abh-select"
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                          >
+                            {models.map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: "var(--space-4)" }}>
+                    <HardwareBenchmarkCard runtime={hardwareRuntime} />
                   </div>
-                )}
-
-                {testSuccess && (
-                  <div className="abh-status-callout">
-                    <Callout variant="success" title="Local model verified">
-                      In-browser WebGPU engine is verified and ready for offline interviews.
-                    </Callout>
-
-                    {models.length > 0 && (
-                      <div className="abh-form-field" style={{ marginTop: "var(--space-4)" }}>
-                        <label htmlFor="model-picker-select" className="abh-label">
-                          Choose Local Model
-                        </label>
-                        <select
-                          id="model-picker-select"
-                          className="abh-select"
-                          value={selectedModel}
-                          onChange={(e) => setSelectedModel(e.target.value)}
-                        >
-                          {models.map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div style={{ marginTop: "var(--space-4)" }}>
-                  <HardwareBenchmarkCard runtime={hardwareRuntime} />
                 </div>
-              </div>
-            )
-          ) : (
+              )
+            ) : (
               <div className="abh-panel">
                 <div className="abh-panel-header">
                   <span className="abh-panel-monogram" aria-hidden="true">
-                    {selectedProvider === "gemini" ? "G" : selectedProvider === "ollama" ? "🦙" : "O"}
+                    {selectedProvider === "gemini"
+                      ? "G"
+                      : selectedProvider === "ollama"
+                        ? "🦙"
+                        : "O"}
                   </span>
                   <div>
                     <h2 className="abh-panel-title">
@@ -620,7 +624,9 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                 {(selectedProvider === "openai-compatible" || selectedProvider === "ollama") && (
                   <div className="abh-form-field">
                     <Input
-                      label={selectedProvider === "ollama" ? "Ollama Base URL" : "Endpoint Base URL"}
+                      label={
+                        selectedProvider === "ollama" ? "Ollama Base URL" : "Endpoint Base URL"
+                      }
                       value={baseUrl}
                       onChange={(e) => {
                         setBaseUrl(e.target.value);
@@ -643,8 +649,9 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                 {selectedProvider === "ollama" && (
                   <div className="abh-status-callout">
                     <Callout variant="info" title="Browser CORS Requirement">
-                      Browsers enforce cross-origin restrictions on localhost. If the test fails, ensure
-                      Ollama was started with <code>OLLAMA_ORIGINS=&quot;*&quot;</code>. See the{" "}
+                      Browsers enforce cross-origin restrictions on localhost. If the test fails,
+                      ensure Ollama was started with <code>OLLAMA_ORIGINS=&quot;*&quot;</code>. See
+                      the{" "}
                       <a
                         href="/guide/local-models"
                         target="_blank"

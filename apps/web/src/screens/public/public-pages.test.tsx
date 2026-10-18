@@ -221,12 +221,16 @@ describe("M1.9: Public Static Pages & Docs (FR-033, ADR-019)", () => {
       expect(screen.getByText(/llama 3\.1 8b/i)).toBeTruthy();
 
       // Ollama & CORS section
-      expect(screen.getByRole("heading", { name: /4\. ollama setup & cors configuration/i })).toBeTruthy();
+      expect(
+        screen.getByRole("heading", { name: /4\. ollama setup & cors configuration/i })
+      ).toBeTruthy();
       expect(screen.getByText(/configure cors/i)).toBeTruthy();
       expect(screen.getAllByText(/ollama_origins/i).length).toBeGreaterThanOrEqual(1);
 
       // Honesty section
-      expect(screen.getByRole("heading", { name: /6\. honesty: what "basic feedback" means/i })).toBeTruthy();
+      expect(
+        screen.getByRole("heading", { name: /6\. honesty: what "basic feedback" means/i })
+      ).toBeTruthy();
     });
 
     it("has zero axe accessibility violations under Ink and Paper themes", async () => {

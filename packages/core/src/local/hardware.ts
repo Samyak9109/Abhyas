@@ -389,4 +389,3 @@ export function validateDeviceRules(options: {
     isMobile,
   };
 }
-

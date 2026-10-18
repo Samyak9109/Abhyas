@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "slug": "amazon",
+  "name": "Amazon",
+  "domain": "amazon.com",
+  "aliases": ["Amazon.com, Inc.", "AWS", "Amazon Web Services"],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Multinational technology enterprise focusing on e-commerce, cloud computing with Amazon Web Services, digital streaming, and artificial intelligence solutions.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.aboutamazon.com/",
+        "title": "About Amazon",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Amazon Web Services",
+      "Amazon Retail & Marketplace",
+      "Prime Video",
+      "Kindle",
+      "Alexa",
+      "Amazon Ads"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.aboutamazon.com/what-we-do",
+        "title": "What We Do — Amazon",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Java",
+      "Python",
+      "Rust",
+      "Go",
+      "TypeScript",
+      "AWS Lambda",
+      "Amazon DynamoDB",
+      "Amazon S3",
+      "Amazon ECS",
+      "CloudFormation"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://aws.amazon.com/blogs/architecture/",
+        "title": "AWS Architecture Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Customer Obsession",
+        "description": "Leaders start with the customer and work backwards, earning and keeping trust."
+      },
+      {
+        "name": "Ownership",
+        "description": "Leaders act on behalf of the entire company, never saying 'that's not my job'."
+      },
+      {
+        "name": "Invent and Simplify",
+        "description": "Leaders require innovation from their teams and always find ways to simplify systems."
+      },
+      {
+        "name": "Bias for Action",
+        "description": "Speed matters in business; many decisions are reversible and do not need extensive study."
+      },
+      {
+        "name": "Earn Trust",
+        "description": "Leaders listen attentively, speak candidly, and treat others respectfully."
+      },
+      {
+        "name": "Deliver Results",
+        "description": "Leaders focus on key business inputs and deliver them with high quality despite setbacks."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.aboutamazon.com/about-us/leadership-principles",
+        "title": "Amazon Leadership Principles",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Online assessment (debugging, coding, or work simulation)",
+      "Phone or video technical screening with behavioral Leadership Principle questions",
+      "Onsite loop (typically 4-5 rounds, each evaluating 2 Leadership Principles with STAR format)",
+      "Dedicated Bar Raiser round focusing on cultural standards and long-term hiring bar"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.amazon.jobs/content/en/how-we-hire/interviewing-at-amazon",
+        "title": "Interviewing at Amazon",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Narrative 6-page memos and silent reading meetings instead of slide decks",
+      "Two-pizza teams owning services end-to-end (devops and on-call operational excellence)",
+      "Strict STAR method (Situation, Task, Action, Result) expectation in all behavioral evaluations"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.amazon.jobs/content/en/how-we-hire/principles-and-practices",
+        "title": "Amazon Principles and Practices",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

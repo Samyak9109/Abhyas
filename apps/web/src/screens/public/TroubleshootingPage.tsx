@@ -51,7 +51,7 @@ export function TroubleshootingPage() {
       category: "CORS / Local Server",
       cause:
         "Browser Same-Origin Policy blocked fetch to http://localhost:11434 or local server because cross-origin headers are not enabled on the server.",
-      fix: "For Ollama, set the environment variable OLLAMA_ORIGINS=\"*\" and restart Ollama (Windows: set OLLAMA_ORIGINS=* && ollama serve; macOS: launchctl setenv OLLAMA_ORIGINS \"*\"). For LM Studio, toggle 'Enable CORS' in Server Settings. Refer to the Local Models Guide (/guide/local-models).",
+      fix: 'For Ollama, set the environment variable OLLAMA_ORIGINS="*" and restart Ollama (Windows: set OLLAMA_ORIGINS=* && ollama serve; macOS: launchctl setenv OLLAMA_ORIGINS "*"). For LM Studio, toggle \'Enable CORS\' in Server Settings. Refer to the Local Models Guide (/guide/local-models).',
     },
     {
       id: "err-local-conn",

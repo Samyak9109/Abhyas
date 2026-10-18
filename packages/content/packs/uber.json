@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "slug": "uber",
+  "name": "Uber",
+  "domain": "uber.com",
+  "aliases": ["Uber Technologies, Inc.", "Uber Eats", "Uber Freight"],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Mobility and delivery platform connecting consumers with independent rideshare drivers, couriers, and merchants across international markets.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.uber.com/about/",
+        "title": "About Uber",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": ["Uber Rides", "Uber Eats", "Uber Freight", "Uber for Business", "Uber Advertising"],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.uber.com/products/",
+        "title": "Uber Products and Platforms",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Go",
+      "Java",
+      "Python",
+      "TypeScript",
+      "React Native",
+      "Apache Kafka",
+      "Apache Flink",
+      "MySQL / Schemaless",
+      "Cassandra",
+      "Mesos / Kubernetes"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.uber.com/blog/engineering/",
+        "title": "Uber Engineering Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Go get it",
+        "description": "Pursue solutions proactively, seize initiative, and move through obstacles."
+      },
+      {
+        "name": "Trip obsessed",
+        "description": "Focus relentlessly on perfecting the physical ride and delivery experience for all participants."
+      },
+      {
+        "name": "Build with heart",
+        "description": "Act with empathy, champion safety, and treat customers, drivers, and teammates with care."
+      },
+      {
+        "name": "Stand for safety",
+        "description": "Prioritize physical and digital security across all trips and interactions."
+      },
+      {
+        "name": "Great minds don't think alike",
+        "description": "Value diverse perspectives, background diversity, and robust debates."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.uber.com/about/values/",
+        "title": "Uber Values and Culture",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter screen and resume calibration",
+      "Technical phone screen (algorithmic problem solving or systems design)",
+      "Onsite loop (coding, high-throughput distributed system design, behavioral and values alignment)"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.uber.com/careers/interviewing/",
+        "title": "Interviewing at Uber",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "High-throughput real-time streaming architectures handling millions of geolocated events per second",
+      "Strong microservices governance with standardized RPC interfaces and tracing instrumentation",
+      "Data-driven dispatch, pricing, and routing algorithms grounded in continuous telemetry"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.uber.com/blog/uber-real-time-data-platform/",
+        "title": "Uber Real-time Data Platform",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

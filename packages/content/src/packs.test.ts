@@ -12,6 +12,13 @@ import {
   validateCompanyPackIndex,
 } from "./validator.js";
 import { validateContentDirectory } from "./validate-directory.js";
+import {
+  SEED_COMPANY_PACKS,
+  SEED_COMPANY_PACK_INDEX,
+  getSeedCompanyPack,
+  getSeedCompanyPackByDomain,
+  searchSeedCompanyPacks,
+} from "./packs.js";
 
 const CONTENT_DIR = path.resolve(__dirname, "..");
 
@@ -253,6 +260,100 @@ describe("M4.1: Company Pack Contract & Validator (FR-025, ADR-008)", () => {
       expect(() => validateCompanyPacks(duplicateDomainPacks)).toThrowError(
         /Duplicate canonical domain "example.tech"/
       );
+    });
+  });
+
+  describe("M4.2: Seed Packs for Popular Employers (FR-025, ADR-008)", () => {
+    it("contains between 10 and 20 hand-reviewed seed company packs", () => {
+      expect(SEED_COMPANY_PACKS.length).toBeGreaterThanOrEqual(10);
+      expect(SEED_COMPANY_PACKS.length).toBeLessThanOrEqual(20);
+    });
+
+    it("verifies every seed pack adheres strictly to CompanyPackSchema with evidence", () => {
+      for (const pack of SEED_COMPANY_PACKS) {
+        const validated = validateCompanyPack(pack);
+        expect(validated.slug).toBe(pack.slug);
+        expect(validated.name).toBeTruthy();
+        expect(validated.domain).toBeTruthy();
+        expect(validated.coverage).toMatch(/high|medium|low/);
+
+        // Verify every present evidenced field has at least one valid source
+        const sections = [
+          pack.overview,
+          pack.products,
+          pack.techStack,
+          pack.values,
+          pack.interviewProcess,
+          pack.cultureSignals,
+        ];
+        const presentSections = sections.filter(Boolean);
+        expect(presentSections.length).toBeGreaterThanOrEqual(1);
+
+        for (const section of presentSections) {
+          expect(section?.confidence).toMatch(/documented|inferred/);
+          expect(section?.sources.length).toBeGreaterThanOrEqual(1);
+          for (const source of section?.sources ?? []) {
+            expect(source.url).toMatch(/^https?:\/\//);
+            expect(source.title.trim().length).toBeGreaterThan(0);
+            expect(source.retrievedAt).toMatch(/^\d{4}-\d{2}-\d{2}/);
+          }
+        }
+      }
+    });
+
+    it("verifies all seed company pack slugs and domains are strictly unique", () => {
+      const validated = validateCompanyPacks(SEED_COMPANY_PACKS);
+      expect(validated.length).toBe(SEED_COMPANY_PACKS.length);
+    });
+
+    it("verifies directory validation reports between 10 and 20 valid production packs", () => {
+      const result = validateContentDirectory(CONTENT_DIR);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toEqual([]);
+      expect(result.summary.packsCount).toBeGreaterThanOrEqual(10);
+      expect(result.summary.packsCount).toBeLessThanOrEqual(20);
+    });
+
+    it("verifies SEED_COMPANY_PACK_INDEX correctly indexes all seed packs as ready", () => {
+      const index = validateCompanyPackIndex(SEED_COMPANY_PACK_INDEX);
+      expect(index.companies.length).toBe(SEED_COMPANY_PACKS.length);
+      for (const item of index.companies) {
+        expect(item.status).toBe("ready");
+        expect(item.retrievedAt).toBeTruthy();
+      }
+    });
+
+    it("looks up seed packs by slug and canonical domain", () => {
+      const googleBySlug = getSeedCompanyPack("google");
+      expect(googleBySlug?.name).toBe("Google");
+      expect(googleBySlug?.domain).toBe("google.com");
+
+      const stripeByDomain = getSeedCompanyPackByDomain("stripe.com");
+      expect(stripeByDomain?.slug).toBe("stripe");
+      expect(stripeByDomain?.name).toBe("Stripe");
+
+      expect(getSeedCompanyPack("non-existent-corp")).toBeUndefined();
+      expect(getSeedCompanyPackByDomain("non-existent.com")).toBeUndefined();
+    });
+
+    it("searches seed packs by company name, slug, domain, and aliases", () => {
+      // By name
+      const metaResults = searchSeedCompanyPacks("Meta");
+      expect(metaResults.some((c) => c.slug === "meta")).toBe(true);
+
+      // By alias
+      const fbResults = searchSeedCompanyPacks("Facebook");
+      expect(fbResults.some((c) => c.slug === "meta")).toBe(true);
+
+      const awsResults = searchSeedCompanyPacks("AWS");
+      expect(awsResults.some((c) => c.slug === "amazon")).toBe(true);
+
+      // By domain
+      const netflixResults = searchSeedCompanyPacks("netflix.com");
+      expect(netflixResults.some((c) => c.slug === "netflix")).toBe(true);
+
+      // Empty query returns all
+      expect(searchSeedCompanyPacks("").length).toBe(SEED_COMPANY_PACKS.length);
     });
   });
 });

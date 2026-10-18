@@ -707,4 +707,3 @@ describe("M1.5: LiveInterviewScreen (PG-12)", () => {
     });
   });
 });
-

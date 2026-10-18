@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "slug": "apple",
+  "name": "Apple",
+  "domain": "apple.com",
+  "aliases": ["Apple Inc.", "AAPL"],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Global designer, manufacturer, and marketer of personal computers, smartphones, tablets, wearables, software platforms, and digital cloud services.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.apple.com/about/",
+        "title": "About Apple",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "iPhone",
+      "Mac & macOS",
+      "iPad",
+      "Apple Watch",
+      "iOS",
+      "Vision Pro",
+      "iCloud",
+      "Apple Silicon"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.apple.com/",
+        "title": "Apple Products",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Swift",
+      "Objective-C",
+      "C++",
+      "C",
+      "Rust",
+      "Python",
+      "LLVM",
+      "Metal",
+      "FoundationDB",
+      "WebKit"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://developer.apple.com/",
+        "title": "Apple Developer Documentation and Technologies",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Accessibility",
+        "description": "Build technology that is accessible to everyone regardless of physical ability."
+      },
+      {
+        "name": "Privacy",
+        "description": "Design products that treat user data confidentiality as a fundamental human right."
+      },
+      {
+        "name": "Environment",
+        "description": "Pioneer carbon neutrality, recycled materials, and energy-efficient engineering."
+      },
+      {
+        "name": "Craft and Excellence",
+        "description": "Obsess over hardware-software integration, sensory detail, and refined craft."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.apple.com/careers/us/culture.html",
+        "title": "Apple Careers Culture and Values",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter screen and background evaluation",
+      "Hiring manager technical exploration and deep-dive",
+      "Onsite loop with team members (coding, deep domain system architecture, peer design critiques)",
+      "Cross-functional alignment with engineering leadership"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.apple.com/careers/us/how-to-apply.html",
+        "title": "How to Apply at Apple",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Strict confidentiality and compartmentalized projects with focus on polished public debuts",
+      "Tight vertical integration between custom silicon, operating systems, and developer frameworks",
+      "Relentless attention to user privacy guarantees, low memory footprints, and battery efficiency"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.apple.com/privacy/",
+        "title": "Apple Privacy Principles",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

@@ -1,20 +1,14 @@
-// FR-023, ADR-013, architecture.md Section 12: Curated in-browser models.
+// FR-023, ADR-013, architecture.md Section 12: Curated in-browser models catalog.
 import modelsData from "../models.json" with { type: "json" };
-import type { HardwareTier } from "@abhyas/core";
+import type { HardwareTier, CuratedModel, CuratedCatalog, CuratedModelSpeed } from "@abhyas/core";
 
-export interface CuratedModel {
-  id: string;
-  name: string;
-  engine: "webllm";
-  repository: string;
-  sizeBytes: number;
-  minimumTier: Exclude<HardwareTier, "unsupported">;
-  contextLength: number;
-  format: "safetensors" | "gguf" | "onnx";
-  notes: string;
-}
+export type { CuratedModel, CuratedCatalog, CuratedModelSpeed };
 
-export const CURATED_MODELS: readonly CuratedModel[] = modelsData as unknown as CuratedModel[];
+export const CURATED_CATALOG: CuratedCatalog = modelsData as unknown as CuratedCatalog;
+
+export const MODELS_CATALOG_VERSION = CURATED_CATALOG.version;
+
+export const CURATED_MODELS: readonly CuratedModel[] = CURATED_CATALOG.models;
 
 export function getCuratedModel(id: string): CuratedModel | undefined {
   return CURATED_MODELS.find((m) => m.id === id);

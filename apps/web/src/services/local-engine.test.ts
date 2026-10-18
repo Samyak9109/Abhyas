@@ -7,8 +7,10 @@ import {
   getLocalEngineAdapter,
   getStorageQuotaReport,
   recordModelStatus,
+  recordModelSanityResult,
   removeModelRecord,
   requestPersistentStorage,
+  runSanityTestOnLoadedModel,
 } from "./local-engine";
 
 describe("Local Engine Service (FR-022, FR-023)", () => {
@@ -91,5 +93,38 @@ describe("Local Engine Service (FR-022, FR-023)", () => {
     const unloadRes = await adapter.unloadModel();
     expect(unloadRes.ok).toBe(true);
     expect(adapter.isModelLoaded()).toBe(false);
+  });
+
+  it("records sanity results and runs sanity tests on loaded models (FR-023, AI-006)", async () => {
+    const bridge = createWorkerBridge();
+    const adapter = getLocalEngineAdapter(bridge);
+
+    await recordModelSanityResult(storage, "SmolLM2-1.7B-Instruct-q4f16_1-MLC", {
+      status: "interview-ready",
+      tokensPerSecond: 28.5,
+      speedPassed: true,
+      jsonValid: true,
+      instructionFollowing: true,
+      testedAt: "2026-10-18T00:00:00.000Z",
+      referenceDevice: "Local Test Device",
+    });
+
+    const installed = await getInstalledModels(storage);
+    expect(installed[0]?.sanityResult?.status).toBe("interview-ready");
+    expect(installed[0]?.sanityResult?.tokensPerSecond).toBe(28.5);
+
+    await adapter.loadModel("SmolLM2-1.7B-Instruct-q4f16_1-MLC");
+    const sanityResult = await runSanityTestOnLoadedModel(
+      adapter,
+      "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
+      storage,
+      {
+        thresholds: { minInterviewTps: 1, minQuestionsTps: 0.5 },
+        deviceLabel: "Test Device",
+      }
+    );
+
+    expect(sanityResult).toBeDefined();
+    expect(sanityResult.testedAt).toBeTruthy();
   });
 });

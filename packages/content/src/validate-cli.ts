@@ -24,5 +24,9 @@ if (!result.valid) {
   console.log(`  - Level rubrics: ${result.summary.rubricsCount} (all 5 levels verified)`);
   // eslint-disable-next-line no-console
   console.log(`  - Validated questions: ${result.summary.questionsCount}`);
+  // eslint-disable-next-line no-console
+  console.log(
+    `  - Curated models: ${result.summary.modelsCount} (measured speeds & sanity verified)`
+  );
   process.exit(0);
 }

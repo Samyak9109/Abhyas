@@ -23,6 +23,7 @@ import {
   recordModelStatus,
   removeModelRecord,
   requestPersistentStorage,
+  runSanityTestOnLoadedModel,
 } from "../services/local-engine";
 
 interface ModelManagerScreenProps {
@@ -61,6 +62,8 @@ export function ModelManagerScreen({
   // Dialog & notifications
   const [deleteModelTarget, setDeleteModelTarget] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [sanityTestingId, setSanityTestingId] = useState<string | null>(null);
+  const [sanityStep, setSanityStep] = useState<string | null>(null);
   const [isPersistRequesting, setIsPersistRequesting] = useState(false);
   const [isOffline, setIsOffline] = useState(
     () => typeof navigator !== "undefined" && !navigator.onLine
@@ -239,6 +242,41 @@ export function ModelManagerScreen({
     await handleDownloadModel({ id: cleanId, sizeBytes: 1_500_000_000 });
     setCustomIdentifier("");
     setCustomPreflight(null);
+  };
+
+  const handleRunSanityTest = async (modelId: string) => {
+    try {
+      setSanityTestingId(modelId);
+      setSanityStep("Starting sanity checks...");
+      setErrorMessage(null);
+      await runSanityTestOnLoadedModel(engineAdapter, modelId, storage, {
+        deviceLabel: hardwareReport?.adapterInfo?.description || "In-browser WebGPU Device",
+        onStepChange: (step, status) => {
+          if (step === "speed") {
+            setSanityStep(
+              status === "running" ? "Measuring inference speed..." : `Speed check ${status}`
+            );
+          } else if (step === "instructionFollowing") {
+            setSanityStep(
+              status === "running"
+                ? "Testing instruction adherence..."
+                : `Instruction check ${status}`
+            );
+          } else if (step === "jsonValidity") {
+            setSanityStep(
+              status === "running" ? "Verifying JSON schema format..." : `JSON check ${status}`
+            );
+          }
+        },
+      });
+      const updated = await getInstalledModels(storage);
+      setInstalledModels(updated);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Sanity test failed.");
+    } finally {
+      setSanityTestingId(null);
+      setSanityStep(null);
+    }
   };
 
   const isModelReady = (id: string) =>
@@ -432,6 +470,10 @@ export function ModelManagerScreen({
                     const isDownloading = downloadingId === model.id;
                     const isPaused = isModelPaused(model.id);
                     const isActive = activeModelId === model.id;
+                    const localRecord = installedModels.find((m) => m.id === model.id);
+                    const localSanity = localRecord?.sanityResult;
+                    const effectiveSanity = localSanity ?? model.sanityResult;
+                    const isTestingSanity = sanityTestingId === model.id;
                     const isRecommended =
                       benchmark &&
                       ((benchmark.tier === "basic" && model.minimumTier === "basic") ||
@@ -455,6 +497,17 @@ export function ModelManagerScreen({
                                   RECOMMENDED FOR YOU
                                 </span>
                               )}
+                              <span
+                                className={`abh-badge abh-badge--sanity-${effectiveSanity.status}`}
+                                title={effectiveSanity.notes}
+                              >
+                                {effectiveSanity.status === "interview-ready"
+                                  ? "INTERVIEW-READY"
+                                  : effectiveSanity.status === "questions-only"
+                                    ? "QUESTIONS ONLY"
+                                    : "NOT SUITABLE"}
+                                {localSanity ? " (LOCAL)" : " (VERIFIED)"}
+                              </span>
                               {ready && (
                                 <span className="abh-badge abh-badge--success">INSTALLED</span>
                               )}
@@ -478,6 +531,12 @@ export function ModelManagerScreen({
                         <div className="abh-mm-card-meta">
                           <span>Context: {model.contextLength} tokens</span>
                           <span>Format: {model.format}</span>
+                          <span>
+                            Speed:{" "}
+                            {localSanity
+                              ? `${localSanity.tokensPerSecond} tps (local)`
+                              : `${model.measuredSpeed.tokensPerSecond} tps (${model.measuredSpeed.referenceDevice})`}
+                          </span>
                         </div>
 
                         {/* Download Progress Bar */}
@@ -544,16 +603,29 @@ export function ModelManagerScreen({
                                     Load into Memory
                                   </Button>
                                 ) : (
-                                  <Button
-                                    variant="secondary"
-                                    onClick={() => void handleUnloadModel()}
-                                  >
-                                    Unload (Free Memory)
-                                  </Button>
+                                  <>
+                                    <Button
+                                      variant="secondary"
+                                      onClick={() => void handleRunSanityTest(model.id)}
+                                      disabled={Boolean(sanityTestingId)}
+                                    >
+                                      {isTestingSanity
+                                        ? (sanityStep ?? "Testing Sanity...")
+                                        : "Run Sanity Test"}
+                                    </Button>
+                                    <Button
+                                      variant="secondary"
+                                      onClick={() => void handleUnloadModel()}
+                                      disabled={Boolean(sanityTestingId)}
+                                    >
+                                      Unload (Free Memory)
+                                    </Button>
+                                  </>
                                 )}
                                 <Button
                                   variant="danger"
                                   onClick={() => setDeleteModelTarget(model.id)}
+                                  disabled={Boolean(sanityTestingId)}
                                 >
                                   Delete
                                 </Button>
@@ -576,6 +648,7 @@ export function ModelManagerScreen({
                       <tr>
                         <th scope="col">Model Name</th>
                         <th scope="col">Tier</th>
+                        <th scope="col">Speed & Sanity</th>
                         <th scope="col">Size</th>
                         <th scope="col">Context</th>
                         <th scope="col">Status</th>
@@ -586,6 +659,11 @@ export function ModelManagerScreen({
                       {CURATED_MODELS.map((model) => {
                         const ready = isModelReady(model.id);
                         const isActive = activeModelId === model.id;
+                        const localRecord = installedModels.find((m) => m.id === model.id);
+                        const localSanity = localRecord?.sanityResult;
+                        const effectiveSanity = localSanity ?? model.sanityResult;
+                        const isTestingSanity = sanityTestingId === model.id;
+
                         return (
                           <tr key={model.id}>
                             <td>
@@ -593,6 +671,20 @@ export function ModelManagerScreen({
                               <div className="abh-mm-table-sub">{model.repository}</div>
                             </td>
                             <td>{model.minimumTier}</td>
+                            <td>
+                              <div className="abh-mm-table-speed">
+                                {localSanity
+                                  ? `${localSanity.tokensPerSecond} tps (local)`
+                                  : `${model.measuredSpeed.tokensPerSecond} tps (ref)`}
+                              </div>
+                              <span
+                                className={`abh-badge abh-badge--sanity-${effectiveSanity.status}`}
+                              >
+                                {effectiveSanity.status === "interview-ready"
+                                  ? "Interview Ready"
+                                  : "Questions Only"}
+                              </span>
+                            </td>
                             <td>{formatBytes(model.sizeBytes)}</td>
                             <td>{model.contextLength}</td>
                             <td>
@@ -616,12 +708,22 @@ export function ModelManagerScreen({
                               ) : (
                                 <div className="abh-mm-table-actions">
                                   {isActive ? (
-                                    <Button
-                                      variant="ghost"
-                                      onClick={() => void handleUnloadModel()}
-                                    >
-                                      Unload
-                                    </Button>
+                                    <>
+                                      <Button
+                                        variant="secondary"
+                                        onClick={() => void handleRunSanityTest(model.id)}
+                                        disabled={Boolean(sanityTestingId)}
+                                      >
+                                        {isTestingSanity ? "Testing..." : "Sanity Test"}
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        onClick={() => void handleUnloadModel()}
+                                        disabled={Boolean(sanityTestingId)}
+                                      >
+                                        Unload
+                                      </Button>
+                                    </>
                                   ) : (
                                     <Button
                                       variant="secondary"
@@ -633,6 +735,7 @@ export function ModelManagerScreen({
                                   <Button
                                     variant="danger"
                                     onClick={() => setDeleteModelTarget(model.id)}
+                                    disabled={Boolean(sanityTestingId)}
                                   >
                                     Delete
                                   </Button>

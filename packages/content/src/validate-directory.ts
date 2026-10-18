@@ -5,6 +5,7 @@ import {
   validateTaxonomy,
   validateRubric,
   validateQuestionBank,
+  validateCuratedModelsCatalog,
   REQUIRED_EXPERIENCE_LEVELS,
   type ValidationResult,
 } from "./validator.js";
@@ -101,12 +102,28 @@ export function validateContentDirectory(contentDir: string): ValidationResult {
     }
   }
 
+  // 4. Validate Curated Models Catalog (phases.md M3.3, FR-023)
+  const modelsPath = path.join(contentDir, "models.json");
+  let modelsCount = 0;
+  if (!fs.existsSync(modelsPath)) {
+    errors.push(`Curated models catalog missing at expected path: ${modelsPath}`);
+  } else {
+    try {
+      const modelsRaw = JSON.parse(fs.readFileSync(modelsPath, "utf8"));
+      const catalog = validateCuratedModelsCatalog(modelsRaw);
+      modelsCount = catalog.models.length;
+    } catch (err) {
+      errors.push(`Curated models catalog: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   return {
     valid: errors.length === 0,
     summary: {
       skillsCount,
       rubricsCount,
       questionsCount,
+      modelsCount,
     },
     errors,
   };

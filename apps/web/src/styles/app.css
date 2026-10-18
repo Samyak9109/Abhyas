@@ -3870,6 +3870,30 @@
   color: var(--text-muted);
 }
 
+.abh-badge--sanity-interview-ready {
+  background-color: var(--surface-2);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+
+.abh-badge--sanity-questions-only {
+  background-color: var(--surface-2);
+  border: 1px solid var(--warning);
+  color: var(--warning);
+}
+
+.abh-badge--sanity-not-suitable {
+  background-color: var(--surface-2);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+.abh-mm-table-speed {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  margin-bottom: 2px;
+}
+
 .abh-mm-section {
   display: flex;
   flex-direction: column;

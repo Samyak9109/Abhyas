@@ -167,4 +167,44 @@ describe("ModelManagerScreen (PG-19, M3.2)", () => {
     container.setAttribute("data-theme", "paper");
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it("displays measured speeds, reference sanity badges, and executes local sanity tests", async () => {
+    // Pre-populate an installed and loaded model
+    await storage.put<ModelRow>("models", {
+      id: "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
+      engine: "webllm",
+      sizeBytes: 1_050_000_000,
+      status: "ready",
+    });
+
+    render(<ModelManagerScreen storage={storage} hardwareRuntime={mockHardwareRuntime} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("In-Browser Model Manager")).toBeDefined();
+    });
+
+    // Check that measured speed and verified sanity status badge are shown
+    expect(screen.getAllByText(/INTERVIEW-READY/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/28.5 tps/i)).toBeDefined();
+
+    // Load model into memory
+    const loadBtn = screen.getByRole("button", { name: "Load into Memory" });
+    await act(async () => {
+      fireEvent.click(loadBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Run Sanity Test" })).toBeDefined();
+    });
+
+    // Run Sanity Test
+    const sanityBtn = screen.getByRole("button", { name: "Run Sanity Test" });
+    await act(async () => {
+      fireEvent.click(sanityBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Run Sanity Test" })).toBeDefined();
+    });
+  });
 });

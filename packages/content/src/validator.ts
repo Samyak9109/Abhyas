@@ -1,13 +1,14 @@
-// FR-014, FR-017, ADR-006: In-memory content validation engine for taxonomy, rubrics, and question bank.
 import {
   TaxonomySchema,
   RubricLevelSchema,
   QuestionBankSchema,
   ExperienceLevelSchema,
+  CuratedCatalogSchema,
   type Taxonomy,
   type RubricLevel,
   type QuestionBank,
   type ExperienceLevel,
+  type CuratedCatalog,
 } from "@abhyas/core";
 
 export interface ValidationResult {
@@ -16,6 +17,7 @@ export interface ValidationResult {
     skillsCount: number;
     rubricsCount: number;
     questionsCount: number;
+    modelsCount?: number;
   };
   errors: string[];
 }
@@ -69,6 +71,43 @@ export function validateQuestionBank(data: unknown, validSkillIds?: Set<string>)
     if (errors.length > 0) {
       throw new Error(`Question bank taxonomy verification failed: ${errors.join("; ")}`);
     }
+  }
+
+  return result.data;
+}
+
+/**
+ * Validates a curated models catalog object against CuratedCatalogSchema (phases.md M3.3, FR-023).
+ * Verifies version, 3 to 5 model count, measured speeds, and reference sanity test results.
+ */
+export function validateCuratedModelsCatalog(data: unknown): CuratedCatalog {
+  const result = CuratedCatalogSchema.safeParse(data);
+  if (!result.success) {
+    const issues = result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    throw new Error(`Curated models catalog validation failed: ${issues}`);
+  }
+
+  // Acceptance criteria check: Each listed model passes the sanity test on at least one reference device
+  const errors: string[] = [];
+  for (const model of result.data.models) {
+    const sanity = model.sanityResult;
+    if (sanity.status === "not-suitable") {
+      errors.push(
+        `Model "${model.id}" is marked "not-suitable"; each curated model must pass sanity test on at least one reference device (phases.md M3.3)`
+      );
+    }
+    if (!sanity.speedPassed || !sanity.jsonValid || !sanity.instructionFollowing) {
+      errors.push(
+        `Model "${model.id}" sanity test failed (speedPassed: ${sanity.speedPassed}, jsonValid: ${sanity.jsonValid}, instructionFollowing: ${sanity.instructionFollowing})`
+      );
+    }
+    if (!sanity.referenceDevice || sanity.referenceDevice.trim().length === 0) {
+      errors.push(`Model "${model.id}" lacks reference device documentation in sanity result`);
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Curated models sanity verification failed: ${errors.join("; ")}`);
   }
 
   return result.data;

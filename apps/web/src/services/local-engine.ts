@@ -2,16 +2,18 @@
 import {
   LocalEngineAdapter,
   calculateStorageQuotaStatus,
+  runModelSanityTest,
   type EngineWorkerBridge,
   type LocalWorkerRequest,
   type LocalWorkerResponse,
   type ModelRow,
+  type ModelSanityResult,
+  type SanityTestOptions,
   type StorageAdapter,
   type StorageQuotaReport,
 } from "@abhyas/core";
 
 let sharedAdapter: LocalEngineAdapter | null = null;
-let sharedWorker: Worker | null = null;
 
 /**
  * Creates an EngineWorkerBridge connected to the Web Worker or fallback simulation.
@@ -25,7 +27,6 @@ export function createWorkerBridge(customWorker?: Worker): EngineWorkerBridge {
       worker = new Worker(new URL("../workers/local-engine.worker.ts", import.meta.url), {
         type: "module",
       });
-      sharedWorker = worker;
     } catch {
       // Worker construction may fail in certain restricted contexts/test environments
       worker = null;
@@ -248,4 +249,50 @@ export async function removeModelRecord(storage: StorageAdapter, modelId: string
   } catch {
     // Gracefully handle storage errors
   }
+}
+
+/**
+ * Updates a model record with its measured sanity test results (FR-023, AI-006).
+ */
+export async function recordModelSanityResult(
+  storage: StorageAdapter,
+  modelId: string,
+  sanityResult: ModelSanityResult
+): Promise<void> {
+  try {
+    const existing = await storage.get<ModelRow>("models", modelId);
+    if (existing) {
+      await storage.put<ModelRow>("models", {
+        ...existing,
+        sanityResult,
+      });
+    } else {
+      await storage.put<ModelRow>("models", {
+        id: modelId,
+        engine: "webllm",
+        sizeBytes: 1_000_000_000,
+        status: "ready",
+        sanityResult,
+      });
+    }
+  } catch {
+    // Gracefully handle storage errors
+  }
+}
+
+/**
+ * Executes a post-load sanity test on the loaded local model (FR-023, AI-006).
+ * Persists the result into IndexedDB if storage is provided.
+ */
+export async function runSanityTestOnLoadedModel(
+  adapter: LocalEngineAdapter,
+  modelId: string,
+  storage?: StorageAdapter,
+  options?: SanityTestOptions
+): Promise<ModelSanityResult> {
+  const result = await runModelSanityTest(adapter, modelId, options);
+  if (storage) {
+    await recordModelSanityResult(storage, modelId, result);
+  }
+  return result;
 }

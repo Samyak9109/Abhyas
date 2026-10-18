@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { DeliveryMetricsSchema, EvaluationSchema } from "./evaluation.schema";
 import { ExperienceLevelSchema, IngestedDocumentSchema, ProfileSchema } from "./profile.schema";
+import { ModelSanityResultSchema } from "../local/sanity";
 
 export const ProfileRowSchema = ProfileSchema;
 export type ProfileRow = z.infer<typeof ProfileRowSchema>;
@@ -105,7 +106,7 @@ export const ModelRowSchema = z.object({
   engine: z.string().min(1),
   sizeBytes: z.number().int().nonnegative(),
   status: z.string().min(1),
-  sanityResult: z.unknown().optional(),
+  sanityResult: ModelSanityResultSchema.optional(),
 });
 export type ModelRow = z.infer<typeof ModelRowSchema>;
 

@@ -79,6 +79,61 @@ export interface ModelFormatValidation {
   error?: string;
 }
 
+export type ModelSanityStatus = "interview-ready" | "questions-only" | "not-suitable";
+
+export interface SanityCheckStepResult {
+  passed: boolean;
+  latencyMs: number;
+  output?: string | undefined;
+  error?: string | undefined;
+}
+
+export interface ModelSanityResult {
+  status: ModelSanityStatus;
+  tokensPerSecond: number;
+  speedPassed: boolean;
+  jsonValid: boolean;
+  instructionFollowing: boolean;
+  testedAt: string;
+  modelId?: string | undefined;
+  referenceDevice?: string | undefined;
+  notes?: string | undefined;
+  stepResults?:
+    | {
+        speed?: SanityCheckStepResult | undefined;
+        instructionFollowing?: SanityCheckStepResult | undefined;
+        jsonValidity?: SanityCheckStepResult | undefined;
+      }
+    | undefined;
+}
+
+export interface CuratedModelSpeed {
+  referenceDevice: string;
+  tokensPerSecond: number;
+  latencyMs: number;
+}
+
+export interface CuratedModel {
+  id: string;
+  name: string;
+  engine: "webllm";
+  repository: string;
+  sizeBytes: number;
+  minimumTier: Exclude<HardwareTier, "unsupported">;
+  contextLength: number;
+  format: ModelFormat;
+  measuredSpeed: CuratedModelSpeed;
+  sanityResult: ModelSanityResult;
+  notes: string;
+}
+
+export interface CuratedCatalog {
+  version: number;
+  schemaVersion: number;
+  updatedAt: string;
+  models: CuratedModel[];
+}
+
 export type LocalWorkerRequest =
   | { type: "INIT_ENGINE"; id: string; modelId: string }
   | { type: "LOAD_MODEL"; id: string; modelId: string }

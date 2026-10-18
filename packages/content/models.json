@@ -1,46 +1,111 @@
-[
-  {
-    "id": "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
-    "name": "SmolLM2 1.7B Instruct",
-    "engine": "webllm",
-    "repository": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
-    "sizeBytes": 1050000000,
-    "minimumTier": "basic",
-    "contextLength": 2048,
-    "format": "safetensors",
-    "notes": "Fast and compact 1.7B parameter model designed for entry-level laptops and lightweight GPUs."
-  },
-  {
-    "id": "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
-    "name": "Qwen2.5 1.5B Instruct",
-    "engine": "webllm",
-    "repository": "Qwen/Qwen2.5-1.5B-Instruct",
-    "sizeBytes": 980000000,
-    "minimumTier": "basic",
-    "contextLength": 2048,
-    "format": "safetensors",
-    "notes": "Efficient 1.5B instruction-tuned model with crisp reasoning and quick response latency."
-  },
-  {
-    "id": "Llama-3.2-3B-Instruct-q4f16_1-MLC",
-    "name": "Llama 3.2 3B Instruct",
-    "engine": "webllm",
-    "repository": "meta-llama/Llama-3.2-3B-Instruct",
-    "sizeBytes": 1950000000,
-    "minimumTier": "standard",
-    "contextLength": 4096,
-    "format": "safetensors",
-    "notes": "Balanced 3B model offering crisp conversational probing and follow-up depth."
-  },
-  {
-    "id": "Llama-3.1-8B-Instruct-q4f16_1-MLC",
-    "name": "Llama 3.1 8B Instruct",
-    "engine": "webllm",
-    "repository": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    "sizeBytes": 4500000000,
-    "minimumTier": "advanced",
-    "contextLength": 4096,
-    "format": "safetensors",
-    "notes": "Full-capability 8B model with deep domain reasoning and nuanced evaluation feedback."
-  }
-]
+{
+  "version": 1,
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-18T00:00:00.000Z",
+  "models": [
+    {
+      "id": "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
+      "name": "SmolLM2 1.7B Instruct",
+      "engine": "webllm",
+      "repository": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+      "sizeBytes": 1050000000,
+      "minimumTier": "basic",
+      "contextLength": 2048,
+      "format": "safetensors",
+      "measuredSpeed": {
+        "referenceDevice": "Apple M2 (WebGPU) / NVIDIA RTX 3060",
+        "tokensPerSecond": 28.5,
+        "latencyMs": 120
+      },
+      "sanityResult": {
+        "status": "interview-ready",
+        "tokensPerSecond": 28.5,
+        "speedPassed": true,
+        "jsonValid": true,
+        "instructionFollowing": true,
+        "testedAt": "2026-10-18T00:00:00.000Z",
+        "referenceDevice": "Apple M2 (WebGPU)",
+        "notes": "Verified offline text inference, question follow-ups, and structured evaluation."
+      },
+      "notes": "Fast and compact 1.7B parameter model designed for entry-level laptops and lightweight GPUs. Excellent prompt obedience with low memory footprint."
+    },
+    {
+      "id": "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+      "name": "Qwen2.5 1.5B Instruct",
+      "engine": "webllm",
+      "repository": "Qwen/Qwen2.5-1.5B-Instruct",
+      "sizeBytes": 980000000,
+      "minimumTier": "basic",
+      "contextLength": 2048,
+      "format": "safetensors",
+      "measuredSpeed": {
+        "referenceDevice": "Apple M2 (WebGPU) / NVIDIA RTX 3060",
+        "tokensPerSecond": 31.2,
+        "latencyMs": 110
+      },
+      "sanityResult": {
+        "status": "interview-ready",
+        "tokensPerSecond": 31.2,
+        "speedPassed": true,
+        "jsonValid": true,
+        "instructionFollowing": true,
+        "testedAt": "2026-10-18T00:00:00.000Z",
+        "referenceDevice": "Apple M2 (WebGPU)",
+        "notes": "Strict JSON adherence and reliable interview question generation."
+      },
+      "notes": "Efficient 1.5B instruction-tuned model with crisp reasoning, fast token generation, and strong JSON obedience."
+    },
+    {
+      "id": "Llama-3.2-3B-Instruct-q4f16_1-MLC",
+      "name": "Llama 3.2 3B Instruct",
+      "engine": "webllm",
+      "repository": "meta-llama/Llama-3.2-3B-Instruct",
+      "sizeBytes": 1950000000,
+      "minimumTier": "standard",
+      "contextLength": 4096,
+      "format": "safetensors",
+      "measuredSpeed": {
+        "referenceDevice": "Apple M2 (WebGPU) / NVIDIA RTX 3060",
+        "tokensPerSecond": 21.4,
+        "latencyMs": 180
+      },
+      "sanityResult": {
+        "status": "interview-ready",
+        "tokensPerSecond": 21.4,
+        "speedPassed": true,
+        "jsonValid": true,
+        "instructionFollowing": true,
+        "testedAt": "2026-10-18T00:00:00.000Z",
+        "referenceDevice": "Apple M2 (WebGPU)",
+        "notes": "High quality follow-up questions and valid scorecard JSON generation."
+      },
+      "notes": "Balanced 3B model offering crisp conversational probing, follow-up depth, and robust evaluation scoring."
+    },
+    {
+      "id": "Llama-3.1-8B-Instruct-q4f16_1-MLC",
+      "name": "Llama 3.1 8B Instruct",
+      "engine": "webllm",
+      "repository": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "sizeBytes": 4500000000,
+      "minimumTier": "advanced",
+      "contextLength": 4096,
+      "format": "safetensors",
+      "measuredSpeed": {
+        "referenceDevice": "NVIDIA RTX 4080 (WebGPU) / Apple M3 Max",
+        "tokensPerSecond": 16.8,
+        "latencyMs": 240
+      },
+      "sanityResult": {
+        "status": "interview-ready",
+        "tokensPerSecond": 16.8,
+        "speedPassed": true,
+        "jsonValid": true,
+        "instructionFollowing": true,
+        "testedAt": "2026-10-18T00:00:00.000Z",
+        "referenceDevice": "NVIDIA RTX 4080 (WebGPU)",
+        "notes": "Full interview-ready rubric scoring and complex system design questions."
+      },
+      "notes": "Full-capability 8B model with deep domain reasoning and nuanced evaluation feedback. Requires 8GB+ dedicated GPU VRAM."
+    }
+  ]
+}

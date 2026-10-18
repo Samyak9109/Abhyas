@@ -125,6 +125,49 @@ describe("PG-20: CompanyDirectoryScreen (M4.3)", () => {
     expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 
+  it("opens the request dialog when '+ Request a company' is clicked", async () => {
+    const storage = new MemoryStorageAdapter();
+    render(<CompanyDirectoryScreen storage={storage} />);
+
+    const reqBtn = screen.getByTestId("request-company-header-btn");
+    fireEvent.click(reqBtn);
+
+    expect(screen.getByText(/Request a Company Pack/i)).toBeTruthy();
+  });
+
+  it("opens the request dialog from zero search results state", async () => {
+    const storage = new MemoryStorageAdapter();
+    render(<CompanyDirectoryScreen storage={storage} />);
+
+    const searchInput = screen.getByPlaceholderText(/Search company name, domain/i);
+    fireEvent.change(searchInput, { target: { value: "nonexistentcorpxyz" } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/No companies found/i)).toBeTruthy();
+    });
+
+    const zeroReqBtn = screen.getByTestId("request-company-zero-state-btn");
+    fireEvent.click(zeroReqBtn);
+
+    expect(screen.getByText(/Request a Company Pack/i)).toBeTruthy();
+  });
+
+  it("opens the report dialog when 'Report incorrect data' is clicked in company panel", async () => {
+    const storage = new MemoryStorageAdapter();
+    render(<CompanyDirectoryScreen storage={storage} initialCompanySlug="google" />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("company-context-panel")).toBeTruthy();
+    });
+
+    const reportBtn = screen.getByTestId("open-report-dialog-btn");
+    fireEvent.click(reportBtn);
+
+    expect(screen.getByText(/Report Incorrect Company Data/i)).toBeTruthy();
+    expect(screen.getByText(/Target Pack:/i)).toBeTruthy();
+    expect(screen.getAllByText("Google").length).toBeGreaterThanOrEqual(1);
+  });
+
   describe("Accessibility (axe)", () => {
     it("has zero axe violations under Ink and Paper themes", async () => {
       const storage = new MemoryStorageAdapter();

@@ -1,9 +1,11 @@
 // FR-025, ADR-008: "Company context used" panel component.
 // Displays sourced, dated, confidence-labeled company facts, values, tech stack,
 // interview process stages, and culture signals with zero unevidenced speculation.
+import { useState } from "react";
 import type { CompanyPack, EvidenceSource } from "@abhyas/core";
 import { Button } from "./Button";
 import { Callout } from "./Callout";
+import { CompanyReportDialog } from "./CompanyReportDialog";
 
 interface CompanyContextPanelProps {
   pack: CompanyPack;
@@ -22,6 +24,7 @@ export function CompanyContextPanel({
 }: CompanyContextPanelProps) {
   const verifiedDate = pack.retrievedAt.slice(0, 10);
   const monogram = pack.slug.slice(0, 2).toUpperCase();
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   const renderSources = (sources: EvidenceSource[], label = "Sources") => (
     <div className="abh-pack-sources" aria-label={`${label} citations`}>
@@ -44,12 +47,6 @@ export function CompanyContextPanel({
       </ul>
     </div>
   );
-
-  const reportUrl = `https://github.com/abhyas/abhyas/issues/new?template=company_pack_report.md&title=${encodeURIComponent(
-    `[Company Pack Report] ${pack.name}`
-  )}&body=${encodeURIComponent(
-    `Report regarding company pack "${pack.slug}" (${pack.domain}):\n\n- Field(s) affected:\n- Explanation of inaccuracy:\n- Verified public source link:\n`
-  )}`;
 
   return (
     <div className="abh-company-context-panel" data-testid="company-context-panel">
@@ -216,15 +213,16 @@ export function CompanyContextPanel({
 
       {/* Footer Actions */}
       <div className="abh-company-panel-footer">
-        <a
-          href={reportUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => setIsReportDialogOpen(true)}
           className="abh-report-link"
-          aria-label="Report incorrect or outdated data for this company pack on GitHub"
+          aria-label={`Report incorrect or outdated data for ${pack.name}`}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          data-testid="open-report-dialog-btn"
         >
           ⚐ Report incorrect data (GitHub issue)
-        </a>
+        </button>
 
         <div className="abh-company-panel-actions">
           {showPracticeAction && onPracticeCompany && (
@@ -243,6 +241,13 @@ export function CompanyContextPanel({
           )}
         </div>
       </div>
+
+      <CompanyReportDialog
+        isOpen={isReportDialogOpen}
+        onClose={() => setIsReportDialogOpen(false)}
+        initialMode="report"
+        company={{ name: pack.name, slug: pack.slug, domain: pack.domain }}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // FR-025, AI-014, ADR-008: Pack condenser for layered interview context injection.
 // Condenses evidenced company pack fields into compact, injection-safe text conforming to token budgets.
 import type { CompanyPack } from "../schemas/pack.schema.js";
+import { sanitizePromptData } from "./security.js";
 
 export interface CondenseCompanyPackOptions {
   /** Target small local models (targets <= 400 tokens / 1,600 chars per AI-014) */
@@ -18,6 +19,7 @@ export interface CondenseCompanyPackOptions {
  * - Omits unevidenced or missing fields completely to prevent hallucination.
  * - Formats sections deterministically for cache efficiency and test repeatability.
  * - Caps item lists for small local models to preserve context window for candidate turns.
+ * - Sanitizes untrusted pack text against delimiter escaping (AI-019).
  */
 export function condenseCompanyPack(
   pack: CompanyPack,
@@ -30,26 +32,30 @@ export function condenseCompanyPack(
 
   // 1. Overview
   if (pack.overview?.value) {
-    sections.push(`Overview: ${pack.overview.value}`);
+    sections.push(`Overview: ${sanitizePromptData(pack.overview.value)}`);
   }
 
   // 2. Products
   if (pack.products?.value && pack.products.value.length > 0) {
     const prods = isSmallModel ? pack.products.value.slice(0, 4) : pack.products.value;
-    sections.push(`Key Products: ${prods.join(", ")}`);
+    sections.push(`Key Products: ${prods.map(sanitizePromptData).join(", ")}`);
   }
 
   // 3. Documented Tech Stack
   if (pack.techStack?.value && pack.techStack.value.length > 0) {
     const stack = isSmallModel ? pack.techStack.value.slice(0, 8) : pack.techStack.value;
-    sections.push(`Documented Tech Stack: ${stack.join(", ")}`);
+    sections.push(`Documented Tech Stack: ${stack.map(sanitizePromptData).join(", ")}`);
   }
 
   // 4. Core Values & Principles
   if (pack.values?.value && pack.values.value.length > 0) {
     const valuesList = isSmallModel
-      ? pack.values.value.slice(0, 4).map((v) => `${v.name}: ${v.description.slice(0, 80)}`)
-      : pack.values.value.map((v) => `${v.name}: ${v.description}`);
+      ? pack.values.value
+          .slice(0, 4)
+          .map((v) => `${sanitizePromptData(v.name)}: ${sanitizePromptData(v.description.slice(0, 80))}`)
+      : pack.values.value.map(
+          (v) => `${sanitizePromptData(v.name)}: ${sanitizePromptData(v.description)}`
+        );
     sections.push(`Core Values:\n- ${valuesList.join("\n- ")}`);
   }
 
@@ -58,7 +64,7 @@ export function condenseCompanyPack(
     const steps = isSmallModel
       ? pack.interviewProcess.value.slice(0, 3)
       : pack.interviewProcess.value;
-    sections.push(`Documented Interview Process: ${steps.join(" -> ")}`);
+    sections.push(`Documented Interview Process: ${steps.map(sanitizePromptData).join(" -> ")}`);
   }
 
   // 6. Culture Signals
@@ -66,7 +72,7 @@ export function condenseCompanyPack(
     const signals = isSmallModel
       ? pack.cultureSignals.value.slice(0, 2)
       : pack.cultureSignals.value;
-    sections.push(`Culture Signals: ${signals.join("; ")}`);
+    sections.push(`Culture Signals: ${signals.map(sanitizePromptData).join("; ")}`);
   }
 
   let result = sections.join("\n\n");

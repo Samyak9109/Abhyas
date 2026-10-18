@@ -6,6 +6,7 @@ import { Button } from "../components/Button";
 import { Callout } from "../components/Callout";
 import { Skeleton } from "../components/Skeleton";
 import { CompanyContextPanel } from "../components/CompanyContextPanel";
+import { CompanyReportDialog } from "../components/CompanyReportDialog";
 import {
   getCompanyDirectory,
   loadCompanyPack,
@@ -32,6 +33,7 @@ export function CompanyDirectoryScreen({
   const [selectedPack, setSelectedPack] = useState<CompanyPack | null>(null);
   const [isSelectedStale, setIsSelectedStale] = useState(false);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
 
   // Directory list filtered by search and coverage
   const companies: CompanyDirectoryItem[] = useMemo(() => {
@@ -84,11 +86,23 @@ export function CompanyDirectoryScreen({
   return (
     <div className="abh-company-directory" data-testid="company-directory-screen">
       <div className="abh-company-dir-header">
-        <h1 className="abh-app-title">Company Directory_</h1>
-        <p className="abh-prose" style={{ color: "var(--text-muted)", margin: 0 }}>
-          Browse vetted company packs. Questions in tailored sessions draw from verified tech
-          stacks, corporate values, and publicly documented interview loops (FR-025).
-        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-3)" }}>
+          <div>
+            <h1 className="abh-app-title">Company Directory_</h1>
+            <p className="abh-prose" style={{ color: "var(--text-muted)", margin: 0 }}>
+              Browse vetted company packs. Questions in tailored sessions draw from verified tech
+              stacks, corporate values, and publicly documented interview loops (FR-025).
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            onClick={() => setIsRequestDialogOpen(true)}
+            data-testid="request-company-header-btn"
+            style={{ fontSize: "12px", padding: "var(--space-2) var(--space-3)" }}
+          >
+            + Request a company
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -142,9 +156,16 @@ export function CompanyDirectoryScreen({
             No company packs match &quot;{searchQuery}&quot;. You can clear your search or practice
             with a general session.
           </Callout>
-          <div style={{ marginTop: "var(--space-4)", display: "flex", gap: "var(--space-3)" }}>
+          <div style={{ marginTop: "var(--space-4)", display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
             <Button variant="secondary" onClick={() => setSearchQuery("")}>
               Clear search
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setIsRequestDialogOpen(true)}
+              data-testid="request-company-zero-state-btn"
+            >
+              Request this company pack
             </Button>
             {onNavigateSessionSetup && (
               <Button variant="primary" onClick={onNavigateSessionSetup}>
@@ -225,6 +246,12 @@ export function CompanyDirectoryScreen({
           </div>
         </div>
       )}
+
+      <CompanyReportDialog
+        isOpen={isRequestDialogOpen}
+        onClose={() => setIsRequestDialogOpen(false)}
+        initialMode="request"
+      />
     </div>
   );
 }

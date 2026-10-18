@@ -4,6 +4,8 @@
 // proportional distribution.
 import { describe, expect, it } from "vitest";
 import type { QuestionBank, SessionPlan } from "../schemas/index.js";
+import type { CompanyPack } from "../schemas/pack.schema.js";
+import type { ProviderAdapter } from "../providers/types.js";
 import { getBankSkillStats, selectDrillQuestions, selectQuestions } from "./question-engine.js";
 
 // ---------------------------------------------------------------------------
@@ -644,6 +646,201 @@ describe("selectQuestions", () => {
       expect(result.questions).toEqual([]);
       expect(result.bankTracedCount).toBe(0);
       expect(result.availableInBank).toBe(0);
+    });
+  });
+
+  describe("company pack tailoring (FR-025, AI-014, AI-021)", () => {
+    const amazonPack: CompanyPack = {
+      schemaVersion: 1,
+      slug: "amazon",
+      name: "Amazon",
+      domain: "amazon.com",
+      aliases: ["Amazon.com"],
+      retrievedAt: "2026-10-18T10:00:00.000Z",
+      ttlDays: 90,
+      coverage: "high",
+      overview: {
+        value: "Global technology company focusing on e-commerce, cloud, and AI.",
+        confidence: "documented",
+        sources: [{ url: "https://amazon.com", title: "Amazon", retrievedAt: "2026-10-18" }],
+      },
+      techStack: {
+        value: ["Java", "AWS", "Python", "DynamoDB"],
+        confidence: "documented",
+        sources: [{ url: "https://aws.amazon.com", title: "AWS", retrievedAt: "2026-10-18" }],
+      },
+      values: {
+        value: [
+          { name: "Customer Obsession", description: "Leaders start with the customer." },
+          { name: "Ownership", description: "Leaders act on behalf of the entire company." },
+        ],
+        confidence: "documented",
+        sources: [{ url: "https://amazon.jobs", title: "LP", retrievedAt: "2026-10-18" }],
+      },
+    };
+
+    const stripePack: CompanyPack = {
+      schemaVersion: 1,
+      slug: "stripe",
+      name: "Stripe",
+      domain: "stripe.com",
+      aliases: ["Stripe Inc."],
+      retrievedAt: "2026-10-18T10:00:00.000Z",
+      ttlDays: 90,
+      coverage: "high",
+      overview: {
+        value: "Financial infrastructure platform for internet commerce.",
+        confidence: "documented",
+        sources: [{ url: "https://stripe.com", title: "Stripe", retrievedAt: "2026-10-18" }],
+      },
+      techStack: {
+        value: ["Ruby", "Go", "PostgreSQL", "Kafka", "Redis"],
+        confidence: "documented",
+        sources: [{ url: "https://stripe.com/blog", title: "Tech", retrievedAt: "2026-10-18" }],
+      },
+      values: {
+        value: [
+          { name: "Users First", description: "Prioritize merchant prosperity." },
+          { name: "Meticulous Craftsmanship", description: "Polish APIs to highest standard." },
+        ],
+        confidence: "documented",
+        sources: [{ url: "https://stripe.com/jobs", title: "Culture", retrievedAt: "2026-10-18" }],
+      },
+    };
+
+    it("weights behavioral questions matching company values higher (FR-025)", async () => {
+      const plan = makePlan({ level: "mid", length: 5, type: "behavioral" });
+      // In BANK, q-beh-004 is about conflict resolution, q-beh-002 is about ownership
+      // With amazonPack (Customer Obsession, Ownership), q-beh-002 should receive a 2.0x boost
+      let ownershipPicks = 0;
+      for (let i = 0; i < 10; i++) {
+        const p = { ...plan, sessionId: `session-amazon-${i}` };
+        const result = await selectQuestions({
+          plan: p,
+          bank: BANK,
+          profile: null,
+          companyPack: amazonPack,
+        });
+        if (result.questions.some((q) => q.skillTags.includes("ownership"))) {
+          ownershipPicks++;
+        }
+      }
+      expect(ownershipPicks).toBeGreaterThanOrEqual(6);
+    });
+
+    it("weights technical questions matching company tech stack higher (FR-025)", async () => {
+      const plan = makePlan({ level: "mid", length: 5, type: "technical" });
+      // Stripe uses PostgreSQL, Kafka, Redis. In BANK, q-tech-004 is tagged with "databases"
+      let databasePicks = 0;
+      for (let i = 0; i < 10; i++) {
+        const p = { ...plan, sessionId: `session-stripe-${i}` };
+        const result = await selectQuestions({
+          plan: p,
+          bank: BANK,
+          profile: null,
+          companyPack: stripePack,
+        });
+        if (result.questions.some((q) => q.skillTags.includes("databases"))) {
+          databasePicks++;
+        }
+      }
+      expect(databasePicks).toBeGreaterThanOrEqual(6);
+    });
+
+    it("with a company pack and adapter, questions can reference verified company fields", async () => {
+      const capturedPrompts: string[] = [];
+      const mockAdapter: ProviderAdapter = {
+        id: "openai",
+        capabilities: async () => ({
+          streaming: true,
+          jsonMode: "native",
+          maxContextTokens: 4096,
+        }),
+        listModels: async () => ({
+          ok: true,
+          value: [{ id: "mock-model", label: "Mock Model" }],
+        }),
+        testConnection: async () => ({ ok: true, value: undefined }),
+        generateObject: async <T>(messages: { role: string; content: string }[]) => {
+          const userMsg = messages.find((m) => m.role === "user")?.content ?? "";
+          capturedPrompts.push(userMsg);
+          return {
+            ok: true as const,
+            value: {
+              personalizedText: "At Stripe, how would you design a distributed queue with Kafka and Redis for payment idempotency?",
+            } as T,
+          };
+        },
+        stream: async function* () {
+          yield { delta: "mock", isComplete: true };
+        },
+      };
+
+      const plan = makePlan({ level: "senior", length: 5, type: "system_design" });
+      const result = await selectQuestions({
+        plan,
+        bank: BANK,
+        profile: null,
+        companyPack: stripePack,
+        adapter: mockAdapter,
+      });
+
+      // The prompt sent to adapter includes verified company context
+      expect(capturedPrompts[0]).toContain("Target Company: Stripe");
+      expect(capturedPrompts[0]).toContain("Verified Stack: Ruby, Go, PostgreSQL, Kafka, Redis");
+      expect(capturedPrompts[0]).toContain("Verified Values: Users First, Meticulous Craftsmanship");
+
+      // The selected question text references pack fields
+      expect(result.questions[0]?.text).toContain("Stripe");
+      expect(result.questions[0]?.text).toContain("Kafka");
+      expect(result.questions[0]?.originalText).toBeDefined();
+    });
+
+    it("without a company pack, prompts strictly instruct not to invent company facts, and no company facts are stated (AI-021)", async () => {
+      const capturedPrompts: string[] = [];
+      const mockAdapter: ProviderAdapter = {
+        id: "openai",
+        capabilities: async () => ({
+          streaming: true,
+          jsonMode: "native",
+          maxContextTokens: 4096,
+        }),
+        listModels: async () => ({
+          ok: true,
+          value: [{ id: "mock-model", label: "Mock Model" }],
+        }),
+        testConnection: async () => ({ ok: true, value: undefined }),
+        generateObject: async <T>(messages: { role: string; content: string }[]) => {
+          const userMsg = messages.find((m) => m.role === "user")?.content ?? "";
+          capturedPrompts.push(userMsg);
+          return {
+            ok: true as const,
+            value: {
+              personalizedText: "As a Mid Full Stack Developer, describe how you implement optimistic UI updates.",
+            } as T,
+          };
+        },
+        stream: async function* () {
+          yield { delta: "mock", isComplete: true };
+        },
+      };
+
+      const plan = makePlan({ level: "mid", length: 5, type: "technical" });
+      const result = await selectQuestions({
+        plan,
+        bank: BANK,
+        profile: null,
+        companyPack: null,
+        adapter: mockAdapter,
+      });
+
+      // Prompt sent to adapter strictly warns against stating or inventing company facts
+      expect(capturedPrompts[0]).toContain(
+        "Company: None (general session). Do NOT state, assume, or invent company facts."
+      );
+      expect(result.questions[0]?.text).not.toContain("Stripe");
+      expect(result.questions[0]?.text).not.toContain("Amazon");
+      expect(result.questions[0]?.text).not.toContain("Google");
     });
   });
 });

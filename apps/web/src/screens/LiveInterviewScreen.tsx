@@ -18,6 +18,7 @@ import {
   type StorageAdapter,
   type SubtitleSettings,
   type VoiceSettings,
+  type CompanyPack,
 } from "@abhyas/core";
 import { Button, Callout, Dialog, Progress, SubtitleLanes } from "../components";
 import { getBrowserSpeechInput, getBrowserSpeechOutput } from "../services/speech";
@@ -26,6 +27,7 @@ interface LiveInterviewScreenProps {
   storage: StorageAdapter;
   plan: SessionPlan;
   questions: SelectedQuestion[];
+  companyPack?: CompanyPack | null | undefined;
   provider?: ProviderAdapter | undefined;
   speechInput?: SpeechInput | undefined;
   speechOutput?: SpeechOutput | undefined;
@@ -39,6 +41,7 @@ export function LiveInterviewScreen({
   storage,
   plan,
   questions,
+  companyPack,
   provider,
   speechInput,
   speechOutput,
@@ -83,11 +86,12 @@ export function LiveInterviewScreen({
     return new SessionRunner({
       plan,
       questions,
+      companyPack,
       storage,
       provider,
       autoStart: true,
     });
-  }, [plan, questions, storage, provider]);
+  }, [plan, questions, companyPack, storage, provider]);
 
   const [state, setState] = useState<InterviewState>(() => runner.getState());
   const [typedAnswer, setTypedAnswer] = useState("");

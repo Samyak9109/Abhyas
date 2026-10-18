@@ -1,7 +1,9 @@
 // FR-012, AI-013, AI-014: Layered interview context builder with rolling summary and token budgeting.
 import type { ChatMessage } from "../providers/types.js";
+import type { CompanyPack } from "../schemas/pack.schema.js";
 import type { ExperienceLevel, StructuredProfile } from "../schemas/profile.schema.js";
 import { condenseProfile } from "../profile/condenser.js";
+import { condenseCompanyPack } from "./company-condenser.js";
 
 export interface TurnContextItem {
   index: number;
@@ -20,13 +22,17 @@ export interface CompanyPackContext {
   notes?: string | undefined;
 }
 
+function isFullCompanyPack(pack: CompanyPack | CompanyPackContext): pack is CompanyPack {
+  return "domain" in pack || "schemaVersion" in pack;
+}
+
 export interface LayeredContextOptions {
   systemRules?: string | undefined;
   targetRole: string;
   level: ExperienceLevel;
   interviewStyle?: string | undefined;
   profile?: StructuredProfile | null | undefined;
-  companyPack?: CompanyPackContext | null | undefined;
+  companyPack?: CompanyPack | CompanyPackContext | null | undefined;
   completedTurns: TurnContextItem[];
   currentQuestion: string;
   instruction?: string | undefined;
@@ -160,7 +166,12 @@ export function buildLayeredInterviewContext(options: LayeredContextOptions): La
   // Target token budget: 3,000 tokens for small models (AI-014), 8,000 for standard
   const targetTokenBudget = options.targetTokenBudget ?? (isSmallModel ? 3000 : 8000);
 
-  // Layer 1: System Rules
+  // Layer 1: System Rules (FR-025, AI-013, AI-021)
+  const companyName = companyPack?.name;
+  const companyDirective = companyName
+    ? `You are conducting a realistic mock interview tailored for ${companyName}. Tailor questions and follow-ups to probe alignment with verified company values and documented engineering stack where appropriate. Strictly adhere to verified company facts in the delimited context; never invent or assume unevidenced facts about ${companyName}.`
+    : "No verified company context is available. Do NOT assert, assume, or invent specific facts, tech stacks, or corporate culture details about any company. Keep questions broadly applicable and role-focused.";
+
   const systemRules =
     options.systemRules ||
     [
@@ -169,6 +180,7 @@ export function buildLayeredInterviewContext(options: LayeredContextOptions): La
       "Ask focused, probing questions that assess depth, structure, and technical trade-offs.",
       "Calibrate your evaluation strictly against the candidate's declared level.",
       "Do not invent facts or experiences absent from the candidate's verified profile.",
+      companyDirective,
     ].join("\n");
 
   // Layer 2: Level and Persona
@@ -209,21 +221,26 @@ export function buildLayeredInterviewContext(options: LayeredContextOptions): La
   // Layer 4: Delimited Company Pack (as data per AI-013 / ADR-008 injection safety)
   let delimitedCompanyPack = "";
   if (companyPack) {
-    const packLines: string[] = [`<company_data name="${companyPack.name}">`];
-    if (companyPack.cultureValues && companyPack.cultureValues.length > 0) {
-      packLines.push(`Core Values: ${companyPack.cultureValues.join(", ")}`);
+    let packBody = "";
+    if (isFullCompanyPack(companyPack)) {
+      packBody = condenseCompanyPack(companyPack, { isSmallModel });
+    } else {
+      const packLines: string[] = [];
+      if (companyPack.cultureValues && companyPack.cultureValues.length > 0) {
+        packLines.push(`Core Values: ${companyPack.cultureValues.join(", ")}`);
+      }
+      if (companyPack.interviewFocus && companyPack.interviewFocus.length > 0) {
+        packLines.push(`Interview Focus: ${companyPack.interviewFocus.join(", ")}`);
+      }
+      if (companyPack.techStack && companyPack.techStack.length > 0) {
+        packLines.push(`Tech Stack: ${companyPack.techStack.join(", ")}`);
+      }
+      if (companyPack.notes) {
+        packLines.push(`Context Notes: ${companyPack.notes}`);
+      }
+      packBody = packLines.join("\n");
     }
-    if (companyPack.interviewFocus && companyPack.interviewFocus.length > 0) {
-      packLines.push(`Interview Focus: ${companyPack.interviewFocus.join(", ")}`);
-    }
-    if (companyPack.techStack && companyPack.techStack.length > 0) {
-      packLines.push(`Tech Stack: ${companyPack.techStack.join(", ")}`);
-    }
-    if (companyPack.notes) {
-      packLines.push(`Context Notes: ${companyPack.notes}`);
-    }
-    packLines.push("</company_data>");
-    delimitedCompanyPack = packLines.join("\n");
+    delimitedCompanyPack = `<company_data name="${companyPack.name}">\n${packBody}\n</company_data>`;
   }
 
   // Determine window: small models use last 2 turns verbatim; standard uses last 3 turns

@@ -8,6 +8,7 @@ import type { ProviderAdapter } from "../providers/types.js";
 import type { StructuredProfile } from "../schemas/profile.schema.js";
 import type { RubricLevel } from "../schemas/rubric.schema.js";
 import type { SelectedQuestion, SessionPlan } from "../schemas/session.schema.js";
+import type { CompanyPack } from "../schemas/pack.schema.js";
 import type { SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
 import type { StorageAdapter } from "../storage/storage-interface.js";
 import {
@@ -29,6 +30,7 @@ export interface SessionRunnerOptions {
   modelId?: string | undefined;
   rubric?: RubricLevel | undefined;
   profile?: StructuredProfile | null | undefined;
+  companyPack?: CompanyPack | null | undefined;
   /** Auto-start the session upon creation (default: false) */
   autoStart?: boolean | undefined;
 }
@@ -44,6 +46,7 @@ export class SessionRunner {
   private modelId: string;
   private rubric?: RubricLevel | undefined;
   private profile?: StructuredProfile | null | undefined;
+  private companyPack?: CompanyPack | null | undefined;
   private isProcessing = false;
   private eventQueue: InterviewEvent[] = [];
 
@@ -54,6 +57,7 @@ export class SessionRunner {
     this.modelId = options.modelId ?? "default-model";
     this.rubric = options.rubric;
     this.profile = options.profile;
+    this.companyPack = options.companyPack;
     this.state = createInitialInterviewState(options.plan, options.questions);
 
     if (options.autoStart) {
@@ -298,6 +302,9 @@ export class SessionRunner {
       rubric,
       profile: this.profile,
       provider: this.provider,
+      companyValues: this.companyPack?.values?.value
+        ? this.companyPack.values.value.map((v) => `${v.name}: ${v.description}`)
+        : undefined,
       isSmallModel,
     });
 
@@ -385,6 +392,7 @@ export class SessionRunner {
         level: plan.level,
         interviewStyle: plan.style,
         profile: this.profile,
+        companyPack: this.companyPack,
         completedTurns: completedTurnItems,
         currentQuestion: lastTurn.questionText,
         instruction:

@@ -229,5 +229,67 @@ describe("context-builder", () => {
       expect(result.layers.currentQuestion).toContain("Tell me about your experience");
       expect(result.messages[1]?.content).toContain("Tell me about your experience");
     });
+
+    it("enforces strict anti-hallucination instruction when no company pack is selected (FR-025, AI-021)", () => {
+      const result = buildLayeredInterviewContext({
+        targetRole: "Full Stack Engineer",
+        level: "mid",
+        completedTurns: [],
+        currentQuestion: "Describe a challenging bug you fixed.",
+      });
+
+      expect(result.layers.systemRules).toContain("No verified company context is available");
+      expect(result.layers.systemRules).toContain(
+        "Do NOT assert, assume, or invent specific facts, tech stacks, or corporate culture details about any company"
+      );
+      expect(result.layers.delimitedCompanyPack).toBe("");
+      expect(result.messages[0]?.content).not.toContain("<company_data");
+    });
+
+    it("injects full evidenced CompanyPack with tailoring directive into Layer 1 and Layer 4", () => {
+      const fullPack = {
+        schemaVersion: 1 as const,
+        slug: "amazon",
+        name: "Amazon",
+        domain: "amazon.com",
+        aliases: ["Amazon.com Inc."],
+        retrievedAt: "2026-10-18T10:00:00.000Z",
+        ttlDays: 90,
+        coverage: "high" as const,
+        overview: {
+          value: "Global technology company focusing on e-commerce, cloud computing, and AI.",
+          confidence: "documented" as const,
+          sources: [{ url: "https://aboutamazon.com", title: "About", retrievedAt: "2026-10-18" }],
+        },
+        techStack: {
+          value: ["Java", "AWS", "Python", "DynamoDB"],
+          confidence: "documented" as const,
+          sources: [{ url: "https://aws.amazon.com", title: "AWS", retrievedAt: "2026-10-18" }],
+        },
+        values: {
+          value: [
+            { name: "Customer Obsession", description: "Leaders start with customer and work backwards." },
+            { name: "Ownership", description: "Leaders are owners and think long term." },
+          ],
+          confidence: "documented" as const,
+          sources: [{ url: "https://amazon.jobs", title: "LP", retrievedAt: "2026-10-18" }],
+        },
+      };
+
+      const result = buildLayeredInterviewContext({
+        targetRole: "Backend Engineer",
+        level: "senior",
+        companyPack: fullPack,
+        completedTurns: [],
+        currentQuestion: "Tell me about a time you had to make a trade-off.",
+      });
+
+      expect(result.layers.systemRules).toContain("You are conducting a realistic mock interview tailored for Amazon");
+      expect(result.layers.systemRules).toContain("Tailor questions and follow-ups to probe alignment with verified company values");
+      expect(result.layers.delimitedCompanyPack).toContain('<company_data name="Amazon">');
+      expect(result.layers.delimitedCompanyPack).toContain("Customer Obsession");
+      expect(result.layers.delimitedCompanyPack).toContain("Documented Tech Stack: Java, AWS, Python, DynamoDB");
+      expect(result.layers.delimitedCompanyPack).toContain("</company_data>");
+    });
   });
 });

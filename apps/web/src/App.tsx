@@ -5,10 +5,12 @@ import {
   type SelectedQuestion,
   type SessionPlan,
   type StorageAdapter,
+  type CompanyPack,
 } from "@abhyas/core";
 import { Banner, Button, Callout, Skeleton } from "./components";
 import { HomeScreen } from "./screens/HomeScreen";
 import { DEFAULT_QUESTION_BANK } from "./services/question-bank";
+import { loadCompanyPack } from "./services/company-pack-service";
 import {
   StorageOpenError,
   initStorage,
@@ -165,6 +167,7 @@ export function App() {
   const [activeSession, setActiveSession] = useState<{
     plan: SessionPlan;
     questions: SelectedQuestion[];
+    companyPack?: CompanyPack | null;
   } | null>(null);
   const [isOffline, setIsOffline] = useState(
     () => typeof navigator !== "undefined" && !navigator.onLine
@@ -247,12 +250,18 @@ export function App() {
       try {
         const structured = await storage.getAll<StructuredProfile>("structuredProfiles");
         const profile = structured[0] ?? null;
+        let companyPack: CompanyPack | null = null;
+        if (plan.companySlug) {
+          const cached = await loadCompanyPack(plan.companySlug, storage);
+          companyPack = cached?.pack ?? null;
+        }
         const result = await selectQuestions({
           plan,
           bank: DEFAULT_QUESTION_BANK,
           profile,
+          companyPack,
         });
-        setActiveSession({ plan, questions: result.questions });
+        setActiveSession({ plan, questions: result.questions, companyPack });
         navigateTo("/app/interview");
       } catch (err) {
         console.error("Failed to select questions for session:", err);
@@ -591,6 +600,7 @@ export function App() {
             storage={init.storage}
             plan={activeSession.plan}
             questions={activeSession.questions}
+            companyPack={activeSession.companyPack}
             provider={activeSession.plan.isLocalModel ? getLocalEngineAdapter() : undefined}
             onFinish={(completedSessionId) => {
               setActiveSession(null);

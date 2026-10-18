@@ -19,6 +19,7 @@ import {
   SelectedQuestionSchema,
 } from "../schemas/index.js";
 import type { ExperienceLevel, StructuredProfile } from "../schemas/profile.schema.js";
+import type { CompanyPack } from "../schemas/pack.schema.js";
 import type { ProviderAdapter } from "../providers/types.js";
 
 // ---------------------------------------------------------------------------
@@ -67,16 +68,104 @@ import { LEVEL_BANDS, difficultyBankToNorm } from "../calibration/index.js";
 // ---------------------------------------------------------------------------
 
 /**
+ * Checks if a behavioral question matches any of the company's verified values or culture signals (FR-025).
+ */
+function matchesCompanyValues(question: Question, pack: CompanyPack): boolean {
+  const qText = question.text.toLowerCase();
+  const qTags = new Set(question.skillTags.map((t) => t.toLowerCase()));
+  const qHints = (question.rubricHints ?? []).map((h) => h.toLowerCase()).join(" ");
+
+  if (pack.values?.value) {
+    for (const v of pack.values.value) {
+      const vName = v.name.toLowerCase();
+      // Tag matches
+      if (
+        qTags.has(vName) ||
+        (vName.includes("ownership") && qTags.has("ownership")) ||
+        (vName.includes("leader") && qTags.has("leadership"))
+      ) {
+        return true;
+      }
+      // Text and rubric hint matches on keywords
+      const keywords = vName.split(/\s+/).filter((w) => w.length >= 4);
+      for (const kw of keywords) {
+        if (qText.includes(kw) || qHints.includes(kw)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  if (pack.cultureSignals?.value) {
+    for (const signal of pack.cultureSignals.value) {
+      const sWords = signal.toLowerCase().split(/\s+/).filter((w) => w.length >= 5);
+      for (const sw of sWords) {
+        if (qText.includes(sw)) return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Checks if a technical or system design question aligns with the company's verified tech stack (FR-025).
+ */
+function matchesCompanyTechStack(question: Question, pack: CompanyPack): boolean {
+  if (!pack.techStack?.value || pack.techStack.value.length === 0) return false;
+
+  const qText = question.text.toLowerCase();
+  const qTags = new Set(question.skillTags.map((t) => t.toLowerCase()));
+  const qHints = (question.rubricHints ?? []).map((h) => h.toLowerCase()).join(" ");
+
+  for (const stackItem of pack.techStack.value) {
+    const item = stackItem.toLowerCase().trim();
+    if (!item) continue;
+
+    // Direct regex word boundary check in text or hints
+    const escaped = item.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const itemRegex = new RegExp(`\\b${escaped}\\b`, "i");
+    if (itemRegex.test(qText) || itemRegex.test(qHints)) {
+      return true;
+    }
+
+    // Domain tag mappings
+    if (["postgresql", "postgres", "mysql", "mongodb", "dynamodb", "redis", "cassandra", "sql"].includes(item)) {
+      if (qTags.has("databases")) return true;
+    }
+    if (["aws", "gcp", "azure", "kubernetes", "docker", "terraform"].includes(item)) {
+      if (qTags.has("cloud_devops")) return true;
+    }
+    if (["kafka", "rabbitmq", "rest", "grpc", "graphql", "microservices"].includes(item)) {
+      if (qTags.has("backend_apis")) return true;
+    }
+    if (["react", "typescript", "javascript", "vue", "next.js", "frontend"].includes(item)) {
+      if (qTags.has("frontend")) return true;
+    }
+    if (["go", "golang", "java", "ruby", "python", "c++"].includes(item)) {
+      if (qTags.has("language_specific") || qTags.has("dsa")) return true;
+    }
+    if (["kafka", "redis", "distributed", "microservices"].includes(item)) {
+      if (qTags.has("system_design")) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Assign a selection weight to a bank question for a given session.
  * Higher weight = more likely to be selected.
  *
  * FR-017: Questions missing level or difficulty tags are not selectable (weight 0).
+ * FR-025: Tailors behavioral questions to company values, and technical questions to tech stack.
  */
 function computeWeight(
   question: Question,
   plan: SessionPlan,
   gapSkills: Set<string>,
-  weakSkills: Set<string>
+  weakSkills: Set<string>,
+  companyPack?: CompanyPack | null
 ): number {
   // FR-017: missing tags -> question not selectable
   if (
@@ -103,6 +192,29 @@ function computeWeight(
   // Weak skills from prior sessions boost selection (FR-007 spec).
   const hasWeakSkill = question.skillTags.some((t) => weakSkills.has(t));
   if (hasWeakSkill) weight *= 1.8;
+
+  // FR-025: Values-based behavioral question weighting
+  if (
+    companyPack &&
+    (question.type === "behavioral" ||
+      question.skillTags.some((t) =>
+        ["ownership", "leadership", "conflict", "communication", "clarity"].includes(t)
+      )) &&
+    matchesCompanyValues(question, companyPack)
+  ) {
+    weight *= 2.0;
+  }
+
+  // FR-025: Tech stack-weighted technical and system design question weighting
+  if (
+    companyPack &&
+    (question.type === "technical" ||
+      question.type === "system_design" ||
+      question.type === "dsa_verbal") &&
+    matchesCompanyTechStack(question, companyPack)
+  ) {
+    weight *= 2.0;
+  }
 
   return weight;
 }
@@ -137,22 +249,32 @@ const PersonalizationOutputSchema = z.object({
 type PersonalizationOutput = z.infer<typeof PersonalizationOutputSchema>;
 
 const PERSONALIZATION_SYSTEM_PROMPT = `You are an expert interview coach helping personalize question phrasing.
-Given a candidate profile and an original question, rewrite the question to:
+Given a candidate profile, target company context, and an original question, rewrite the question to:
 - Reference the candidate's specific experience level and target role naturally.
 - Keep the core technical/behavioral intent unchanged.
 - Maintain the same difficulty.
 - Stay concise (one to two sentences maximum).
+- When target company context is provided, subtly tailor the scenario or phrasing around the company's verified domain or engineering stack without altering difficulty or inventing fake trivia.
+- When no company context is provided, do NOT mention, assume, or invent any company name or company facts.
 Return a JSON object with a single "personalizedText" field containing the rewritten question.`;
 
 async function personalizeQuestion(
   originalText: string,
   plan: SessionPlan,
   profile: StructuredProfile | null,
-  adapter: ProviderAdapter
+  adapter: ProviderAdapter,
+  companyPack?: CompanyPack | null
 ): Promise<string> {
   const profileContext = profile
     ? `Candidate: ${plan.level} ${plan.targetRole}. Skills: ${profile.skills.slice(0, 8).join(", ")}.`
     : `Candidate: ${plan.level} ${plan.targetRole}.`;
+
+  let companyContext = "Company: None (general session). Do NOT state, assume, or invent company facts.";
+  if (companyPack) {
+    const stack = companyPack.techStack?.value?.slice(0, 6).join(", ") ?? "";
+    const values = companyPack.values?.value?.slice(0, 3).map((v) => v.name).join(", ") ?? "";
+    companyContext = `Target Company: ${companyPack.name}.${stack ? ` Verified Stack: ${stack}.` : ""}${values ? ` Verified Values: ${values}.` : ""}`;
+  }
 
   try {
     const controller = new AbortController();
@@ -161,7 +283,7 @@ async function personalizeQuestion(
         { role: "system", content: PERSONALIZATION_SYSTEM_PROMPT },
         {
           role: "user",
-          content: `${profileContext}\n\nOriginal question: "${originalText}"`,
+          content: `${profileContext}\n${companyContext}\n\nOriginal question: "${originalText}"`,
         },
       ],
       PersonalizationOutputSchema,
@@ -193,6 +315,9 @@ export interface SelectQuestionsOptions {
 
   /** Structured profile for gap and weak-skill weighting; null for role-only mode. */
   profile: StructuredProfile | null;
+
+  /** Evidenced company pack for company values and tech stack tailoring (FR-025, AI-014). */
+  companyPack?: CompanyPack | null | undefined;
 
   /** Skill IDs from prior sessions with low scores (for weak-skill weighting). */
   weakSkillIds?: string[];
@@ -240,7 +365,7 @@ export interface SelectQuestionsResult {
 export async function selectQuestions(
   opts: SelectQuestionsOptions
 ): Promise<SelectQuestionsResult> {
-  const { plan, bank, profile, adapter } = opts;
+  const { plan, bank, profile, adapter, companyPack } = opts;
   const weakSkills = new Set(opts.weakSkillIds ?? []);
   const recentIds = new Set(opts.recentQuestionIds ?? []);
   const rngFactory = opts.rng ?? mulberry32;
@@ -253,7 +378,7 @@ export async function selectQuestions(
   const typeFilter = TYPE_FILTER[plan.type] ?? (() => true);
 
   const eligible = bank.filter(
-    (q) => typeFilter(q) && computeWeight(q, plan, gapSkills, weakSkills) > 0
+    (q) => typeFilter(q) && computeWeight(q, plan, gapSkills, weakSkills, companyPack) > 0
   );
 
   // Deduplicate against recent sessions (soft: if pool too small, allow repeats).
@@ -262,7 +387,7 @@ export async function selectQuestions(
 
   // --- Weighted sampling ---------------------------------------------------
 
-  const weights = pool.map((q) => computeWeight(q, plan, gapSkills, weakSkills));
+  const weights = pool.map((q) => computeWeight(q, plan, gapSkills, weakSkills, companyPack));
   const selected: Question[] = [];
   const usedIds = new Set<string>();
 
@@ -271,7 +396,9 @@ export async function selectQuestions(
     const perType = Math.ceil(plan.length / MIXED_TYPES.length);
     for (const t of MIXED_TYPES) {
       const typePool = pool.filter((q) => q.type === t && !usedIds.has(q.id));
-      const typeWeights = typePool.map((q) => computeWeight(q, plan, gapSkills, weakSkills));
+      const typeWeights = typePool.map((q) =>
+        computeWeight(q, plan, gapSkills, weakSkills, companyPack)
+      );
       const picks = weightedSample(typePool, typeWeights, perType, rng);
       for (const p of picks) {
         if (selected.length < plan.length) {
@@ -283,7 +410,9 @@ export async function selectQuestions(
     // Fill remaining from the full pool.
     if (selected.length < plan.length) {
       const remaining = pool.filter((q) => !usedIds.has(q.id));
-      const remWeights = remaining.map((q) => computeWeight(q, plan, gapSkills, weakSkills));
+      const remWeights = remaining.map((q) =>
+        computeWeight(q, plan, gapSkills, weakSkills, companyPack)
+      );
       const fill = weightedSample(remaining, remWeights, plan.length - selected.length, rng);
       for (const q of fill) {
         selected.push(q);
@@ -325,7 +454,7 @@ export async function selectQuestions(
     let originalText: string | undefined;
 
     if (adapter) {
-      const personalized = await personalizeQuestion(q.text, plan, profile, adapter);
+      const personalized = await personalizeQuestion(q.text, plan, profile, adapter, companyPack);
       if (personalized !== q.text) {
         originalText = q.text;
         text = personalized;

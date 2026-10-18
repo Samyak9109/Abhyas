@@ -291,6 +291,69 @@ describe("M1.2: AISetupScreen (PG-09)", () => {
     expect(providers[0]?.key).toBeUndefined();
   });
 
+  describe("Device Rules Enforcement (M3.5, FR-022, ADR-013)", () => {
+    it("blocks local mode selection on phones and displays explanation message", async () => {
+      const storage = new MemoryStorageAdapter();
+      const mockMobileRuntime = {
+        hasWebGpu: vi.fn().mockResolvedValue(false),
+        isMobileDevice: vi.fn().mockReturnValue(true),
+      };
+
+      render(
+        <AISetupScreen
+          storage={storage}
+          onComplete={() => {}}
+          hardwareRuntime={mockMobileRuntime}
+        />
+      );
+
+      // Local model radio card should be disabled on phone
+      const localRadio = screen.getByRole("radio", { name: /local model \(webllm\)/i });
+      expect(localRadio).toHaveProperty("disabled", true);
+      expect(screen.getByText("PC ONLY")).toBeDefined();
+
+      // Explanation message should appear
+      expect(screen.getByText(/Local mode blocked on phones/i)).toBeDefined();
+      expect(
+        screen.getAllByText(/Local models are disabled on mobile devices/i).length
+      ).toBeGreaterThanOrEqual(1);
+
+      // Clicking disabled radio should not select local model
+      fireEvent.click(localRadio);
+      expect(screen.queryByText("In-Browser Local Model (WebLLM)")).toBeNull();
+      expect(screen.getByText("Google Gemini Setup")).toBeDefined();
+    });
+
+    it("resets existing webllm provider to cloud provider on phone and shows warning", async () => {
+      const storage = new MemoryStorageAdapter();
+      await storage.put("providers", {
+        id: "webllm",
+        kind: "webllm",
+        modelRoles: { interviewer: "SmolLM2-1.7B-Instruct-q4f16_1-MLC" },
+      });
+
+      const mockMobileRuntime = {
+        hasWebGpu: vi.fn().mockResolvedValue(false),
+        isMobileDevice: vi.fn().mockReturnValue(true),
+      };
+
+      render(
+        <AISetupScreen
+          storage={storage}
+          onComplete={() => {}}
+          hardwareRuntime={mockMobileRuntime}
+        />
+      );
+
+      // Should fall back to gemini instead of webllm on phone
+      await waitFor(() => {
+        expect(screen.getByText("Google Gemini Setup")).toBeDefined();
+      });
+
+      expect(screen.getByText(/Local mode blocked on phones/i)).toBeDefined();
+    });
+  });
+
   describe("Accessibility (axe)", () => {
     it("has no axe violations in default state under Ink theme", async () => {
       document.documentElement.setAttribute("data-theme", "ink");

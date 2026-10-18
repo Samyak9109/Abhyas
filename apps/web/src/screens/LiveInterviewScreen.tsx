@@ -26,9 +26,9 @@ interface LiveInterviewScreenProps {
   storage: StorageAdapter;
   plan: SessionPlan;
   questions: SelectedQuestion[];
-  provider?: ProviderAdapter;
-  speechInput?: SpeechInput;
-  speechOutput?: SpeechOutput;
+  provider?: ProviderAdapter | undefined;
+  speechInput?: SpeechInput | undefined;
+  speechOutput?: SpeechOutput | undefined;
   onFinish: (sessionId?: string) => void;
   onExit: () => void;
 }
@@ -45,14 +45,32 @@ export function LiveInterviewScreen({
   onFinish,
   onExit,
 }: LiveInterviewScreenProps) {
-  // Speech services
-  const inputService = useMemo(() => speechInput ?? getBrowserSpeechInput(), [speechInput]);
-  const outputService = useMemo(() => speechOutput ?? getBrowserSpeechOutput(), [speechOutput]);
+  const isLocalMode =
+    provider?.id === "webllm" ||
+    Boolean((plan as { isLocalModel?: boolean }).isLocalModel);
 
-  // Mode resolution (fallback to text if voice is not supported)
+  // Mode resolution: local mode strictly enforces text-only (FR-022, ADR-013)
   const [effectiveMode, setEffectiveMode] = useState<"text" | "voice">(() => {
-    return plan.inputMode === "voice" && inputService.isSupported ? "voice" : "text";
+    if (isLocalMode) return "text";
+    if (plan.inputMode !== "voice") return "text";
+    const supported = speechInput ? speechInput.isSupported : getBrowserSpeechInput().isSupported;
+    return supported ? "voice" : "text";
   });
+
+  // Speech services: NEVER construct speech services in local mode or text mode (FR-022, ADR-013)
+  const inputService = useMemo<SpeechInput | null>(() => {
+    if (isLocalMode || effectiveMode === "text") {
+      return speechInput ?? null;
+    }
+    return speechInput ?? getBrowserSpeechInput();
+  }, [isLocalMode, effectiveMode, speechInput]);
+
+  const outputService = useMemo<SpeechOutput | null>(() => {
+    if (isLocalMode || effectiveMode === "text") {
+      return speechOutput ?? null;
+    }
+    return speechOutput ?? getBrowserSpeechOutput();
+  }, [isLocalMode, effectiveMode, speechOutput]);
 
   // Settings
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(DEFAULT_VOICE_SETTINGS);
@@ -146,8 +164,8 @@ export function LiveInterviewScreen({
   // Clean-up speech on unmount
   useEffect(() => {
     return () => {
-      outputService.cancel();
-      void inputService.abort();
+      outputService?.cancel();
+      void inputService?.abort();
     };
   }, [outputService, inputService]);
 
@@ -173,7 +191,8 @@ export function LiveInterviewScreen({
       state.context.currentQuestion &&
       !isMuted &&
       voiceSettings.enabled &&
-      voiceSettings.autoPlay
+      voiceSettings.autoPlay &&
+      outputService
     ) {
       const q = state.context.currentQuestion;
       const key = `${state.context.currentQuestionIndex}-${q.id}`;
@@ -215,9 +234,10 @@ export function LiveInterviewScreen({
   // --- Voice Actions (FR-009) ---
 
   const startListening = async () => {
+    if (effectiveMode !== "voice" || !inputService) return;
     if (state.status !== "await_answer" || pttState === "listening") return;
     // Interrupt ongoing interviewer speech immediately (design.md 7.1)
-    outputService.cancel();
+    outputService?.cancel();
     setSpeechError(null);
     setInterimSpeech("");
     setPttSeconds(0);
@@ -250,7 +270,7 @@ export function LiveInterviewScreen({
   };
 
   const stopListening = async () => {
-    if (pttState !== "listening") return;
+    if (pttState !== "listening" || !inputService) return;
     try {
       const finalTranscript = await inputService.stop();
       const combined = (finalTranscript || interimSpeech || typedAnswer).trim();
@@ -279,15 +299,15 @@ export function LiveInterviewScreen({
 
   const handleSwitchToTyping = () => {
     if (pttState === "listening") {
-      void inputService.abort();
+      void inputService?.abort();
     }
-    outputService.cancel();
+    outputService?.cancel();
     setPttState("idle");
     setEffectiveMode("text");
   };
 
   const handleSwitchToVoice = () => {
-    if (inputService.isSupported) {
+    if (!isLocalMode && inputService?.isSupported) {
       setEffectiveMode("voice");
       setPttState("idle");
       setSpeechError(null);
@@ -300,7 +320,7 @@ export function LiveInterviewScreen({
     if (e) e.preventDefault();
     if (!typedAnswer.trim() || state.status !== "await_answer") return;
 
-    outputService.cancel();
+    outputService?.cancel();
     const answerToSubmit = typedAnswer.trim().slice(0, MAX_ANSWER_CHARS);
     setTypedAnswer("");
     setInterimSpeech("");
@@ -362,9 +382,9 @@ export function LiveInterviewScreen({
 
   const handleSkip = async () => {
     if (state.status !== "await_answer") return;
-    outputService.cancel();
+    outputService?.cancel();
     if (pttState === "listening") {
-      void inputService.abort();
+      void inputService?.abort();
       setPttState("idle");
     }
     await runner.dispatch({ type: "SKIP" });
@@ -377,7 +397,7 @@ export function LiveInterviewScreen({
 
   const handleRepeat = async () => {
     if (state.status !== "await_answer") return;
-    if (effectiveMode === "voice" && !isMuted && state.context.currentQuestion) {
+    if (effectiveMode === "voice" && !isMuted && state.context.currentQuestion && outputService) {
       outputService.cancel();
       void outputService.speak(state.context.currentQuestion.text, {
         rate: voiceSettings.rate,
@@ -391,9 +411,9 @@ export function LiveInterviewScreen({
     if (state.status === "paused") {
       await runner.dispatch({ type: "RESUME" });
     } else {
-      outputService.cancel();
+      outputService?.cancel();
       if (pttState === "listening") {
-        void inputService.abort();
+        void inputService?.abort();
         setPttState("idle");
       }
       await runner.dispatch({ type: "PAUSE" });
@@ -401,9 +421,9 @@ export function LiveInterviewScreen({
   };
 
   const handleConfirmEnd = async () => {
-    outputService.cancel();
+    outputService?.cancel();
     if (pttState === "listening") {
-      void inputService.abort();
+      void inputService?.abort();
       setPttState("idle");
     }
     setShowEndDialog(false);
@@ -416,9 +436,9 @@ export function LiveInterviewScreen({
   };
 
   const handleSavePartial = async () => {
-    outputService.cancel();
+    outputService?.cancel();
     if (pttState === "listening") {
-      void inputService.abort();
+      void inputService?.abort();
     }
     await runner.dispatch({ type: "SAVE_PARTIAL" });
     onExit();
@@ -521,7 +541,7 @@ export function LiveInterviewScreen({
                 variant="ghost"
                 onClick={() => {
                   if (!isMuted) {
-                    outputService.cancel();
+                    outputService?.cancel();
                   }
                   setIsMuted((prev) => !prev);
                 }}
@@ -583,7 +603,7 @@ export function LiveInterviewScreen({
         )}
 
         {/* Fallback Notice when plan requested voice but browser does not support it */}
-        {plan.inputMode === "voice" && !inputService.isSupported && (
+        {plan.inputMode === "voice" && !isLocalMode && !inputService?.isSupported && (
           <Callout variant="info" title="Voice Input Unavailable">
             Voice recognition is not supported in this browser. Switched to typing mode
             automatically.
@@ -848,7 +868,7 @@ export function LiveInterviewScreen({
                 <span id="answer-help-text" className="abh-form-hint">
                   Press Submit or use Ctrl+Enter when complete. You can also ask for a hint or skip.
                 </span>
-                {inputService.isSupported && (
+                {!isLocalMode && inputService?.isSupported && (
                   <button
                     type="button"
                     className="abh-switch-to-text-btn"

@@ -63,6 +63,12 @@ export const SessionPlanSchema = z.object({
 
   /** Drill format: "quick_fire" (short answers) or "deep_dive" (follow-up chains). */
   drillFormat: DrillFormatSchema.optional(),
+
+  /** Whether the session runs on a local in-browser model (FR-022, ADR-013). */
+  isLocalModel: z.boolean().optional(),
+
+  /** Whether the session runs on a small model (AI-014). */
+  isSmallModel: z.boolean().optional(),
 });
 
 export type SessionPlan = z.infer<typeof SessionPlanSchema>;

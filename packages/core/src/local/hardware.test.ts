@@ -4,7 +4,9 @@ import {
   detectHardwareCapabilities,
   determineHardwareTier,
   isMobileUserAgent,
+  isPhoneDevice,
   runHardwareBenchmark,
+  validateDeviceRules,
   RECOMMENDED_MODELS_BY_TIER,
   TIER_LABELS,
 } from "./hardware.js";
@@ -186,4 +188,92 @@ describe("Tier Recommendation & Benchmark (phases.md M3.1 Acceptance Criteria)",
     expect(result.recommendedModels).toHaveLength(0);
     expect(result.notes[0]).toContain("WebGPU is not supported");
   });
+
+  describe("Device Rules Enforcement (M3.5, FR-022, ADR-013)", () => {
+    it("identifies phone devices via runtime and navigator", () => {
+      const mobileRuntime: HardwareRuntime = {
+        hasWebGpu: () => true,
+        isMobileDevice: () => true,
+      };
+      const desktopRuntime: HardwareRuntime = {
+        hasWebGpu: () => true,
+        isMobileDevice: () => false,
+      };
+
+      expect(isPhoneDevice(mobileRuntime)).toBe(true);
+      expect(isPhoneDevice(desktopRuntime)).toBe(false);
+    });
+
+    it("blocks local mode on phones with clear explanation", () => {
+      const mobileRuntime: HardwareRuntime = {
+        hasWebGpu: () => true,
+        isMobileDevice: () => true,
+      };
+
+      const result = validateDeviceRules({
+        isLocalModel: true,
+        inputMode: "text",
+        runtime: mobileRuntime,
+      });
+
+      expect(result.valid).toBe(false);
+      expect(result.isMobile).toBe(true);
+      expect(result.enforcedInputMode).toBe("text");
+      expect(result.error).toContain("Local models are disabled on mobile devices (phones/tablets)");
+    });
+
+    it("enforces text-only mode for local models on PC when voice is attempted", () => {
+      const desktopRuntime: HardwareRuntime = {
+        hasWebGpu: () => true,
+        isMobileDevice: () => false,
+      };
+
+      const result = validateDeviceRules({
+        isLocalModel: true,
+        inputMode: "voice",
+        runtime: desktopRuntime,
+      });
+
+      expect(result.valid).toBe(false);
+      expect(result.isMobile).toBe(false);
+      expect(result.enforcedInputMode).toBe("text");
+      expect(result.error).toContain("Local mode is text-only. Voice input and output are disabled");
+    });
+
+    it("allows valid text-only local model on PC", () => {
+      const desktopRuntime: HardwareRuntime = {
+        hasWebGpu: () => true,
+        isMobileDevice: () => false,
+      };
+
+      const result = validateDeviceRules({
+        isLocalModel: true,
+        inputMode: "text",
+        runtime: desktopRuntime,
+      });
+
+      expect(result.valid).toBe(true);
+      expect(result.isMobile).toBe(false);
+      expect(result.enforcedInputMode).toBe("text");
+      expect(result.error).toBeUndefined();
+    });
+
+    it("allows voice mode for cloud models on supported devices", () => {
+      const desktopRuntime: HardwareRuntime = {
+        hasWebGpu: () => false,
+        isMobileDevice: () => false,
+      };
+
+      const result = validateDeviceRules({
+        isLocalModel: false,
+        inputMode: "voice",
+        runtime: desktopRuntime,
+      });
+
+      expect(result.valid).toBe(true);
+      expect(result.enforcedInputMode).toBe("voice");
+      expect(result.error).toBeUndefined();
+    });
+  });
 });
+

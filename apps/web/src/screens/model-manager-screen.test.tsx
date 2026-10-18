@@ -151,6 +151,29 @@ describe("ModelManagerScreen (PG-19, M3.2)", () => {
     });
   });
 
+  it("displays Mobile Device Blocked when opened on a phone (FR-022, ADR-013)", async () => {
+    const mobileRuntime: HardwareRuntime = {
+      hasWebGpu: vi.fn().mockResolvedValue(true),
+      isMobileDevice: vi.fn().mockReturnValue(true),
+    };
+
+    render(<ModelManagerScreen storage={storage} hardwareRuntime={mobileRuntime} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Mobile Device Blocked")).toBeDefined();
+    });
+
+    expect(
+      screen.getByText(/Local models are disabled on mobile devices \(phones\/tablets\)/i)
+    ).toBeDefined();
+
+    // Verify all download buttons are disabled
+    const downloadBtns = screen.getAllByRole("button", { name: /^Download /i });
+    for (const btn of downloadBtns) {
+      expect(btn).toHaveProperty("disabled", true);
+    }
+  });
+
   it("has zero axe accessibility violations under Ink and Paper themes", async () => {
     const { container } = render(
       <div data-theme="ink">

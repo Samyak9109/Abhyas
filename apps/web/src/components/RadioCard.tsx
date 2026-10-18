@@ -6,11 +6,11 @@ export interface RadioCardProps {
   description: string;
   monogram: string;
   checked: boolean;
-  onChange?: () => void;
-  disabled?: boolean;
-  comingSoon?: boolean;
-  tag?: string;
-  extra?: ReactNode;
+  onChange?: (() => void) | undefined;
+  disabled?: boolean | undefined;
+  comingSoon?: boolean | undefined;
+  tag?: string | undefined;
+  extra?: ReactNode | undefined;
 }
 
 export const RadioCard: React.FC<RadioCardProps> = ({

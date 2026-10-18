@@ -334,7 +334,10 @@ export function ModelManagerScreen({
         {/* Global Notifications and State Banners */}
         {hardwareReport && !hardwareReport.supported && (
           <div className="abh-mm-alert" role="alert">
-            <Callout variant="danger" title="WebGPU Unavailable">
+            <Callout
+              variant="danger"
+              title={hardwareReport.isMobile ? "Mobile Device Blocked" : "WebGPU Unavailable"}
+            >
               {hardwareReport.unsupportedReason ??
                 "Local models are disabled on this device. Please use Chrome 113+ on desktop or connect a Gemini/OpenAI cloud key."}
             </Callout>

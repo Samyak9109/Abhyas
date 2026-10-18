@@ -201,6 +201,116 @@ describe("M1.4: SessionSetupScreen (PG-11)", () => {
     expect(plan.inputMode).toBe("voice");
   });
 
+  describe("Device Rules Enforcement (M3.5, FR-022, ADR-013)", () => {
+    it("enforces text-only mode for local model (webllm) on PC and disables voice input", async () => {
+      const storage = new MemoryStorageAdapter();
+      await storage.put("providers", {
+        id: "webllm",
+        kind: "webllm",
+        modelRoles: { interviewer: "SmolLM2-1.7B-Instruct-q4f16_1-MLC" },
+      });
+      await storage.put("settings", {
+        key: "activeProviderId",
+        value: "webllm",
+      });
+
+      const onStart = vi.fn();
+      const mockSpeechInput = {
+        isSupported: true,
+        getState: () => "idle" as const,
+        start: vi.fn(),
+        stop: vi.fn().mockResolvedValue(""),
+        abort: vi.fn(),
+      };
+
+      const desktopRuntime = {
+        hasWebGpu: () => true,
+        isMobileDevice: () => false,
+      };
+
+      render(
+        <SessionSetupScreen
+          storage={storage}
+          speechInput={mockSpeechInput}
+          onStart={onStart}
+          onBack={vi.fn()}
+          hardwareRuntime={desktopRuntime}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Local Model: Text-Only Enforced")).toBeDefined();
+      });
+
+      // Voice radio should be disabled with TEXT ONLY tag
+      const voiceRadio = screen.getByRole("radio", { name: /voice/i });
+      expect(voiceRadio).toHaveProperty("disabled", true);
+      expect(screen.getByText("TEXT ONLY")).toBeDefined();
+      expect(
+        screen.getByText(/Voice is disabled in local mode to dedicate device resources to the model/i)
+      ).toBeDefined();
+
+      // Start session should produce text plan with isLocalModel and isSmallModel
+      const startBtn = screen.getByRole("button", { name: /Start Session/i });
+      expect(startBtn).toHaveProperty("disabled", false);
+      fireEvent.click(startBtn);
+
+      await waitFor(() => {
+        expect(onStart).toHaveBeenCalledTimes(1);
+      });
+
+      const plan = onStart.mock.calls[0]?.[0];
+      expect(plan.inputMode).toBe("text");
+      expect(plan.isLocalModel).toBe(true);
+      expect(plan.isSmallModel).toBe(true);
+    });
+
+    it("blocks starting session when local model (webllm) is configured on a phone", async () => {
+      const storage = new MemoryStorageAdapter();
+      await storage.put("providers", {
+        id: "webllm",
+        kind: "webllm",
+        modelRoles: { interviewer: "SmolLM2-1.7B-Instruct-q4f16_1-MLC" },
+      });
+      await storage.put("settings", {
+        key: "activeProviderId",
+        value: "webllm",
+      });
+
+      const onStart = vi.fn();
+      const mobileRuntime = {
+        hasWebGpu: () => false,
+        isMobileDevice: () => true,
+      };
+
+      render(
+        <SessionSetupScreen
+          storage={storage}
+          onStart={onStart}
+          onBack={vi.fn()}
+          hardwareRuntime={mobileRuntime}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Local mode cannot run on phones")).toBeDefined();
+      });
+
+      expect(
+        screen.getByText(
+          /Your configured AI provider is a local model, which is disabled on mobile devices/i
+        )
+      ).toBeDefined();
+
+      // Start button should be disabled
+      const startBtn = screen.getByRole("button", { name: /Start Session/i });
+      expect(startBtn).toHaveProperty("disabled", true);
+      fireEvent.click(startBtn);
+
+      expect(onStart).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Accessibility (axe)", () => {
     it("has zero axe violations under Ink theme in default state", async () => {
       const storage = new MemoryStorageAdapter();

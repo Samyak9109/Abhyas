@@ -322,3 +322,71 @@ export async function runHardwareBenchmark(
     notes,
   };
 }
+
+/**
+ * Checks whether the current environment or runtime represents a phone or mobile device (FR-022, ADR-013).
+ */
+export function isPhoneDevice(runtime?: HardwareRuntime): boolean {
+  if (runtime?.isMobileDevice) {
+    return runtime.isMobileDevice();
+  }
+  const g = typeof globalThis !== "undefined" ? (globalThis as GlobalEnvironment) : {};
+  const nav = g.navigator;
+  if (!nav) return false;
+  return isMobileUserAgent(nav.userAgent || "", nav.maxTouchPoints || 0);
+}
+
+export interface DeviceRuleValidation {
+  valid: boolean;
+  enforcedInputMode: "voice" | "text";
+  isMobile: boolean;
+  error?: string;
+}
+
+/**
+ * Enforces device-level constraints for local and cloud models (FR-022, ADR-013).
+ * - On phones/tablets, local mode cannot be selected or started.
+ * - On PCs running local models, text-only is strictly enforced (no voice).
+ */
+export function validateDeviceRules(options: {
+  isLocalModel: boolean;
+  inputMode: "voice" | "text";
+  runtime?: HardwareRuntime;
+}): DeviceRuleValidation {
+  const isMobile = isPhoneDevice(options.runtime);
+
+  if (options.isLocalModel) {
+    if (isMobile) {
+      return {
+        valid: false,
+        enforcedInputMode: "text",
+        isMobile: true,
+        error:
+          "Local models are disabled on mobile devices (phones/tablets). Local mode runs only on desktop computers with a dedicated GPU (FR-022, ADR-013).",
+      };
+    }
+
+    if (options.inputMode === "voice") {
+      return {
+        valid: false,
+        enforcedInputMode: "text",
+        isMobile: false,
+        error:
+          "Local mode is text-only. Voice input and output are disabled to dedicate device resources to the model (FR-022, ADR-013).",
+      };
+    }
+
+    return {
+      valid: true,
+      enforcedInputMode: "text",
+      isMobile: false,
+    };
+  }
+
+  return {
+    valid: true,
+    enforcedInputMode: options.inputMode,
+    isMobile,
+  };
+}
+

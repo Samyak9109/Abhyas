@@ -18,6 +18,7 @@ import {
 import { applyResolvedTheme, loadThemePreference, mirrorThemePreference } from "./services/theme";
 import { useTheme } from "./services/use-theme";
 import { registerPwa } from "./services/pwa";
+import { getLocalEngineAdapter } from "./services/local-engine";
 import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/app.css";
@@ -568,6 +569,7 @@ export function App() {
             storage={init.storage}
             plan={activeSession.plan}
             questions={activeSession.questions}
+            provider={activeSession.plan.isLocalModel ? getLocalEngineAdapter() : undefined}
             onFinish={(completedSessionId) => {
               setActiveSession(null);
               if (completedSessionId) {

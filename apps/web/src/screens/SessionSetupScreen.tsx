@@ -4,10 +4,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   SessionPlanSchema,
+  isPhoneDevice,
   type ExperienceLevel,
+  type HardwareRuntime,
   type InputMode,
   type InterviewerStyle,
   type ProfileRow,
+  type ProviderRow,
   type SessionLength,
   type SessionPlan,
   type SessionType,
@@ -24,6 +27,7 @@ interface SessionSetupScreenProps {
   onBack: () => void;
   onNavigateAISetup?: () => void;
   onNavigateSettings?: () => void;
+  hardwareRuntime?: HardwareRuntime;
 }
 
 const SETUP_STEPS = [
@@ -137,16 +141,24 @@ export function SessionSetupScreen({
   onBack,
   onNavigateAISetup,
   onNavigateSettings,
+  hardwareRuntime,
 }: SessionSetupScreenProps) {
   const [sessionType, setSessionType] = useState<SessionType>("mixed");
   const [length, setLength] = useState<SessionLength>(10);
   const [style, setStyle] = useState<InterviewerStyle>("standard");
+  const [activeProviderKind, setActiveProviderKind] = useState<string | null>(null);
+
+  const isMobile = useMemo(() => isPhoneDevice(hardwareRuntime), [hardwareRuntime]);
+  const isLocalProvider = activeProviderKind === "webllm";
 
   const isSpeechSupported = useMemo(() => {
+    // In local mode, never construct speech services (FR-022, ADR-013)
+    if (isLocalProvider) return false;
     return speechInput ? speechInput.isSupported : getBrowserSpeechInput().isSupported;
-  }, [speechInput]);
+  }, [speechInput, isLocalProvider]);
 
   const [inputMode, setInputMode] = useState<InputMode>("text");
+  const effectiveInputMode: InputMode = isLocalProvider ? "text" : inputMode;
 
   // Profile-derived state
   const [level, setLevel] = useState<ExperienceLevel>("mid");
@@ -169,9 +181,20 @@ export function SessionSetupScreen({
           if (p.targetRole) setTargetRole(p.targetRole);
         }
 
-        const providers = await storage.getAll("providers");
+        const providers = (await storage.getAll("providers")) as ProviderRow[];
         if (mounted) {
           setHasProvider(providers.length > 0);
+          try {
+            const activeSetting = await storage.get<{ key: string; value: string }>(
+              "settings",
+              "activeProviderId"
+            );
+            const activeId = activeSetting?.value ?? providers[0]?.id;
+            const current = providers.find((p) => p.id === activeId) ?? providers[0] ?? null;
+            setActiveProviderKind(current?.kind ?? null);
+          } catch {
+            setActiveProviderKind(providers[0]?.kind ?? null);
+          }
         }
       } catch {
         // Fallback to defaults — profile screen validates before reaching here.
@@ -194,6 +217,13 @@ export function SessionSetupScreen({
       return;
     }
 
+    if (isMobile && isLocalProvider) {
+      setValidationError(
+        "Local mode is disabled on mobile devices (phones/tablets). Please configure a cloud AI provider."
+      );
+      return;
+    }
+
     setIsStarting(true);
     try {
       const plan = SessionPlanSchema.parse({
@@ -201,10 +231,12 @@ export function SessionSetupScreen({
         type: sessionType,
         length,
         style,
-        inputMode,
+        inputMode: effectiveInputMode,
         level,
         targetRole,
         createdAt: new Date().toISOString(),
+        isLocalModel: isLocalProvider,
+        isSmallModel: isLocalProvider,
       });
       onStart(plan);
     } catch (err: unknown) {
@@ -335,25 +367,45 @@ export function SessionSetupScreen({
                   title="Text"
                   description="Type your answers. Works on any device and browser."
                   monogram="T"
-                  checked={inputMode === "text"}
+                  checked={effectiveInputMode === "text"}
                   onChange={() => setInputMode("text")}
                 />
                 <RadioCard
                   title="Voice"
                   description={
-                    isSpeechSupported
-                      ? "Push-to-talk microphone input with live subtitles and review."
-                      : "Voice input is not supported in this browser."
+                    isLocalProvider
+                      ? "Voice is disabled in local mode to dedicate device resources to the model (FR-022, ADR-013)."
+                      : isSpeechSupported
+                        ? "Push-to-talk microphone input with live subtitles and review."
+                        : "Voice input is not supported in this browser."
                   }
                   monogram="🎙"
-                  checked={inputMode === "voice"}
+                  tag={isLocalProvider ? "TEXT ONLY" : undefined}
+                  checked={effectiveInputMode === "voice"}
                   onChange={() => {
-                    if (isSpeechSupported) setInputMode("voice");
+                    if (!isLocalProvider && isSpeechSupported) setInputMode("voice");
                   }}
-                  disabled={!isSpeechSupported}
+                  disabled={!isSpeechSupported || isLocalProvider}
                 />
               </div>
-              {!isSpeechSupported && (
+              {isLocalProvider && (
+                <div style={{ marginTop: "var(--space-2)" }}>
+                  <Callout variant="info" title="Local Model: Text-Only Enforced">
+                    Speech input and output are disabled in local mode (ADR-013). All device
+                    resources are dedicated to the in-browser model.
+                  </Callout>
+                </div>
+              )}
+              {isMobile && isLocalProvider && (
+                <div style={{ marginTop: "var(--space-2)" }}>
+                  <Callout variant="danger" title="Local mode cannot run on phones">
+                    Your configured AI provider is a local model, which is disabled on mobile
+                    devices (phones/tablets). Please open AI Setup to configure a cloud provider
+                    (Gemini or OpenAI) to practice on this device (FR-022, ADR-013).
+                  </Callout>
+                </div>
+              )}
+              {!isLocalProvider && !isSpeechSupported && (
                 <p className="abh-form-hint" style={{ marginTop: "var(--space-2)" }}>
                   Voice input requires Chrome, Edge, or Safari speech recognition.
                 </p>
@@ -405,7 +457,7 @@ export function SessionSetupScreen({
                 variant="primary"
                 onClick={handleStart}
                 isLoading={isStarting}
-                disabled={hasProvider === false}
+                disabled={hasProvider === false || (isMobile && isLocalProvider)}
               >
                 Start Session
               </Button>

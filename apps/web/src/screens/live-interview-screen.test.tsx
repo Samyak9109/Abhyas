@@ -4,12 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
 import {
   MemoryStorageAdapter,
+  MockProviderAdapter,
   MockSpeechInput,
   MockSpeechOutput,
   type SelectedQuestion,
   type SessionPlan,
 } from "@abhyas/core";
 import { LiveInterviewScreen } from "./LiveInterviewScreen";
+import * as speechModule from "../services/speech";
 
 const samplePlan: SessionPlan = {
   sessionId: "test-live-session-1",
@@ -602,4 +604,107 @@ describe("M1.5: LiveInterviewScreen (PG-12)", () => {
       expect(results.violations).toEqual([]);
     });
   });
+
+  describe("Device Rules Enforcement (M3.5, FR-022, ADR-013)", () => {
+    it("enforces text-only mode and NEVER constructs speech services in local mode on PC", async () => {
+      const speechInputSpy = vi.spyOn(speechModule, "getBrowserSpeechInput");
+      const speechOutputSpy = vi.spyOn(speechModule, "getBrowserSpeechOutput");
+
+      const storage = new MemoryStorageAdapter();
+      const localPlan: SessionPlan = {
+        ...sampleVoicePlan, // Even if requested inputMode was voice!
+        isLocalModel: true,
+      };
+
+      const mockLocalProvider = new MockProviderAdapter({ id: "webllm" });
+
+      render(
+        <LiveInterviewScreen
+          storage={storage}
+          plan={localPlan}
+          questions={sampleQuestions}
+          provider={mockLocalProvider}
+          onFinish={vi.fn()}
+          onExit={vi.fn()}
+        />
+      );
+
+      // Verify text interface is rendered
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      expect(screen.getByRole("textbox", { name: /your answer/i })).toBeDefined();
+
+      // Voice controls should NOT be rendered
+      expect(screen.queryByRole("button", { name: /push to speak/i })).toBeNull();
+      expect(screen.queryByText(/Want to speak\? Switch to voice mode/i)).toBeNull();
+
+      // Crucial: speech services were NEVER constructed
+      expect(speechInputSpy).not.toHaveBeenCalled();
+      expect(speechOutputSpy).not.toHaveBeenCalled();
+
+      speechInputSpy.mockRestore();
+      speechOutputSpy.mockRestore();
+    });
+
+    it("has zero axe violations under Ink theme in Local Text Mode", async () => {
+      const storage = new MemoryStorageAdapter();
+      const localPlan: SessionPlan = {
+        ...samplePlan,
+        isLocalModel: true,
+      };
+
+      const mockLocalProvider = new MockProviderAdapter({ id: "webllm" });
+
+      const { container } = render(
+        <div data-theme="ink">
+          <LiveInterviewScreen
+            storage={storage}
+            plan={localPlan}
+            questions={sampleQuestions}
+            provider={mockLocalProvider}
+            onFinish={vi.fn()}
+            onExit={vi.fn()}
+          />
+        </div>
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      expect((await axe(container)).violations).toEqual([]);
+    });
+
+    it("has zero axe violations under Paper theme in Local Text Mode", async () => {
+      const storage = new MemoryStorageAdapter();
+      const localPlan: SessionPlan = {
+        ...samplePlan,
+        isLocalModel: true,
+      };
+
+      const mockLocalProvider = new MockProviderAdapter({ id: "webllm" });
+
+      const { container } = render(
+        <div data-theme="paper">
+          <LiveInterviewScreen
+            storage={storage}
+            plan={localPlan}
+            questions={sampleQuestions}
+            provider={mockLocalProvider}
+            onFinish={vi.fn()}
+            onExit={vi.fn()}
+          />
+        </div>
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      expect((await axe(container)).violations).toEqual([]);
+    });
+  });
 });
+

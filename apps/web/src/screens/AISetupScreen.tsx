@@ -2,7 +2,7 @@
 // Connects an AI source with bring-your-own-key, direct browser calls,
 // optional WebCrypto passphrase encryption, connection test with classified errors,
 // model picker, and cost estimation.
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   encryptApiKey,
   estimateSessionCost,
@@ -10,6 +10,7 @@ import {
   GeminiAdapter,
   OpenAICompatibleAdapter,
   detectHardwareCapabilities,
+  isPhoneDevice,
   type ModelInfo,
   type ProviderError,
   type ProviderRow,
@@ -56,7 +57,8 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
   fetchFn,
   hardwareRuntime,
 }) => {
-  const [selectedProvider, setSelectedProvider] = useState<ProviderChoice>("gemini");
+  const isMobile = useMemo(() => isPhoneDevice(hardwareRuntime), [hardwareRuntime]);
+  const [selectedProvider, setSelectedProvider] = useState<ProviderChoice>(() => "gemini");
   const [apiKey, setApiKey] = useState("");
   const [baseUrl, setBaseUrl] = useState("https://api.openai.com/v1");
   const [usePassphrase, setUsePassphrase] = useState(false);
@@ -87,7 +89,11 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
           existing.kind === "openai-compatible" ||
           existing.kind === "webllm"
         ) {
-          setSelectedProvider(existing.kind as ProviderChoice);
+          if (existing.kind === "webllm" && isMobile) {
+            setSelectedProvider("gemini");
+          } else {
+            setSelectedProvider(existing.kind as ProviderChoice);
+          }
         }
         if (existing.baseUrl) {
           setBaseUrl(existing.baseUrl);
@@ -108,9 +114,13 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [storage]);
+  }, [storage, isMobile]);
 
   const handleProviderChange = (provider: ProviderChoice) => {
+    // Local mode blocked on phones (FR-022, ADR-013)
+    if (provider === "webllm" && isMobile) {
+      return;
+    }
     setSelectedProvider(provider);
     setTestSuccess(false);
     setTestError(null);
@@ -400,11 +410,16 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
 
               <RadioCard
                 title="Local model (WebLLM)"
-                description="In-browser AI via WebGPU (free, private, text-only, requires PC)"
+                description={
+                  isMobile
+                    ? "Local models are disabled on mobile devices (phones/tablets). Requires a desktop PC with WebGPU."
+                    : "In-browser AI via WebGPU (free, private, text-only, requires PC)"
+                }
                 monogram="⚡"
-                tag="KEYLESS"
+                tag={isMobile ? "PC ONLY" : "KEYLESS"}
                 checked={selectedProvider === "webllm"}
                 onChange={() => handleProviderChange("webllm")}
+                disabled={isMobile}
               />
 
               <RadioCard
@@ -416,6 +431,16 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
               />
             </div>
 
+            {isMobile && (
+              <div style={{ marginTop: "var(--space-3)" }}>
+                <Callout variant="warning" title="Local mode blocked on phones">
+                  Local models are disabled on mobile devices (phones/tablets). Local mode runs only
+                  on desktop computers with a dedicated GPU (FR-022, ADR-013). Please choose a cloud
+                  provider (Gemini or OpenAI) or refer to the key guide.
+                </Callout>
+              </div>
+            )}
+
             <div className="abh-guide-link-wrap">
               <a href="/guide/keys" className="abh-guide-link" target="_blank" rel="noreferrer">
                 Need help getting a key? Read the key guide →
@@ -426,6 +451,15 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
           {/* Right Column: Configuration & Test Panel */}
           <section className="abh-setup-col-right" aria-label="Provider configuration">
             {selectedProvider === "webllm" ? (
+              isMobile ? (
+                <div className="abh-panel">
+                  <Callout variant="danger" title="Local model unavailable on mobile devices">
+                    Local models are disabled on mobile devices (phones/tablets). Local mode runs
+                    only on desktop computers with a dedicated GPU (FR-022, ADR-013). Please select
+                    a cloud provider.
+                  </Callout>
+                </div>
+              ) : (
               <div className="abh-panel">
                 <div className="abh-panel-header">
                   <span className="abh-panel-monogram" aria-hidden="true">
@@ -504,7 +538,8 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                   <HardwareBenchmarkCard runtime={hardwareRuntime} />
                 </div>
               </div>
-            ) : (
+            )
+          ) : (
               <div className="abh-panel">
                 <div className="abh-panel-header">
                   <span className="abh-panel-monogram" aria-hidden="true">

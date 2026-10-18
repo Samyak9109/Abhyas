@@ -1,4 +1,4 @@
-// FR-014, FR-017, ADR-006: CLI runner for CI content validation.
+// FR-014, FR-017, FR-025, ADR-006, ADR-008: CLI runner for CI content validation.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateContentDirectory } from "./validate-directory.js";
@@ -27,6 +27,10 @@ if (!result.valid) {
   // eslint-disable-next-line no-console
   console.log(
     `  - Curated models: ${result.summary.modelsCount} (measured speeds & sanity verified)`
+  );
+  // eslint-disable-next-line no-console
+  console.log(
+    `  - Company packs: ${result.summary.packsCount ?? 0} (evidenced claims & dates verified)`
   );
   process.exit(0);
 }

@@ -4,11 +4,15 @@ import {
   QuestionBankSchema,
   ExperienceLevelSchema,
   CuratedCatalogSchema,
+  CompanyPackSchema,
+  CompanyPackIndexSchema,
   type Taxonomy,
   type RubricLevel,
   type QuestionBank,
   type ExperienceLevel,
   type CuratedCatalog,
+  type CompanyPack,
+  type CompanyPackIndex,
 } from "@abhyas/core";
 
 export interface ValidationResult {
@@ -18,6 +22,7 @@ export interface ValidationResult {
     rubricsCount: number;
     questionsCount: number;
     modelsCount?: number;
+    packsCount?: number;
   };
   errors: string[];
 }
@@ -110,6 +115,60 @@ export function validateCuratedModelsCatalog(data: unknown): CuratedCatalog {
     throw new Error(`Curated models sanity verification failed: ${errors.join("; ")}`);
   }
 
+  return result.data;
+}
+
+/**
+ * Validates a single company pack object against CompanyPackSchema (phases.md M4.1, FR-025, ADR-008).
+ * Enforces that all claims carry evidence sources with valid URLs, titles, and dates.
+ */
+export function validateCompanyPack(data: unknown): CompanyPack {
+  const result = CompanyPackSchema.safeParse(data);
+  if (!result.success) {
+    const issues = result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    throw new Error(`Company pack validation failed: ${issues}`);
+  }
+  return result.data;
+}
+
+/**
+ * Validates an array of company packs, ensuring all are schema-valid and slugs/domains are unique.
+ */
+export function validateCompanyPacks(data: unknown): CompanyPack[] {
+  if (!Array.isArray(data)) {
+    throw new Error("Expected an array of company packs");
+  }
+  const packs: CompanyPack[] = [];
+  const seenSlugs = new Set<string>();
+  const seenDomains = new Set<string>();
+
+  for (let i = 0; i < data.length; i++) {
+    const pack = validateCompanyPack(data[i]);
+    if (seenSlugs.has(pack.slug)) {
+      throw new Error(`Duplicate company pack slug "${pack.slug}" at index ${i}`);
+    }
+    seenSlugs.add(pack.slug);
+
+    if (seenDomains.has(pack.domain.toLowerCase())) {
+      throw new Error(`Duplicate canonical domain "${pack.domain}" in company pack "${pack.slug}"`);
+    }
+    seenDomains.add(pack.domain.toLowerCase());
+
+    packs.push(pack);
+  }
+
+  return packs;
+}
+
+/**
+ * Validates a company pack index against CompanyPackIndexSchema.
+ */
+export function validateCompanyPackIndex(data: unknown): CompanyPackIndex {
+  const result = CompanyPackIndexSchema.safeParse(data);
+  if (!result.success) {
+    const issues = result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    throw new Error(`Company pack index validation failed: ${issues}`);
+  }
   return result.data;
 }
 

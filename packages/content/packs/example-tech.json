@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "slug": "example-tech",
+  "name": "Example Tech",
+  "domain": "example.tech",
+  "aliases": ["Example Technologies", "ET Inc"],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Cloud infrastructure and developer tooling company providing scalable APIs and microservices platforms.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://example.tech/about",
+        "title": "Example Tech Overview",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Example Cloud Compute",
+      "Example Database Engine",
+      "Example Edge Routing"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://example.tech/products",
+        "title": "Example Tech Product Catalog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "TypeScript",
+      "Node.js",
+      "React",
+      "Go",
+      "PostgreSQL",
+      "Kubernetes"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://example.tech/engineering/stack",
+        "title": "Engineering Stack at Example Tech",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Customer Obsession",
+        "description": "Start with customer outcomes and work backward."
+      },
+      {
+        "name": "High Ownership",
+        "description": "Take end-to-end accountability from concept to production."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://example.tech/culture/values",
+        "title": "Example Tech Core Values",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter consultation and role alignment",
+      "Technical screen (live problem solving or system design)",
+      "Onsite loop (architecture, coding, behavioral values)"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://example.tech/careers/interviewing",
+        "title": "Interview Guide for Candidates",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Written documentation preferred over synchronous meetings",
+      "Blameless postmortems for production incidents"
+    ],
+    "confidence": "inferred",
+    "sources": [
+      {
+        "url": "https://example.tech/engineering/culture",
+        "title": "Engineering Culture Principles",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

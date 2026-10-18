@@ -1,4 +1,4 @@
-// FR-014, FR-017, ADR-006: Node filesystem-based directory validation for content package.
+// FR-014, FR-017, FR-025, ADR-006, ADR-008: Node filesystem-based directory validation for content package.
 import fs from "node:fs";
 import path from "node:path";
 import {
@@ -6,18 +6,21 @@ import {
   validateRubric,
   validateQuestionBank,
   validateCuratedModelsCatalog,
+  validateCompanyPack,
   REQUIRED_EXPERIENCE_LEVELS,
   type ValidationResult,
 } from "./validator.js";
 
 /**
- * Validates the entire content directory: taxonomy, rubrics for all 5 levels, and question banks.
+ * Validates the entire content directory: taxonomy, rubrics for all 5 levels, question banks, curated models, and company packs.
  */
 export function validateContentDirectory(contentDir: string): ValidationResult {
   const errors: string[] = [];
   let skillsCount = 0;
   let rubricsCount = 0;
   let questionsCount = 0;
+  let modelsCount = 0;
+  let packsCount = 0;
 
   // 1. Validate Taxonomy
   const taxonomyPath = path.join(contentDir, "taxonomy", "skills.json");
@@ -104,7 +107,6 @@ export function validateContentDirectory(contentDir: string): ValidationResult {
 
   // 4. Validate Curated Models Catalog (phases.md M3.3, FR-023)
   const modelsPath = path.join(contentDir, "models.json");
-  let modelsCount = 0;
   if (!fs.existsSync(modelsPath)) {
     errors.push(`Curated models catalog missing at expected path: ${modelsPath}`);
   } else {
@@ -117,6 +119,40 @@ export function validateContentDirectory(contentDir: string): ValidationResult {
     }
   }
 
+  // 5. Validate Company Packs (phases.md M4.1, FR-025, ADR-008)
+  const packsDir = path.join(contentDir, "packs");
+  const seenPackSlugs = new Set<string>();
+
+  if (fs.existsSync(packsDir)) {
+    const packFiles = fs.readdirSync(packsDir).filter((f) => f.endsWith(".json"));
+    for (const file of packFiles) {
+      const filePath = path.join(packsDir, file);
+      try {
+        const raw = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        const pack = validateCompanyPack(raw);
+
+        // Ensure file name matches slug (e.g. stripe.json -> slug: 'stripe')
+        const expectedSlug = path.basename(file, ".json");
+        if (pack.slug !== expectedSlug) {
+          errors.push(
+            `Company pack file "${file}" has mismatched internal slug "${pack.slug}" (expected "${expectedSlug}")`
+          );
+        }
+
+        if (seenPackSlugs.has(pack.slug)) {
+          errors.push(`Duplicate company pack slug "${pack.slug}" in "${file}"`);
+        }
+        seenPackSlugs.add(pack.slug);
+
+        packsCount++;
+      } catch (err) {
+        errors.push(
+          `Company pack "${file}": ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    }
+  }
+
   return {
     valid: errors.length === 0,
     summary: {
@@ -124,6 +160,7 @@ export function validateContentDirectory(contentDir: string): ValidationResult {
       rubricsCount,
       questionsCount,
       modelsCount,
+      packsCount,
     },
     errors,
   };

@@ -126,6 +126,11 @@ async function main() {
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://abhyas.app/guide/local-models</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://abhyas.app/help</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

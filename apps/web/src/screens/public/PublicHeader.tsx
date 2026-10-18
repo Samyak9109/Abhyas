@@ -86,6 +86,13 @@ export function PublicHeader({
           &#123; Key Guide &#125;
         </a>
         <a
+          href="/guide/local-models"
+          className="abh-nav-link"
+          aria-current={currentPath === "/guide/local-models" ? "page" : undefined}
+        >
+          &#123; Local Models &#125;
+        </a>
+        <a
           href="/help"
           className="abh-nav-link"
           aria-current={currentPath === "/help" ? "page" : undefined}
@@ -155,6 +162,9 @@ export function PublicHeader({
           </a>
           <a href="/guide/keys" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
             &#123; Key Guide &#125;
+          </a>
+          <a href="/guide/local-models" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
+            &#123; Local Models &#125;
           </a>
           <a href="/help" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
             &#123; Help &#125;

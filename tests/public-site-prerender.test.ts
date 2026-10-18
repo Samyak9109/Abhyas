@@ -12,6 +12,7 @@ describe("M1.9: Prerendered Static Site & Network Verification", () => {
       "privacy/index.html",
       "open-source/index.html",
       "guide/keys/index.html",
+      "guide/local-models/index.html",
       "help/index.html",
       "404.html",
       "sitemap.xml",
@@ -34,6 +35,7 @@ describe("M1.9: Prerendered Static Site & Network Verification", () => {
     expect(sitemap).toContain("<loc>https://abhyas.app/privacy</loc>");
     expect(sitemap).toContain("<loc>https://abhyas.app/open-source</loc>");
     expect(sitemap).toContain("<loc>https://abhyas.app/guide/keys</loc>");
+    expect(sitemap).toContain("<loc>https://abhyas.app/guide/local-models</loc>");
     expect(sitemap).toContain("<loc>https://abhyas.app/help</loc>");
     expect(sitemap).not.toContain("/app/");
   });
@@ -44,6 +46,7 @@ describe("M1.9: Prerendered Static Site & Network Verification", () => {
       "privacy/index.html",
       "open-source/index.html",
       "guide/keys/index.html",
+      "guide/local-models/index.html",
       "help/index.html",
       "404.html",
     ];

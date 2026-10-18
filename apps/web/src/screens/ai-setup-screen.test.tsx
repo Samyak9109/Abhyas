@@ -32,9 +32,30 @@ const MOCK_OPENAI_MODELS = {
 function createMockFetch(responseMap: {
   geminiModels?: { status: number; body: unknown };
   openaiModels?: { status: number; body: unknown };
+  ollamaTags?: { status: number; body: unknown };
+  ollamaError?: Error;
 }): typeof fetch {
   return async (input: RequestInfo | URL): Promise<Response> => {
     const url = input.toString();
+
+    if (url.includes("11434") || url.includes("/api/tags")) {
+      if (responseMap.ollamaError) {
+        throw responseMap.ollamaError;
+      }
+      const cfg = responseMap.ollamaTags || {
+        status: 200,
+        body: {
+          models: [
+            { name: "llama3.2:3b", size: 2000000000, modified_at: "2024-01-01T00:00:00Z" },
+            { name: "mistral:7b", size: 4000000000, modified_at: "2024-01-01T00:00:00Z" },
+          ],
+        },
+      };
+      return new Response(JSON.stringify(cfg.body), {
+        status: cfg.status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     if (url.includes("generativelanguage.googleapis.com")) {
       const cfg = responseMap.geminiModels || {
@@ -307,10 +328,12 @@ describe("M1.2: AISetupScreen (PG-09)", () => {
         />
       );
 
-      // Local model radio card should be disabled on phone
+      // Local model radio cards should be disabled on phone
       const localRadio = screen.getByRole("radio", { name: /local model \(webllm\)/i });
       expect(localRadio).toHaveProperty("disabled", true);
-      expect(screen.getByText("PC ONLY")).toBeDefined();
+      const ollamaRadio = screen.getByRole("radio", { name: /ollama \(local server\)/i });
+      expect(ollamaRadio).toHaveProperty("disabled", true);
+      expect(screen.getAllByText("PC ONLY").length).toBeGreaterThanOrEqual(1);
 
       // Explanation message should appear
       expect(screen.getByText(/Local mode blocked on phones/i)).toBeDefined();
@@ -321,6 +344,8 @@ describe("M1.2: AISetupScreen (PG-09)", () => {
       // Clicking disabled radio should not select local model
       fireEvent.click(localRadio);
       expect(screen.queryByText("In-Browser Local Model (WebLLM)")).toBeNull();
+      fireEvent.click(ollamaRadio);
+      expect(screen.queryByText("Ollama (Local Server) Setup")).toBeNull();
       expect(screen.getByText("Google Gemini Setup")).toBeDefined();
     });
 
@@ -351,6 +376,158 @@ describe("M1.2: AISetupScreen (PG-09)", () => {
       });
 
       expect(screen.getByText(/Local mode blocked on phones/i)).toBeDefined();
+    });
+
+    it("resets existing ollama provider to cloud provider on phone", async () => {
+      const storage = new MemoryStorageAdapter();
+      await storage.put("providers", {
+        id: "ollama",
+        kind: "ollama",
+        baseUrl: "http://localhost:11434",
+        modelRoles: { interviewer: "llama3.2:3b" },
+      });
+
+      const mockMobileRuntime = {
+        hasWebGpu: vi.fn().mockResolvedValue(false),
+        isMobileDevice: vi.fn().mockReturnValue(true),
+      };
+
+      render(
+        <AISetupScreen
+          storage={storage}
+          onComplete={() => {}}
+          hardwareRuntime={mockMobileRuntime}
+        />
+      );
+
+      // Should fall back to gemini instead of ollama on phone
+      await waitFor(() => {
+        expect(screen.getByText("Google Gemini Setup")).toBeDefined();
+      });
+
+      expect(screen.getByText(/Local mode blocked on phones/i)).toBeDefined();
+    });
+  });
+
+  describe("M3.6: Ollama & Local Servers (PG-09, FR-005, FR-023, ADR-013)", () => {
+    it("handles Ollama provider selection, defaults baseUrl to http://localhost:11434, and allows testing without API key", async () => {
+      const storage = new MemoryStorageAdapter();
+      render(<AISetupScreen storage={storage} onComplete={() => {}} />);
+
+      // Select Ollama
+      const ollamaRadio = screen.getByRole("radio", { name: /ollama \(local server\)/i });
+      fireEvent.click(ollamaRadio);
+
+      // Verify header and CORS callout
+      expect(screen.getByText("Ollama Local Server")).toBeDefined();
+      expect(screen.getByText(/Browser CORS Requirement/i)).toBeDefined();
+      expect(screen.getByText(/Local Models Guide/i)).toBeDefined();
+
+      // Verify baseUrl input has default
+      const baseUrlInput = screen.getByLabelText(/base url/i) as HTMLInputElement;
+      expect(baseUrlInput.value).toBe("http://localhost:11434");
+
+      // Test Ollama connection button should be enabled without API key
+      const testBtn = screen.getByRole("button", { name: /test ollama connection/i });
+      expect(testBtn).toHaveProperty("disabled", false);
+    });
+
+    it("connects to Ollama, discovers models, and saves provider configuration", async () => {
+      const storage = new MemoryStorageAdapter();
+      const onComplete = vi.fn();
+      const fetchFn = createMockFetch({});
+
+      render(<AISetupScreen storage={storage} onComplete={onComplete} fetchFn={fetchFn} />);
+
+      // Select Ollama
+      const ollamaRadio = screen.getByRole("radio", { name: /ollama \(local server\)/i });
+      fireEvent.click(ollamaRadio);
+
+      // Click test button
+      const testBtn = screen.getByRole("button", { name: /test ollama connection/i });
+      fireEvent.click(testBtn);
+
+      // Verify success
+      await waitFor(() => {
+        expect(screen.getByText(/connection verified/i)).toBeDefined();
+      });
+
+      // Verify model picker populated
+      const modelSelect = screen.getByLabelText(/choose model/i) as HTMLSelectElement;
+      expect(modelSelect).toBeDefined();
+      expect(modelSelect.value).toBe("llama3.2:3b");
+
+      // Save and continue
+      const nextBtn = screen.getByRole("button", { name: /next: add your profile/i });
+      expect(nextBtn).toHaveProperty("disabled", false);
+      fireEvent.click(nextBtn);
+
+      await waitFor(() => {
+        expect(onComplete).toHaveBeenCalled();
+      });
+
+      // Check stored provider
+      const providers = (await storage.getAll("providers")) as ProviderRow[];
+      expect(providers.length).toBe(1);
+      expect(providers[0]?.kind).toBe("ollama");
+      expect(providers[0]?.baseUrl).toBe("http://localhost:11434");
+      expect(providers[0]?.modelRoles?.interviewer).toBe("llama3.2:3b");
+    });
+
+    it("displays CORS diagnostic callout and guide link when Ollama connection fails due to CORS", async () => {
+      const storage = new MemoryStorageAdapter();
+      const corsErrorFetch: typeof fetch = async () => {
+        throw new TypeError("Failed to fetch");
+      };
+
+      render(<AISetupScreen storage={storage} onComplete={() => {}} fetchFn={corsErrorFetch} />);
+
+      // Select Ollama
+      const ollamaRadio = screen.getByRole("radio", { name: /ollama \(local server\)/i });
+      fireEvent.click(ollamaRadio);
+
+      // Test connection
+      const testBtn = screen.getByRole("button", { name: /test ollama connection/i });
+      fireEvent.click(testBtn);
+
+      // Should show CORS error
+      await waitFor(() => {
+        expect(screen.getByText("CORS Restriction Blocked Access")).toBeDefined();
+        expect(screen.getAllByText(/OLLAMA_ORIGINS="\*"/i).length).toBeGreaterThanOrEqual(1);
+      });
+
+      // Guide link in error area
+      expect(screen.getByRole("link", { name: /read ollama setup guide/i })).toBeDefined();
+    });
+
+    it("handles OpenAI-compatible local server with CORS classification when localhost fails", async () => {
+      const storage = new MemoryStorageAdapter();
+      const localServerErrorFetch: typeof fetch = async () => {
+        throw new TypeError("Failed to fetch");
+      };
+
+      render(
+        <AISetupScreen storage={storage} onComplete={() => {}} fetchFn={localServerErrorFetch} />
+      );
+
+      // Select OpenAI-compatible
+      const openAiCompRadio = screen.getByRole("radio", { name: /openai-compatible/i });
+      fireEvent.click(openAiCompRadio);
+
+      // Change baseUrl to local LM Studio endpoint
+      const baseUrlInput = screen.getByLabelText(/base url/i);
+      fireEvent.change(baseUrlInput, { target: { value: "http://localhost:1234/v1" } });
+
+      // Test connection without API key (allowed for localhost)
+      const testBtn = screen.getByRole("button", { name: /test connection/i });
+      expect(testBtn).toHaveProperty("disabled", false);
+      fireEvent.click(testBtn);
+
+      // Should show CORS error
+      await waitFor(() => {
+        expect(screen.getByText("CORS Restriction Blocked Access")).toBeDefined();
+        expect(screen.getAllByText(/LM Studio/i).length).toBeGreaterThanOrEqual(2);
+      });
     });
   });
 

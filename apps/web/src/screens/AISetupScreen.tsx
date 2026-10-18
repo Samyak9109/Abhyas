@@ -9,6 +9,7 @@ import {
   formatBytes,
   GeminiAdapter,
   OpenAICompatibleAdapter,
+  OllamaAdapter,
   detectHardwareCapabilities,
   isPhoneDevice,
   type ModelInfo,
@@ -41,7 +42,7 @@ interface AISetupScreenProps {
   hardwareRuntime?: HardwareRuntime;
 }
 
-type ProviderChoice = "gemini" | "openai" | "openai-compatible" | "webllm";
+type ProviderChoice = "gemini" | "openai" | "openai-compatible" | "ollama" | "webllm";
 
 const SETUP_STEPS = [
   { id: "ai", label: "AI Setup" },
@@ -87,9 +88,10 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
           existing.kind === "gemini" ||
           existing.kind === "openai" ||
           existing.kind === "openai-compatible" ||
+          existing.kind === "ollama" ||
           existing.kind === "webllm"
         ) {
-          if (existing.kind === "webllm" && isMobile) {
+          if ((existing.kind === "webllm" || existing.kind === "ollama") && isMobile) {
             setSelectedProvider("gemini");
           } else {
             setSelectedProvider(existing.kind as ProviderChoice);
@@ -118,7 +120,7 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
 
   const handleProviderChange = (provider: ProviderChoice) => {
     // Local mode blocked on phones (FR-022, ADR-013)
-    if (provider === "webllm" && isMobile) {
+    if ((provider === "webllm" || provider === "ollama") && isMobile) {
       return;
     }
     setSelectedProvider(provider);
@@ -132,6 +134,11 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
       setBaseUrl("https://api.openai.com/v1");
     } else if (provider === "openai-compatible") {
       setBaseUrl("https://api.groq.com/openai/v1");
+    } else if (provider === "ollama") {
+      setBaseUrl("http://localhost:11434");
+      setApiKey("");
+      setUsePassphrase(false);
+      setPassphrase("");
     } else {
       setBaseUrl("");
       setApiKey("");
@@ -197,7 +204,12 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
       return;
     }
 
-    if (!apiKey.trim()) {
+    const isLocalServer =
+      selectedProvider === "ollama" ||
+      (selectedProvider === "openai-compatible" &&
+        (baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")));
+
+    if (!isLocalServer && !apiKey.trim()) {
       setTestError({
         kind: "auth",
         message: "Please enter an API key before testing connection.",
@@ -217,10 +229,16 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
           apiKey,
           ...(fetchFn ? { fetchFn } : {}),
         });
+      } else if (selectedProvider === "ollama") {
+        adapter = new OllamaAdapter({
+          baseUrl: baseUrl || "http://localhost:11434",
+          apiKey: apiKey.trim() || undefined,
+          ...(fetchFn ? { fetchFn } : {}),
+        });
       } else {
         adapter = new OpenAICompatibleAdapter({
           id: selectedProvider,
-          apiKey,
+          apiKey: apiKey.trim() || undefined,
           baseUrl,
           allowCustomOrigin: selectedProvider === "openai-compatible",
           ...(fetchFn ? { fetchFn } : {}),
@@ -240,11 +258,20 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
         setModels(modelsRes.value);
         // Default to first model or recommended model
         const preferred = modelsRes.value.find(
-          (m) => m.id.includes("flash") || m.id.includes("4o-mini")
+          (m) =>
+            m.id.includes("flash") ||
+            m.id.includes("4o-mini") ||
+            m.id.includes("llama") ||
+            m.id.includes("qwen")
         );
         setSelectedModel(preferred?.id || modelsRes.value[0]!.id);
       } else {
-        const fallbackModel = selectedProvider === "gemini" ? "gemini-1.5-flash" : "gpt-4o-mini";
+        const fallbackModel =
+          selectedProvider === "gemini"
+            ? "gemini-1.5-flash"
+            : selectedProvider === "ollama"
+              ? "llama3.2"
+              : "gpt-4o-mini";
         setModels([{ id: fallbackModel, label: fallbackModel }]);
         setSelectedModel(fallbackModel);
       }
@@ -293,9 +320,14 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
       return;
     }
 
-    if (!apiKey.trim()) return;
+    const isLocalServer =
+      selectedProvider === "ollama" ||
+      (selectedProvider === "openai-compatible" &&
+        (baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")));
 
-    if (usePassphrase && !passphrase.trim()) {
+    if (!isLocalServer && !apiKey.trim()) return;
+
+    if (usePassphrase && apiKey && !passphrase.trim()) {
       setTestError({
         kind: "auth",
         message: "Please enter a passphrase to encrypt your key at rest, or disable encryption.",
@@ -306,21 +338,29 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
 
     setSaving(true);
     try {
-      let storedKey: string | undefined = apiKey;
+      let storedKey: string | undefined = apiKey.trim() || undefined;
       let encryptedKey: string | undefined;
 
-      if (usePassphrase) {
+      if (usePassphrase && apiKey) {
         encryptedKey = await encryptApiKey(apiKey, passphrase);
         storedKey = undefined;
       }
 
       const model =
-        selectedModel || (selectedProvider === "gemini" ? "gemini-1.5-flash" : "gpt-4o-mini");
+        selectedModel ||
+        (selectedProvider === "gemini"
+          ? "gemini-1.5-flash"
+          : selectedProvider === "ollama"
+            ? "llama3.2"
+            : "gpt-4o-mini");
 
       const providerRow: ProviderRow = {
         id: selectedProvider,
         kind: selectedProvider,
-        baseUrl: selectedProvider === "openai-compatible" ? baseUrl : undefined,
+        baseUrl:
+          selectedProvider === "openai-compatible" || selectedProvider === "ollama"
+            ? baseUrl || (selectedProvider === "ollama" ? "http://localhost:11434" : undefined)
+            : undefined,
         modelRoles: {
           interviewer: model,
           evaluator: model,
@@ -409,6 +449,20 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
               />
 
               <RadioCard
+                title="Ollama (local server)"
+                description={
+                  isMobile
+                    ? "Local server connections are disabled on mobile devices. Requires a desktop PC."
+                    : "Run models locally via Ollama on http://localhost:11434 (free, private, text-only)"
+                }
+                monogram="🦙"
+                tag={isMobile ? "PC ONLY" : "LOCAL SERVER"}
+                checked={selectedProvider === "ollama"}
+                onChange={() => handleProviderChange("ollama")}
+                disabled={isMobile}
+              />
+
+              <RadioCard
                 title="Local model (WebLLM)"
                 description={
                   isMobile
@@ -450,13 +504,13 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
 
           {/* Right Column: Configuration & Test Panel */}
           <section className="abh-setup-col-right" aria-label="Provider configuration">
-            {selectedProvider === "webllm" ? (
+            {selectedProvider === "webllm" || (selectedProvider === "ollama" && isMobile) ? (
               isMobile ? (
                 <div className="abh-panel">
                   <Callout variant="danger" title="Local model unavailable on mobile devices">
-                    Local models are disabled on mobile devices (phones/tablets). Local mode runs
-                    only on desktop computers with a dedicated GPU (FR-022, ADR-013). Please select
-                    a cloud provider.
+                    Local models and local servers are disabled on mobile devices (phones/tablets).
+                    Local mode runs only on desktop computers (FR-022, ADR-013). Please select a cloud
+                    provider.
                   </Callout>
                 </div>
               ) : (
@@ -543,7 +597,7 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
               <div className="abh-panel">
                 <div className="abh-panel-header">
                   <span className="abh-panel-monogram" aria-hidden="true">
-                    {selectedProvider === "gemini" ? "G" : "O"}
+                    {selectedProvider === "gemini" ? "G" : selectedProvider === "ollama" ? "🦙" : "O"}
                   </span>
                   <div>
                     <h2 className="abh-panel-title">
@@ -551,81 +605,140 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                         ? "Google Gemini Setup"
                         : selectedProvider === "openai"
                           ? "OpenAI API Setup"
-                          : "OpenAI-Compatible Endpoint"}
+                          : selectedProvider === "ollama"
+                            ? "Ollama Local Server"
+                            : "OpenAI-Compatible Endpoint"}
                     </h2>
                     <p className="abh-panel-helper">
-                      Direct browser connection using your own API key.
+                      {selectedProvider === "ollama"
+                        ? "Direct browser connection to your local Ollama daemon (http://localhost:11434). Zero cloud egress."
+                        : "Direct browser connection using your own API key."}
                     </p>
                   </div>
                 </div>
 
-                {selectedProvider === "openai-compatible" && (
+                {(selectedProvider === "openai-compatible" || selectedProvider === "ollama") && (
                   <div className="abh-form-field">
                     <Input
-                      label="Endpoint Base URL"
+                      label={selectedProvider === "ollama" ? "Ollama Base URL" : "Endpoint Base URL"}
                       value={baseUrl}
                       onChange={(e) => {
                         setBaseUrl(e.target.value);
                         setTestSuccess(false);
                       }}
-                      placeholder="https://api.groq.com/openai/v1"
-                      helperText="Must be an HTTPS endpoint (or http://localhost for local servers)."
+                      placeholder={
+                        selectedProvider === "ollama"
+                          ? "http://localhost:11434"
+                          : "https://api.groq.com/openai/v1"
+                      }
+                      helperText={
+                        selectedProvider === "ollama"
+                          ? "Default is http://localhost:11434. Requires Ollama running on your PC."
+                          : "Must be an HTTPS endpoint (or http://localhost for local servers)."
+                      }
                     />
                   </div>
                 )}
 
-                <SecretInput
-                  label="API Key"
-                  value={apiKey}
-                  onChange={(e) => {
-                    setApiKey(e.target.value);
-                    setTestSuccess(false);
-                  }}
-                  placeholder={selectedProvider === "gemini" ? "AIzaSy..." : "sk-..."}
-                  helperText="Stays in this browser. Sent only to the provider you choose."
-                />
-
-                <div className="abh-encryption-toggle">
-                  <Switch
-                    label="Encrypt key at rest with a passphrase"
-                    checked={usePassphrase}
-                    onChange={(checked) => setUsePassphrase(checked)}
-                  />
-                </div>
-
-                {usePassphrase && (
-                  <div className="abh-passphrase-field">
-                    <SecretInput
-                      label="Passphrase for Key Encryption"
-                      value={passphrase}
-                      onChange={(e) => setPassphrase(e.target.value)}
-                      placeholder="Enter passphrase to encrypt key"
-                      helperText="Uses WebCrypto PBKDF2 + AES-GCM 256. Decrypted key is kept only in memory."
-                    />
+                {selectedProvider === "ollama" && (
+                  <div className="abh-status-callout">
+                    <Callout variant="info" title="Browser CORS Requirement">
+                      Browsers enforce cross-origin restrictions on localhost. If the test fails, ensure
+                      Ollama was started with <code>OLLAMA_ORIGINS=&quot;*&quot;</code>. See the{" "}
+                      <a
+                        href="/guide/local-models"
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: "var(--accent-text)", textDecoration: "underline" }}
+                      >
+                        Local Models Guide
+                      </a>{" "}
+                      for setup commands.
+                    </Callout>
                   </div>
+                )}
+
+                {selectedProvider !== "ollama" && (
+                  <>
+                    <SecretInput
+                      label="API Key"
+                      value={apiKey}
+                      onChange={(e) => {
+                        setApiKey(e.target.value);
+                        setTestSuccess(false);
+                      }}
+                      placeholder={selectedProvider === "gemini" ? "AIzaSy..." : "sk-..."}
+                      helperText={
+                        baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")
+                          ? "Optional for local servers (LM Studio, LocalAI)."
+                          : "Stays in this browser. Sent only to the provider you choose."
+                      }
+                    />
+
+                    <div className="abh-encryption-toggle">
+                      <Switch
+                        label="Encrypt key at rest with a passphrase"
+                        checked={usePassphrase}
+                        onChange={(checked) => setUsePassphrase(checked)}
+                      />
+                    </div>
+
+                    {usePassphrase && (
+                      <div className="abh-passphrase-field">
+                        <SecretInput
+                          label="Passphrase for Key Encryption"
+                          value={passphrase}
+                          onChange={(e) => setPassphrase(e.target.value)}
+                          placeholder="Enter passphrase to encrypt key"
+                          helperText="Uses WebCrypto PBKDF2 + AES-GCM 256. Decrypted key is kept only in memory."
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="abh-actions-row">
                   <Button
                     variant="primary"
                     onClick={() => void handleTestConnection()}
-                    disabled={testing || !apiKey.trim()}
+                    disabled={
+                      testing ||
+                      (!apiKey.trim() &&
+                        selectedProvider !== "ollama" &&
+                        !baseUrl.includes("localhost") &&
+                        !baseUrl.includes("127.0.0.1"))
+                    }
                   >
-                    {testing ? "Testing connection..." : "Test connection"}
+                    {testing
+                      ? "Testing connection..."
+                      : selectedProvider === "ollama"
+                        ? "Test Ollama connection"
+                        : "Test connection"}
                   </Button>
 
-                  <a
-                    href={
-                      selectedProvider === "gemini"
-                        ? "https://aistudio.google.com/app/apikey"
-                        : "https://platform.openai.com/api-keys"
-                    }
-                    target="_blank"
-                    rel="noreferrer"
-                    className="abh-free-key-link"
-                  >
-                    Get a free API key ↗
-                  </a>
+                  {selectedProvider === "ollama" ? (
+                    <a
+                      href="/guide/local-models"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="abh-free-key-link"
+                    >
+                      Read Ollama setup guide ↗
+                    </a>
+                  ) : (
+                    <a
+                      href={
+                        selectedProvider === "gemini"
+                          ? "https://aistudio.google.com/app/apikey"
+                          : "https://platform.openai.com/api-keys"
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      className="abh-free-key-link"
+                    >
+                      Get a free API key ↗
+                    </a>
+                  )}
                 </div>
 
                 {/* Error Callout */}

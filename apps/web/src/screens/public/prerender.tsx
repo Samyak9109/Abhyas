@@ -5,6 +5,7 @@ import { PrivacyPage } from "./PrivacyPage";
 import { OpenSourcePage } from "./OpenSourcePage";
 import { KeyGuidePage } from "./KeyGuidePage";
 import { TroubleshootingPage } from "./TroubleshootingPage";
+import { LocalModelsGuidePage } from "./LocalModelsGuidePage";
 import { NotFoundPage } from "./NotFoundPage";
 
 export interface PageMetadata {
@@ -19,6 +20,7 @@ export const PUBLIC_ROUTES = [
   "/privacy",
   "/open-source",
   "/guide/keys",
+  "/guide/local-models",
   "/help",
   "/404",
 ] as const;
@@ -56,6 +58,14 @@ export function renderPage(route: string): PageMetadata {
         description:
           "Step-by-step illustrated guide for Google Gemini and OpenAI API keys with verified last-checked dates.",
         html: renderToStaticMarkup(<KeyGuidePage />),
+      };
+    case "/guide/local-models":
+      return {
+        route,
+        title: "Local Models & Offline Guide — Abhyas",
+        description:
+          "Run interview practice 100% offline or with zero cloud egress using in-browser WebGPU models or local servers (Ollama, LM Studio) with CORS setup instructions.",
+        html: renderToStaticMarkup(<LocalModelsGuidePage />),
       };
     case "/help":
       return {

@@ -64,11 +64,14 @@ export function PublicFooter() {
             <a href="/guide/keys" className="abh-footer-link">
               API key setup guide
             </a>
+            <a href="/guide/local-models" className="abh-footer-link">
+              Local models guide
+            </a>
             <a href="/help" className="abh-footer-link">
-              Troubleshooting & support
+              Troubleshooting &amp; support
             </a>
             <a href="/404" className="abh-footer-link">
-              Error & offline fallback
+              Error &amp; offline fallback
             </a>
           </div>
         </div>

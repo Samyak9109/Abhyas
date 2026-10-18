@@ -5,5 +5,6 @@ export * from "./LandingPage";
 export * from "./PrivacyPage";
 export * from "./OpenSourcePage";
 export * from "./KeyGuidePage";
+export * from "./LocalModelsGuidePage";
 export * from "./TroubleshootingPage";
 export * from "./NotFoundPage";

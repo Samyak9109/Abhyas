@@ -45,6 +45,30 @@ export function TroubleshootingPage() {
       cause: "Internet dropped during turn generation with a cloud AI provider.",
       fix: "Abhyas automatically saves your partial session progress without data loss. Reconnect to the internet and click 'Retry', or run local models with Ollama for 100% offline practice.",
     },
+    {
+      id: "err-cors-ollama",
+      title: "Local Server CORS Origin Blocked (Ollama / LocalAI / LM Studio)",
+      category: "CORS / Local Server",
+      cause:
+        "Browser Same-Origin Policy blocked fetch to http://localhost:11434 or local server because cross-origin headers are not enabled on the server.",
+      fix: "For Ollama, set the environment variable OLLAMA_ORIGINS=\"*\" and restart Ollama (Windows: set OLLAMA_ORIGINS=* && ollama serve; macOS: launchctl setenv OLLAMA_ORIGINS \"*\"). For LM Studio, toggle 'Enable CORS' in Server Settings. Refer to the Local Models Guide (/guide/local-models).",
+    },
+    {
+      id: "err-local-conn",
+      title: "Local Server Offline or Connection Refused",
+      category: "Local Server",
+      cause:
+        "No process is listening on http://localhost:11434 (Ollama) or port 1234 (LM Studio), or the wrong port is entered.",
+      fix: "Start your local model server before clicking 'Test connection'. For Ollama, run 'ollama serve' in your terminal. For LM Studio, click 'Start Server'. Verify the endpoint matches your active port.",
+    },
+    {
+      id: "err-webgpu-unsupported",
+      title: "WebGPU Not Supported or Disabled",
+      category: "Local Models",
+      cause:
+        "Your browser does not support WebGPU, or hardware graphics acceleration is disabled in your browser flags.",
+      fix: "Use Google Chrome 113+ or Microsoft Edge 113+ on a PC with a GPU. Verify 'Use graphics acceleration when available' is turned ON in chrome://settings/system. Alternatively, connect via Ollama or LM Studio.",
+    },
   ];
 
   const filteredErrors = errorItems.filter(
@@ -85,6 +109,7 @@ export function TroubleshootingPage() {
                     <th scope="col">Browser</th>
                     <th scope="col">Push-to-Talk Voice</th>
                     <th scope="col">Speech Output</th>
+                    <th scope="col">Local Models</th>
                     <th scope="col">Storage (IndexedDB)</th>
                     <th scope="col">Status</th>
                   </tr>
@@ -96,6 +121,7 @@ export function TroubleshootingPage() {
                     </td>
                     <td>Supported (Web Speech API)</td>
                     <td>Supported (Web Speech Synthesis)</td>
+                    <td>WebGPU (113+) &amp; Local Servers</td>
                     <td>Persistent</td>
                     <td>
                       <span style={{ color: "var(--success)" }}>Recommended</span>
@@ -107,6 +133,7 @@ export function TroubleshootingPage() {
                     </td>
                     <td>Supported (Web Speech API)</td>
                     <td>Supported (Web Speech Synthesis)</td>
+                    <td>WebGPU (113+) &amp; Local Servers</td>
                     <td>Persistent</td>
                     <td>
                       <span style={{ color: "var(--success)" }}>Full Support</span>
@@ -118,6 +145,7 @@ export function TroubleshootingPage() {
                     </td>
                     <td>Requires speech flag / Text fallback</td>
                     <td>Supported</td>
+                    <td>Local Servers (WebGPU behind flag)</td>
                     <td>Persistent</td>
                     <td>Supported (Text mode recommended)</td>
                   </tr>
@@ -127,6 +155,7 @@ export function TroubleshootingPage() {
                     </td>
                     <td>Supported with permissions</td>
                     <td>Supported</td>
+                    <td>Safari 18+ &amp; Local Servers</td>
                     <td>Persistent</td>
                     <td>Supported</td>
                   </tr>

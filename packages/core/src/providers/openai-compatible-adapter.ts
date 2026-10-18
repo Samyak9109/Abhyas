@@ -15,13 +15,13 @@ import type {
 } from "./types";
 
 export interface OpenAIAdapterConfig {
-  id?: "openai" | "openai-compatible";
-  apiKey: string;
-  baseUrl?: string;
-  model?: string;
-  fetchFn?: typeof fetch;
+  id?: "openai" | "openai-compatible" | undefined;
+  apiKey?: string | undefined;
+  baseUrl?: string | undefined;
+  model?: string | undefined;
+  fetchFn?: typeof fetch | undefined;
   /** Allow custom endpoint not in default static allowlist if user explicitly opted in */
-  allowCustomOrigin?: boolean;
+  allowCustomOrigin?: boolean | undefined;
 }
 
 interface OpenAIModelItem {
@@ -68,13 +68,24 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   private readonly fetchFn: typeof fetch;
   private readonly allowCustomOrigin: boolean;
 
-  constructor(config: OpenAIAdapterConfig) {
+  constructor(config: OpenAIAdapterConfig = {}) {
     this.id = config.id || (config.baseUrl ? "openai-compatible" : "openai");
-    this.apiKey = config.apiKey.trim();
+    this.apiKey = (config.apiKey || "").trim();
     this.baseUrl = (config.baseUrl || "https://api.openai.com/v1").replace(/\/+$/, "");
     this.defaultModel = config.model || "gpt-4o-mini";
     this.fetchFn = config.fetchFn || globalThis.fetch;
     this.allowCustomOrigin = Boolean(config.allowCustomOrigin);
+  }
+
+  private getHeaders(contentType?: string): Record<string, string> {
+    const headers: Record<string, string> = {};
+    if (contentType) {
+      headers["Content-Type"] = contentType;
+    }
+    if (this.apiKey) {
+      headers.Authorization = `Bearer ${this.apiKey}`;
+    }
+    return headers;
   }
 
   async capabilities(): Promise<Capabilities> {
@@ -107,9 +118,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       this.checkDestination(url);
       const res = await this.fetchFn(url, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-        },
+        headers: this.getHeaders(),
       });
 
       if (!res.ok) {
@@ -163,10 +172,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     try {
       res = await this.fetchFn(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
+        headers: this.getHeaders("application/json"),
         body: JSON.stringify(body),
         signal: opts.signal,
       });
@@ -275,10 +281,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
 
         const res = await this.fetchFn(url, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.apiKey}`,
-          },
+          headers: this.getHeaders("application/json"),
           body: JSON.stringify(body),
           signal: opts.signal,
         });
@@ -388,6 +391,17 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         err.name === "TypeError" &&
         (err.message.includes("fetch") || err.message.includes("NetworkError"))
       ) {
+        const isLocal =
+          this.baseUrl.includes("localhost") ||
+          this.baseUrl.includes("127.0.0.1") ||
+          this.baseUrl.startsWith("http://");
+        if (isLocal) {
+          return {
+            kind: "cors",
+            message: `Connection failed or blocked by CORS at ${this.baseUrl}. If running a local server (e.g. LM Studio, LocalAI, vLLM), ensure it is running and CORS is enabled in server settings.`,
+            retryable: true,
+          };
+        }
         return {
           kind: "network",
           message: "Network connection failure or CORS restriction",

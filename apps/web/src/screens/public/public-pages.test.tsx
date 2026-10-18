@@ -15,6 +15,7 @@ import {
   PrivacyPage,
   OpenSourcePage,
   KeyGuidePage,
+  LocalModelsGuidePage,
   TroubleshootingPage,
   NotFoundPage,
 } from "./index";
@@ -178,10 +179,10 @@ describe("M1.9: Public Static Pages & Docs (FR-033, ADR-019)", () => {
       expect(screen.getByRole("heading", { name: /compatibility & error fixes/i })).toBeTruthy();
 
       // Browser matrix
-      expect(screen.getByText(/google chrome/i)).toBeTruthy();
-      expect(screen.getByText(/microsoft edge/i)).toBeTruthy();
-      expect(screen.getByText(/mozilla firefox/i)).toBeTruthy();
-      expect(screen.getByText(/apple safari/i)).toBeTruthy();
+      expect(screen.getAllByText(/google chrome/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText(/microsoft edge/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText(/mozilla firefox/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText(/apple safari/i).length).toBeGreaterThanOrEqual(1);
 
       // Diagnostics instructions
       expect(
@@ -196,6 +197,45 @@ describe("M1.9: Public Static Pages & Docs (FR-033, ADR-019)", () => {
 
       document.documentElement.setAttribute("data-theme", "paper");
       rerender(<TroubleshootingPage />);
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe("PG-06: Local Models Guide Page", () => {
+    it("renders device requirements, tiers, Ollama CORS setup, and basic feedback note", () => {
+      render(<LocalModelsGuidePage />);
+
+      expect(
+        screen.getByRole("heading", { name: /local models & private practice/i })
+      ).toBeTruthy();
+
+      // PC Only & Text Only requirements
+      expect(screen.getByRole("heading", { name: /1\. device requirements/i })).toBeTruthy();
+      expect(screen.getByText(/pc only \(phones blocked\)/i)).toBeTruthy();
+      expect(screen.getByText(/strictly text-only/i)).toBeTruthy();
+
+      // Hardware Tiers table
+      expect(screen.getByRole("heading", { name: /2\. hardware tiers/i })).toBeTruthy();
+      expect(screen.getByText(/smollm2 1\.7b/i)).toBeTruthy();
+      expect(screen.getByText(/llama 3\.2 3b/i)).toBeTruthy();
+      expect(screen.getByText(/llama 3\.1 8b/i)).toBeTruthy();
+
+      // Ollama & CORS section
+      expect(screen.getByRole("heading", { name: /4\. ollama setup & cors configuration/i })).toBeTruthy();
+      expect(screen.getByText(/configure cors/i)).toBeTruthy();
+      expect(screen.getAllByText(/ollama_origins/i).length).toBeGreaterThanOrEqual(1);
+
+      // Honesty section
+      expect(screen.getByRole("heading", { name: /6\. honesty: what "basic feedback" means/i })).toBeTruthy();
+    });
+
+    it("has zero axe accessibility violations under Ink and Paper themes", async () => {
+      document.documentElement.setAttribute("data-theme", "ink");
+      const { container, rerender } = render(<LocalModelsGuidePage />);
+      expect(await axe(container)).toHaveNoViolations();
+
+      document.documentElement.setAttribute("data-theme", "paper");
+      rerender(<LocalModelsGuidePage />);
       expect(await axe(container)).toHaveNoViolations();
     });
   });

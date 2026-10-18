@@ -69,6 +69,12 @@ export const SessionPlanSchema = z.object({
 
   /** Whether the session runs on a small model (AI-014). */
   isSmallModel: z.boolean().optional(),
+
+  /** Target company slug if tailored to a company pack (FR-025). */
+  companySlug: z.string().optional(),
+
+  /** Target company display name if tailored to a company pack (FR-025). */
+  companyName: z.string().optional(),
 });
 
 export type SessionPlan = z.infer<typeof SessionPlanSchema>;

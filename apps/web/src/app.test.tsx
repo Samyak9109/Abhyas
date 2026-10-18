@@ -116,6 +116,16 @@ describe("M1.1: App shell", () => {
     expect(await screen.findByRole("heading", { name: /in-browser model manager/i })).toBeTruthy();
   });
 
+  it("navigates to Companies screen via aside navigation link", async () => {
+    render(<App />);
+    await screen.findByText(/running in memory/i);
+
+    const companiesLink = screen.getByRole("link", { name: /^companies/i });
+    fireEvent.click(companiesLink);
+
+    expect(await screen.findByRole("heading", { name: /Company Directory_/i })).toBeTruthy();
+  });
+
   it("renders Results screen when navigating to /app/results", async () => {
     window.history.pushState({}, "", "/app/results");
     render(<App />);

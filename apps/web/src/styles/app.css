@@ -4108,3 +4108,428 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+/* --- M4.3: Company Packs, Context Panel & Company Directory (PG-20, PG-11, FR-025) --- */
+
+.abh-company-context-panel {
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+.abh-company-panel-header {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.abh-company-header-main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.abh-company-monogram {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--line-strong);
+  background-color: var(--surface-2);
+  color: var(--accent-text);
+}
+
+.abh-company-title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.abh-company-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.abh-company-domain {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.abh-company-domain-link {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.abh-company-domain-link:hover {
+  text-decoration: underline;
+}
+
+.abh-company-badges-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.abh-company-date-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.abh-company-honesty-note {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  margin-top: var(--space-4);
+}
+
+.abh-company-sections-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.abh-pack-section {
+  padding: var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.abh-pack-section-title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.abh-pack-overview-text {
+  margin: 0 0 var(--space-3);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.abh-pack-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.abh-pack-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+}
+
+.abh-pack-product-chip {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.abh-pack-values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.abh-pack-value-card {
+  padding: var(--space-3);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.abh-pack-value-name {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.abh-pack-value-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.abh-pack-process-list {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.abh-pack-signals-list {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.abh-pack-sources {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.abh-pack-sources-label {
+  color: var(--text-muted);
+  margin-right: var(--space-2);
+}
+
+.abh-pack-sources-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.abh-pack-source-link {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.abh-pack-source-link:hover {
+  text-decoration: underline;
+}
+
+.abh-pack-source-date {
+  color: var(--text-muted);
+  margin-left: var(--space-1);
+}
+
+.abh-company-panel-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.abh-report-link {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.abh-report-link:hover {
+  color: var(--warning);
+  text-decoration: underline;
+}
+
+.abh-company-panel-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* --- PG-20: Company Directory Screen Layout --- */
+
+.abh-company-directory {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.abh-company-dir-header {
+  margin-bottom: var(--space-5);
+}
+
+.abh-company-search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.abh-company-search-input {
+  flex: 1;
+  min-width: 260px;
+}
+
+.abh-company-filter-pills {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.abh-company-dir-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .abh-company-dir-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.abh-company-dir-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 750px;
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+
+.abh-company-card-item {
+  padding: var(--space-4);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+  width: 100%;
+}
+
+.abh-company-card-item:hover {
+  border-color: var(--accent);
+}
+
+.abh-company-card-item--active {
+  border-color: var(--accent-text);
+  background-color: var(--surface-2);
+}
+
+.abh-company-card-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
+.abh-company-card-item-name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.abh-company-card-item-domain {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.abh-company-card-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.abh-company-detail-pane {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  padding: var(--space-5);
+}
+
+/* --- PG-11: Session Setup Company Selection Card & Autocomplete --- */
+
+.abh-company-picker-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.abh-company-autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background-color: var(--surface);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-hard);
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 2px;
+  list-style: none;
+  padding: 0;
+}
+
+.abh-company-autocomplete-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+
+.abh-company-autocomplete-item:hover,
+.abh-company-autocomplete-item[aria-selected="true"] {
+  background-color: var(--surface-2);
+}
+
+.abh-company-autocomplete-item--skip {
+  color: var(--text-muted);
+  font-style: italic;
+  background-color: var(--bg);
+}
+
+.abh-company-selected-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  margin-top: var(--space-2);
+}
+
+.abh-company-selected-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.abh-company-selected-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}

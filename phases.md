@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Document | `phases.md` (authority level 4 of 4) |
-| Version | 0.3.0 |
-| Last updated | 2026-10-14 |
+| Version | 0.6.2 |
+| Last updated | 2026-10-18 |
 | Governs | Order of work, milestones, acceptance criteria, validation gates |
 | Governed by | `PRD.md`, `architecture.md`, `design.md` (they win on conflict) |
 
@@ -279,7 +279,7 @@ Design status values: **Designed** (approved in the design canvas), **Needs desi
 | PG-07 | Roadmap and changelog (Could) | After M2.7, if time allows | Needs design | When scheduled | Not started |
 | PG-19 | Model manager | M3.2 | Needs design | M3.2 | Built (M3.2) to design.md rules; flagged for design review |
 | PG-06 | Local models guide | M3.6 | Needs design | M3.6 | Built (M3.6) to design.md rules; flagged for design review |
-| PG-20 | Company directory and detail | M4.3 | Needs design | M4.3 | Not started |
+| PG-20 | Company directory and detail | M4.3 | Needs design | M4.3 | Built (M4.3) to design.md rules; flagged for design review |
 | PG-21 | Report and request dialogs | M4.5 (issue link), M5.4 (service) | Needs design | M4.5 | Not started |
 | PG-22 | Schedule | M6.1 | Needs design | M6.1 | Not started |
 | PG-23 | Review queue | M6.2 | Needs design | M6.2 | Not started |
@@ -340,7 +340,7 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | Phase 3 Exit Gate | Done | 2026-10-18 | Full offline text session on reference PC verified with 0 network egress; basic feedback honesty badges on scorecard and evaluation fallback verified; mobile device blocking and text-only enforcement verified; curated catalog integrity and post-load sanity verified (tests/p3-exit-gate.test.ts, FR-022, FR-023, FR-024, FR-011, FR-012, AI-014, ADR-013) |
 | M4.1 Pack contract | Done | 2026-10-18 | Pack schema with Evidenced contract requiring source URLs, titles, and dates; validator enforcing date/evidence integrity and unique slugs/domains; CI directory check and CLI runner validating packs; packs without evidence fail validation (FR-025, ADR-008) |
 | M4.2 Seed packs | Done | 2026-10-18 | 12 hand-reviewed seed company packs for major employers (Google, Amazon, Microsoft, Meta, Apple, Netflix, Stripe, Uber, Airbnb, Spotify, GitHub, Salesforce) built from official sources with evidenced claims, dates, and zero guessed facts; packs.ts accessor and indexing module; CI directory validation passes (FR-025, ADR-008) |
-| M4.3 Picker and panel | Not started | 2026-10-18 | Pack index, autocomplete with status, 'Company context used' panel with sources and dates, PG-20 company directory (FR-025, PG-20, PG-11) |
+| M4.3 Picker and panel | Done | 2026-10-18 | Pack index, client offline caching, autocomplete with status, 'Company context used' panel with sources and dates, PG-20 company directory and detail screen with 0 axe violations (FR-025, ADR-008, PG-20, PG-11) |
 | M4.4 Tailoring | Not started | 2026-10-18 | Pack-aware prompts, values-based behavioral questions, stack-weighted technical questions, 'no verified data' instruction when absent (FR-025, AI-014) |
 | M4.5 Safety | Not started | 2026-10-18 | Injection fixtures (malicious pack text), report via prefilled issue link (FR-025, PG-21) |
 | Exit gate G2 | Not started | 2026-10-18 | Owner and testers confirm tailored sessions feel meaningfully better than general ones; decide whether to build P5 |
@@ -405,6 +405,7 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | 2026-10-18 | 0.5.6 | Completed Phase 3 Exit Gate (Phase 3 completion): End-to-end exit gate test suite (tests/p3-exit-gate.test.ts) verifying all 4 criteria: (1) full offline 2-question interview text session with in-browser local model and zero network egress (fetch spy verified), (2) scorecard and evaluator honesty badge tagging (isBasicFeedback=true) and crash-proof rule fallback for invalid model output, (3) strict device rules enforcement (mobile local mode blocked, PC WebGPU supported with hardware runtime detection, text-only mode with zero speech APIs constructed), and (4) curated catalog integrity (3-5 models across Basic/Standard/Advanced tiers) with interview-ready post-load sanity test; all 62 test files (582 tests) passing with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors (FR-022, FR-023, FR-024, FR-011, FR-012, AI-014, ADR-013) |
 | 2026-10-18 | 0.6.0 | P4 begins. Completed M4.1 Pack contract: Strict CompanyPackSchema and Evidenced contract in @abhyas/core with mandatory source URLs, titles, and ISO date strings; rejection of unevidenced claims, empty sources, invalid dates, and 'unknown' confidence (architecture.md 15.1, ADR-008); CompanyPackIndexItemSchema and CompanyPackIndexSchema for static catalog indexing; validateCompanyPack, validateCompanyPacks, and validateCompanyPackIndex validators in @abhyas/content enforcing schema and unique slugs/domains; content directory validation (validateContentDirectory) and CI runner (validate-cli.ts) verifying all company packs in packages/content/packs/; seed reference pack (example-tech.json); 64/64 test files (603 tests) green with 0 knip dead code, 0 type errors, 0 lint errors (FR-025, ADR-008) |
 | 2026-10-18 | 0.6.1 | Completed M4.2 Seed packs: Authored 12 hand-reviewed seed company packs for popular employers (Google, Amazon, Microsoft, Meta, Apple, Netflix, Stripe, Uber, Airbnb, Spotify, GitHub, Salesforce) in packages/content/packs/; every claim backed by official sources, titles, and retrieval dates; unknown fields omitted rather than guessed (architecture.md 15.1, ADR-008); packages/content/src/packs.ts module exposing SEED_COMPANY_PACKS, SEED_COMPANY_PACK_INDEX, getSeedCompanyPack, getSeedCompanyPackByDomain, and searchSeedCompanyPacks; directory and CI validation verifying 12 valid production packs; 64/64 test files (610 tests) green with 0 knip dead code, 0 type errors, 0 lint errors (FR-025, ADR-008) |
+| 2026-10-18 | 0.6.2 | Completed M4.3 Picker and panel: Company pack client service with offline IndexedDB caching (companyCache) and seed pack fallback; TTL stale evaluation (isPackStale); autocomplete and status tags in Session Setup (PG-11) with 'Company context used' dialog, general session skip/clear, and SessionPlan integration; PG-20 Company directory and detail screen with multi-attribute search, coverage filters (All, High, Medium), responsive card list, evidenced CompanyContextPanel, and 'Practice for this company' CTA; aside navigation integration (/app/companies); 66/66 test files (630 tests) green with 0 axe violations across Ink and Paper themes, 0 knip dead code, 0 type errors, 0 lint errors (FR-025, ADR-008, PG-20, PG-11) |
 
 
 

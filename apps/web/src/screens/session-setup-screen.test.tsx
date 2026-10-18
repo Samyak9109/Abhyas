@@ -8,6 +8,7 @@ import {
   type ProfileRow,
   type ProviderRow,
 } from "@abhyas/core";
+import { getSeedCompanyPack } from "@abhyas/content";
 import { SessionSetupScreen } from "./SessionSetupScreen";
 
 describe("M1.4: SessionSetupScreen (PG-11)", () => {
@@ -310,6 +311,165 @@ describe("M1.4: SessionSetupScreen (PG-11)", () => {
       fireEvent.click(startBtn);
 
       expect(onStart).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Company Pack Selection (FR-025, ADR-008, M4.3)", () => {
+    it("renders company picker and pre-selects initialCompanySlug", async () => {
+      const storage = new MemoryStorageAdapter();
+      render(
+        <SessionSetupScreen
+          storage={storage}
+          onStart={vi.fn()}
+          onBack={vi.fn()}
+          initialCompanySlug="amazon"
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Amazon")).toBeTruthy();
+        expect(screen.getByTestId("selected-company-verified")).toBeTruthy();
+      });
+      expect(screen.getByRole("button", { name: /Company context used/i })).toBeTruthy();
+    });
+
+    it("allows opening company context dialog and closing it", async () => {
+      const storage = new MemoryStorageAdapter();
+      render(
+        <SessionSetupScreen
+          storage={storage}
+          onStart={vi.fn()}
+          onBack={vi.fn()}
+          initialCompanySlug="google"
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Google")).toBeTruthy();
+      });
+
+      const viewContextBtn = screen.getByRole("button", { name: /Company context used/i });
+      fireEvent.click(viewContextBtn);
+
+      await waitFor(() => {
+        expect(screen.getByText("Company Context: Google")).toBeTruthy();
+        expect(screen.getByText(/Core Values & Principles/i)).toBeTruthy();
+      });
+
+      const closeBtn = screen.getByRole("button", { name: /^Close$/i });
+      fireEvent.click(closeBtn);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Company Context: Google")).toBeNull();
+      });
+    });
+
+    it("includes companySlug and companyName in SessionPlan when starting session", async () => {
+      const storage = new MemoryStorageAdapter();
+      const provider: ProviderRow = {
+        id: "provider_1",
+        kind: "gemini",
+        modelRoles: { interviewer: "gemini-2.0-flash", evaluator: "gemini-2.0-flash" },
+      };
+      await storage.put("providers", provider);
+      await storage.put("settings", { key: "activeProviderId", value: "provider_1" });
+
+      const onStart = vi.fn();
+      render(
+        <SessionSetupScreen
+          storage={storage}
+          onStart={onStart}
+          onBack={vi.fn()}
+          initialCompanySlug="stripe"
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Stripe")).toBeTruthy();
+      });
+
+      const startBtn = screen.getByRole("button", { name: /Start Session/i });
+      expect(startBtn).toHaveProperty("disabled", false);
+      fireEvent.click(startBtn);
+
+      await waitFor(() => {
+        expect(onStart).toHaveBeenCalledTimes(1);
+      });
+
+      const plan = onStart.mock.calls[0]?.[0];
+      expect(plan.companySlug).toBe("stripe");
+      expect(plan.companyName).toBe("Stripe");
+      expect(SessionPlanSchema.safeParse(plan).success).toBe(true);
+    });
+
+    it("allows skipping company context for a general session via Clear button", async () => {
+      const storage = new MemoryStorageAdapter();
+      const provider: ProviderRow = {
+        id: "provider_1",
+        kind: "gemini",
+        modelRoles: { interviewer: "gemini-2.0-flash", evaluator: "gemini-2.0-flash" },
+      };
+      await storage.put("providers", provider);
+      await storage.put("settings", { key: "activeProviderId", value: "provider_1" });
+
+      const onStart = vi.fn();
+      render(
+        <SessionSetupScreen
+          storage={storage}
+          onStart={onStart}
+          onBack={vi.fn()}
+          initialCompanySlug="google"
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Google")).toBeTruthy();
+      });
+
+      const clearBtn = screen.getByRole("button", { name: /Clear \(general session\)/i });
+      fireEvent.click(clearBtn);
+
+      const startBtn = screen.getByRole("button", { name: /Start Session/i });
+      fireEvent.click(startBtn);
+
+      await waitFor(() => {
+        expect(onStart).toHaveBeenCalledTimes(1);
+      });
+
+      const plan = onStart.mock.calls[0]?.[0];
+      expect(plan.companySlug).toBeUndefined();
+      expect(plan.companyName).toBeUndefined();
+    });
+
+    it("renders stale badge when cached pack exceeds TTL", async () => {
+      const storage = new MemoryStorageAdapter();
+      const basePack = getSeedCompanyPack("netflix")!;
+      const pastDate = new Date(Date.now() - 150 * 86400 * 1000).toISOString();
+      const stalePack = {
+        ...basePack,
+        retrievedAt: pastDate,
+      };
+      await storage.put("companyCache", {
+        slug: "netflix",
+        pack: stalePack,
+        fetchedAt: pastDate,
+        packVersion: stalePack.schemaVersion,
+      });
+
+      render(
+        <SessionSetupScreen
+          storage={storage}
+          onStart={vi.fn()}
+          onBack={vi.fn()}
+          initialCompanySlug="netflix"
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Netflix")).toBeTruthy();
+        expect(screen.getByTestId("selected-company-stale")).toBeTruthy();
+        expect(screen.getByText("STALE (TTL EXCEEDED)")).toBeTruthy();
+      });
     });
   });
 

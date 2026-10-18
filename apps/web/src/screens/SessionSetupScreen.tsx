@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   SessionPlanSchema,
   isPhoneDevice,
+  type CompanyPack,
   type ExperienceLevel,
   type HardwareRuntime,
   type InputMode,
@@ -18,6 +19,9 @@ import {
   type StorageAdapter,
 } from "@abhyas/core";
 import { Button, Callout, RadioCard, Stepper } from "../components";
+import { Dialog } from "../components/Dialog";
+import { CompanyContextPanel } from "../components/CompanyContextPanel";
+import { loadCompanyPack, searchCompanies } from "../services/company-pack-service";
 import { getBrowserSpeechInput } from "../services/speech";
 
 interface SessionSetupScreenProps {
@@ -28,6 +32,7 @@ interface SessionSetupScreenProps {
   onNavigateAISetup?: () => void;
   onNavigateSettings?: () => void;
   hardwareRuntime?: HardwareRuntime;
+  initialCompanySlug?: string | null;
 }
 
 const SETUP_STEPS = [
@@ -142,6 +147,7 @@ export function SessionSetupScreen({
   onNavigateAISetup,
   onNavigateSettings,
   hardwareRuntime,
+  initialCompanySlug,
 }: SessionSetupScreenProps) {
   const [sessionType, setSessionType] = useState<SessionType>("mixed");
   const [length, setLength] = useState<SessionLength>(10);
@@ -164,6 +170,52 @@ export function SessionSetupScreen({
   const [level, setLevel] = useState<ExperienceLevel>("mid");
   const [targetRole, setTargetRole] = useState("Software Engineer");
   const [hasProvider, setHasProvider] = useState<boolean | null>(null);
+
+  // Company pack state (FR-025, ADR-008, M4.3)
+  const [selectedCompanySlug, setSelectedCompanySlug] = useState<string | null>(
+    initialCompanySlug ?? null
+  );
+  const [selectedPack, setSelectedPack] = useState<CompanyPack | null>(null);
+  const [isCompanyStale, setIsCompanyStale] = useState(false);
+  const [companySearch, setCompanySearch] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isContextModalOpen, setIsContextModalOpen] = useState(false);
+
+  // Sync initialCompanySlug prop if it changes
+  useEffect(() => {
+    if (initialCompanySlug !== undefined) {
+      setSelectedCompanySlug(initialCompanySlug);
+    }
+  }, [initialCompanySlug]);
+
+  // Load company pack when selectedCompanySlug changes
+  useEffect(() => {
+    let mounted = true;
+    if (!selectedCompanySlug) {
+      setSelectedPack(null);
+      setIsCompanyStale(false);
+      return;
+    }
+
+    loadCompanyPack(selectedCompanySlug, storage).then((res) => {
+      if (!mounted) return;
+      if (res) {
+        setSelectedPack(res.pack);
+        setIsCompanyStale(res.isStale);
+      } else {
+        setSelectedPack(null);
+        setIsCompanyStale(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCompanySlug, storage]);
+
+  const matchingCompanies = useMemo(() => {
+    return searchCompanies(companySearch);
+  }, [companySearch]);
 
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
@@ -237,6 +289,8 @@ export function SessionSetupScreen({
         createdAt: new Date().toISOString(),
         isLocalModel: isLocalProvider,
         isSmallModel: isLocalProvider,
+        companySlug: selectedPack?.slug,
+        companyName: selectedPack?.name,
       });
       onStart(plan);
     } catch (err: unknown) {
@@ -432,12 +486,169 @@ export function SessionSetupScreen({
               </Callout>
             )}
 
-            {/* Company field — deferred to M4.3 */}
+            {/* Company field — M4.3 (FR-025, PG-11) */}
             <div className="abh-form-field">
-              <p className="abh-form-hint" aria-label="Company-specific question packs">
-                <strong>Company packs</strong> — targeted company question packs are coming in a
-                future release.
+              <label htmlFor="company-autocomplete-input" className="abh-label">
+                Target Company (optional)
+              </label>
+              <p className="abh-form-hint" id="company-field-hint">
+                Tailor questions to the employer&apos;s verified tech stack, values, and interview
+                process (FR-025). Select a company or skip for a general session.
               </p>
+
+              {selectedPack ? (
+                <div className="abh-company-selected-box" data-testid="selected-company-box">
+                  <div className="abh-company-selected-info">
+                    <span className="abh-company-monogram" aria-hidden="true">
+                      {selectedPack.slug.slice(0, 2).toUpperCase()}
+                    </span>
+                    <div>
+                      <div
+                        style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}
+                      >
+                        <strong style={{ fontSize: "15px" }}>{selectedPack.name}</strong>
+                        <span className="abh-company-domain">({selectedPack.domain})</span>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "var(--space-2)",
+                          marginTop: "var(--space-1)",
+                        }}
+                      >
+                        {isCompanyStale ? (
+                          <span
+                            className="abh-badge abh-badge--warning"
+                            data-testid="selected-company-stale"
+                            style={{ fontSize: "10px" }}
+                          >
+                            STALE (TTL EXCEEDED)
+                          </span>
+                        ) : (
+                          <span
+                            className="abh-badge abh-badge--success"
+                            data-testid="selected-company-verified"
+                            style={{ fontSize: "10px" }}
+                          >
+                            VERIFIED ✓
+                          </span>
+                        )}
+                        <span className="abh-company-date-tag">
+                          Verified: {selectedPack.retrievedAt.slice(0, 10)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="abh-company-selected-actions">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => setIsContextModalOpen(true)}
+                      data-testid="view-company-context-btn"
+                    >
+                      Company context used
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedCompanySlug(null);
+                        setSelectedPack(null);
+                      }}
+                      data-testid="clear-company-btn"
+                    >
+                      Clear (general session)
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="abh-company-picker-wrapper">
+                  <input
+                    id="company-autocomplete-input"
+                    type="text"
+                    className="abh-input"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={isDropdownOpen}
+                    aria-controls="company-autocomplete-list"
+                    aria-describedby="company-field-hint"
+                    placeholder="Search company (e.g. Google, Stripe, Amazon) or skip..."
+                    value={companySearch}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    onChange={(e) => {
+                      setCompanySearch(e.target.value);
+                      setIsDropdownOpen(true);
+                    }}
+                  />
+                  {isDropdownOpen && (
+                    <ul
+                      id="company-autocomplete-list"
+                      className="abh-company-autocomplete-dropdown"
+                      role="listbox"
+                    >
+                      <li
+                        className="abh-company-autocomplete-item abh-company-autocomplete-item--skip"
+                        role="option"
+                        aria-selected={false}
+                        onClick={() => {
+                          setSelectedCompanySlug(null);
+                          setSelectedPack(null);
+                          setIsDropdownOpen(false);
+                          setCompanySearch("");
+                        }}
+                      >
+                        <span>[Skip: general session]</span>
+                        <span style={{ fontSize: "11px" }}>No company tailoring</span>
+                      </li>
+                      {matchingCompanies.map((c) => (
+                        <li
+                          key={c.slug}
+                          className="abh-company-autocomplete-item"
+                          role="option"
+                          aria-selected={false}
+                          onClick={() => {
+                            setSelectedCompanySlug(c.slug);
+                            setIsDropdownOpen(false);
+                            setCompanySearch("");
+                          }}
+                        >
+                          <div>
+                            <strong>{c.name}</strong>{" "}
+                            <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>
+                              ({c.domain})
+                            </span>
+                          </div>
+                          <div style={{ display: "flex", gap: "var(--space-1)" }}>
+                            <span
+                              className="abh-badge abh-badge--neutral"
+                              style={{ fontSize: "10px" }}
+                            >
+                              {c.coverage.toUpperCase()}
+                            </span>
+                            {c.isStale ? (
+                              <span
+                                className="abh-badge abh-badge--warning"
+                                style={{ fontSize: "10px" }}
+                              >
+                                STALE
+                              </span>
+                            ) : (
+                              <span
+                                className="abh-badge abh-badge--success"
+                                style={{ fontSize: "10px" }}
+                              >
+                                READY ✓
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Validation error */}
@@ -465,6 +676,21 @@ export function SessionSetupScreen({
           </section>
         </div>
       </main>
+
+      {/* Company context used Dialog (PG-11, FR-025) */}
+      {selectedPack && (
+        <Dialog
+          isOpen={isContextModalOpen}
+          onClose={() => setIsContextModalOpen(false)}
+          title={`Company Context: ${selectedPack.name}`}
+        >
+          <CompanyContextPanel
+            pack={selectedPack}
+            isStale={isCompanyStale}
+            onClose={() => setIsContextModalOpen(false)}
+          />
+        </Dialog>
+      )}
     </div>
   );
 }

@@ -63,6 +63,9 @@ const SettingsScreen = lazy(() =>
 const ModelManagerScreen = lazy(() =>
   import("./screens/ModelManagerScreen").then((m) => ({ default: m.ModelManagerScreen }))
 );
+const CompanyDirectoryScreen = lazy(() =>
+  import("./screens/CompanyDirectoryScreen").then((m) => ({ default: m.CompanyDirectoryScreen }))
+);
 
 type AppRoute =
   | "/"
@@ -77,6 +80,7 @@ type AppRoute =
   | "/app/history"
   | "/app/settings"
   | "/app/models"
+  | "/app/companies"
   | "/app/setup/ai"
   | "/app/setup/profile"
   | "/app/setup/session"
@@ -128,6 +132,9 @@ function getInitialRoute(): AppRoute {
     if (path.includes("setup/ai") || window.location.hash.includes("setup/ai")) {
       return "/app/setup/ai";
     }
+    if (path.includes("companies") || window.location.hash.includes("companies")) {
+      return "/app/companies";
+    }
     if (path.includes("settings") || window.location.hash.includes("settings")) {
       return "/app/settings";
     }
@@ -151,6 +158,7 @@ export function App() {
   const [resultsSessionId, setResultsSessionId] = useState<string | null>(null);
   const [practiceSkillId, setPracticeSkillId] = useState<string | null>(null);
   const [historySessionId, setHistorySessionId] = useState<string | null>(null);
+  const [selectedCompanySlugForSession, setSelectedCompanySlugForSession] = useState<string | null>(null);
   const [init, setInit] = useState<InitState>({ status: "loading" });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -427,6 +435,19 @@ export function App() {
           <li>
             <a
               className="abh-app-nav-item"
+              href="/app/companies"
+              aria-current={currentRoute === "/app/companies" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/companies");
+              }}
+            >
+              Companies
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
               href="/app/setup/ai"
               aria-current={currentRoute === "/app/setup/ai" ? "page" : undefined}
               onClick={(e) => {
@@ -533,6 +554,7 @@ export function App() {
         <Suspense fallback={screenLoading}>
           <SessionSetupScreen
             storage={init.storage}
+            initialCompanySlug={selectedCompanySlugForSession}
             onStart={(plan) => void handleStartSession(plan)}
             onBack={() => navigateTo("/app/setup/profile")}
             onNavigateAISetup={() => navigateTo("/app/setup/ai")}
@@ -711,6 +733,29 @@ export function App() {
             onNavigateProfile={() => navigateTo("/app/setup/profile")}
             onNavigateSkills={() => navigateTo("/app/skills")}
           />
+        </main>
+      </div>
+    );
+  }
+
+  if (route === "/app/companies") {
+    return (
+      <div className="abh-app">
+        {renderTopBanners()}
+        {renderAppNav(route)}
+        <main className="abh-app-main">
+          <Suspense fallback={screenLoading}>
+            <CompanyDirectoryScreen
+              storage={init.storage}
+              initialCompanySlug={selectedCompanySlugForSession}
+              onSelectCompanyForSession={(slug) => {
+                setSelectedCompanySlugForSession(slug);
+              }}
+              onNavigateSessionSetup={() => {
+                navigateTo("/app/setup/session");
+              }}
+            />
+          </Suspense>
         </main>
       </div>
     );

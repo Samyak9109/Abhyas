@@ -52,7 +52,10 @@ export function condenseCompanyPack(
     const valuesList = isSmallModel
       ? pack.values.value
           .slice(0, 4)
-          .map((v) => `${sanitizePromptData(v.name)}: ${sanitizePromptData(v.description.slice(0, 80))}`)
+          .map(
+            (v) =>
+              `${sanitizePromptData(v.name)}: ${sanitizePromptData(v.description.slice(0, 80))}`
+          )
       : pack.values.value.map(
           (v) => `${sanitizePromptData(v.name)}: ${sanitizePromptData(v.description)}`
         );

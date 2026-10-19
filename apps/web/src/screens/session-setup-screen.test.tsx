@@ -471,6 +471,64 @@ describe("M1.4: SessionSetupScreen (PG-11)", () => {
         expect(screen.getByText("STALE (TTL EXCEEDED)")).toBeTruthy();
       });
     });
+
+    it("displays 'REQUESTED ✓' without counts in autocomplete list (M5.4, FR-026)", async () => {
+      const storage = new MemoryStorageAdapter();
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          {
+            slug: "datadog",
+            name: "Datadog",
+            domain: "datadoghq.com",
+            aliases: [],
+            status: "requested",
+            coverage: null,
+            last_researched_at: null,
+          },
+        ],
+      } as Response);
+
+      render(
+        <SessionSetupScreen
+          storage={storage}
+          onStart={vi.fn()}
+          onBack={vi.fn()}
+          apiUrl="http://api.test"
+        />
+      );
+
+      const input = screen.getByRole("combobox");
+      fireEvent.focus(input);
+
+      await waitFor(() => {
+        const badge = screen.getByTestId("company-picker-status-requested");
+        expect(badge).toBeTruthy();
+        expect(badge.textContent).toBe("REQUESTED ✓");
+        expect(badge.textContent).not.toMatch(/\d+/);
+      });
+    });
+
+    it("shows '+ Request pack' item in dropdown when typing unlisted company and opens dialog (M5.4)", async () => {
+      const storage = new MemoryStorageAdapter();
+      render(<SessionSetupScreen storage={storage} onStart={vi.fn()} onBack={vi.fn()} />);
+
+      const input = screen.getByRole("combobox");
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: "Linear" } });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("request-company-picker-btn")).toBeTruthy();
+        expect(screen.getByText(/Request pack for "Linear"/i)).toBeTruthy();
+      });
+
+      const requestItem = screen.getByTestId("request-company-picker-btn");
+      fireEvent.click(requestItem);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Request a Company Pack/i)).toBeTruthy();
+      });
+    });
   });
 
   describe("Accessibility (axe)", () => {

@@ -21,18 +21,37 @@ describe("company-condenser", () => {
     products: {
       value: ["Payments", "Billing", "Connect", "Terminal", "Radar", "Tax"],
       confidence: "documented",
-      sources: [{ url: "https://stripe.com/products", title: "Products", retrievedAt: "2026-10-18" }],
+      sources: [
+        { url: "https://stripe.com/products", title: "Products", retrievedAt: "2026-10-18" },
+      ],
     },
     techStack: {
-      value: ["Ruby", "Sorbet", "Go", "TypeScript", "PostgreSQL", "Redis", "Kafka", "AWS", "Kubernetes", "React"],
+      value: [
+        "Ruby",
+        "Sorbet",
+        "Go",
+        "TypeScript",
+        "PostgreSQL",
+        "Redis",
+        "Kafka",
+        "AWS",
+        "Kubernetes",
+        "React",
+      ],
       confidence: "documented",
       sources: [{ url: "https://stripe.com/blog", title: "Tech", retrievedAt: "2026-10-18" }],
     },
     values: {
       value: [
-        { name: "Users First", description: "Prioritize merchant prosperity and developer experience." },
+        {
+          name: "Users First",
+          description: "Prioritize merchant prosperity and developer experience.",
+        },
         { name: "Move with Urgency", description: "Execute rapidly with precise discipline." },
-        { name: "Meticulous Craftsmanship", description: "Polish APIs and reliability to the highest standard." },
+        {
+          name: "Meticulous Craftsmanship",
+          description: "Polish APIs and reliability to the highest standard.",
+        },
         { name: "Macro Curiosity", description: "Seek deep understanding of global economics." },
         { name: "Efficiency", description: "Work smart and scale leverage." },
       ],
@@ -45,7 +64,11 @@ describe("company-condenser", () => {
       sources: [{ url: "https://stripe.com/jobs", title: "Interview", retrievedAt: "2026-10-18" }],
     },
     cultureSignals: {
-      value: ["Interviews on candidate laptop", "Emphasis on written proposals", "Zero transaction inaccuracy tolerance"],
+      value: [
+        "Interviews on candidate laptop",
+        "Emphasis on written proposals",
+        "Zero transaction inaccuracy tolerance",
+      ],
       confidence: "documented",
       sources: [{ url: "https://stripe.com/blog", title: "Culture", retrievedAt: "2026-10-18" }],
     },
@@ -55,12 +78,18 @@ describe("company-condenser", () => {
     const condensed = condenseCompanyPack(samplePack);
     expect(condensed).toContain("Overview: Financial infrastructure platform");
     expect(condensed).toContain("Key Products: Payments, Billing, Connect, Terminal, Radar, Tax");
-    expect(condensed).toContain("Documented Tech Stack: Ruby, Sorbet, Go, TypeScript, PostgreSQL, Redis, Kafka, AWS, Kubernetes, React");
+    expect(condensed).toContain(
+      "Documented Tech Stack: Ruby, Sorbet, Go, TypeScript, PostgreSQL, Redis, Kafka, AWS, Kubernetes, React"
+    );
     expect(condensed).toContain("Core Values:");
     expect(condensed).toContain("- Users First: Prioritize merchant prosperity");
     expect(condensed).toContain("- Move with Urgency: Execute rapidly");
-    expect(condensed).toContain("Documented Interview Process: Recruiter screen -> Technical phone screen -> Onsite architecture and coding");
-    expect(condensed).toContain("Culture Signals: Interviews on candidate laptop; Emphasis on written proposals; Zero transaction inaccuracy tolerance");
+    expect(condensed).toContain(
+      "Documented Interview Process: Recruiter screen -> Technical phone screen -> Onsite architecture and coding"
+    );
+    expect(condensed).toContain(
+      "Culture Signals: Interviews on candidate laptop; Emphasis on written proposals; Zero transaction inaccuracy tolerance"
+    );
   });
 
   it("respects small local model character limits and item slicing (AI-014)", () => {

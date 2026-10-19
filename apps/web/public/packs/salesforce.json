@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "slug": "salesforce",
+  "name": "Salesforce",
+  "domain": "salesforce.com",
+  "aliases": [
+    "Salesforce, Inc.",
+    "CRM",
+    "Salesforce.com"
+  ],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Cloud-based customer relationship management (CRM) software enterprise providing applications for sales, customer service, marketing automation, and analytics.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.salesforce.com/company/about-us/",
+        "title": "About Salesforce",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Sales Cloud",
+      "Service Cloud",
+      "Marketing Cloud",
+      "Data Cloud",
+      "MuleSoft",
+      "Slack",
+      "Tableau",
+      "Agentforce"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.salesforce.com/products/",
+        "title": "Salesforce Products and Platform",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Java",
+      "Apex",
+      "TypeScript",
+      "JavaScript",
+      "Python",
+      "Go",
+      "PostgreSQL",
+      "Apache Kafka",
+      "HBase",
+      "AWS",
+      "Kubernetes"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://engineering.salesforce.com/",
+        "title": "Salesforce Engineering Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Trust",
+        "description": "Earn and keep customer trust through absolute data security, privacy, and transparent availability."
+      },
+      {
+        "name": "Customer Success",
+        "description": "Align directly with customers' long-term business outcomes and platform return on investment."
+      },
+      {
+        "name": "Innovation",
+        "description": "Deliver continuous technological advances through multi-tenant cloud releases."
+      },
+      {
+        "name": "Equality",
+        "description": "Promote diversity, fair pay, and inclusive access across all teams and communities."
+      },
+      {
+        "name": "Sustainability",
+        "description": "Pioneer climate action and carbon reduction in global digital infrastructure."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.salesforce.com/company/our-values/",
+        "title": "Salesforce Core Values",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter screening and domain match",
+      "Technical screen (coding or software design interview)",
+      "Virtual onsite loop (coding, enterprise architecture, past projects, and core values evaluation)"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://careers.salesforce.com/en/interviewing-at-salesforce/",
+        "title": "Interviewing at Salesforce",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Trust is the number one value: strict multi-tenant isolation and security compliance",
+      "Continuous automated testing for backward compatibility across seasonal platform releases",
+      "Ohana culture emphasizing mutual support, philanthropy, and collaborative problem-solving"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://trust.salesforce.com/",
+        "title": "Salesforce Trust - System Status & Security",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "slug": "airbnb",
+  "name": "Airbnb",
+  "domain": "airbnb.com",
+  "aliases": [
+    "Airbnb, Inc.",
+    "ABNB"
+  ],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Online marketplace platform for short- and long-term homestays, vacation rentals, and travel experiences worldwide.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://news.airbnb.com/about-us/",
+        "title": "About Airbnb",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Airbnb Stays",
+      "Airbnb Experiences",
+      "Airbnb Services & Host Tools"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.airbnb.com/",
+        "title": "Airbnb Marketplace and Services",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Java",
+      "Kotlin",
+      "Ruby",
+      "TypeScript",
+      "React",
+      "Swift",
+      "Apache Airflow",
+      "MySQL",
+      "Kubernetes",
+      "AWS"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://medium.com/airbnb-engineering",
+        "title": "Airbnb Engineering Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Champion the Mission",
+        "description": "Create a world where anyone can belong anywhere through hospitality and trust."
+      },
+      {
+        "name": "Be a Host",
+        "description": "Care for others, demonstrate genuine warmth, and treat every interaction hospitably."
+      },
+      {
+        "name": "Embrace the Adventure",
+        "description": "Approach challenges with curiosity, optimistic resilience, and creative adaptability."
+      },
+      {
+        "name": "Be a Cereal Entrepreneur",
+        "description": "Frugally and resourcefully find ingenious ways to turn constraints into breakthroughs."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://careers.airbnb.com/culture/",
+        "title": "Airbnb Culture and Core Values",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter introductory consultation",
+      "Technical phone screen (coding or architecture evaluation)",
+      "Virtual onsite interviews (coding rounds, system architecture, and 2 dedicated core values interviews with cross-functional employees)"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://careers.airbnb.com/how-we-hire/",
+        "title": "How We Hire at Airbnb",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Core Values interviewers are completely independent from the engineering hiring team and have veto authority",
+      "Pioneers of data orchestration standards like Apache Airflow and widely adopted open-source design systems",
+      "Strong emphasis on clean UI aesthetics, thoughtful design craftsmanship, and host/guest safety mechanisms"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://medium.com/airbnb-engineering/data-infrastructure-at-airbnb-8c8f0b7e2a9b",
+        "title": "Data Infrastructure at Airbnb",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

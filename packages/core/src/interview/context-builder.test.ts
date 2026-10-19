@@ -268,7 +268,10 @@ describe("context-builder", () => {
         },
         values: {
           value: [
-            { name: "Customer Obsession", description: "Leaders start with customer and work backwards." },
+            {
+              name: "Customer Obsession",
+              description: "Leaders start with customer and work backwards.",
+            },
             { name: "Ownership", description: "Leaders are owners and think long term." },
           ],
           confidence: "documented" as const,
@@ -284,11 +287,17 @@ describe("context-builder", () => {
         currentQuestion: "Tell me about a time you had to make a trade-off.",
       });
 
-      expect(result.layers.systemRules).toContain("You are conducting a realistic mock interview tailored for Amazon");
-      expect(result.layers.systemRules).toContain("Tailor questions and follow-ups to probe alignment with verified company values");
+      expect(result.layers.systemRules).toContain(
+        "You are conducting a realistic mock interview tailored for Amazon"
+      );
+      expect(result.layers.systemRules).toContain(
+        "Tailor questions and follow-ups to probe alignment with verified company values"
+      );
       expect(result.layers.delimitedCompanyPack).toContain('<company_data name="Amazon">');
       expect(result.layers.delimitedCompanyPack).toContain("Customer Obsession");
-      expect(result.layers.delimitedCompanyPack).toContain("Documented Tech Stack: Java, AWS, Python, DynamoDB");
+      expect(result.layers.delimitedCompanyPack).toContain(
+        "Documented Tech Stack: Java, AWS, Python, DynamoDB"
+      );
       expect(result.layers.delimitedCompanyPack).toContain("</company_data>");
     });
   });

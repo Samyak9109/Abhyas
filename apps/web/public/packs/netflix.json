@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "slug": "netflix",
+  "name": "Netflix",
+  "domain": "netflix.com",
+  "aliases": [
+    "Netflix, Inc.",
+    "NFLX"
+  ],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Streaming entertainment platform providing films, television series, video games, and personalized recommendation systems to subscribers globally.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://about.netflix.com/",
+        "title": "About Netflix",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Netflix Streaming Service",
+      "Netflix Studios",
+      "Open Connect CDN",
+      "Netflix Games"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://about.netflix.com/en/our-story",
+        "title": "Netflix Story and Offerings",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Java",
+      "Node.js",
+      "Python",
+      "Go",
+      "Kotlin",
+      "React",
+      "GraphQL",
+      "Apache Kafka",
+      "Spinnaker",
+      "Cassandra",
+      "AWS"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://netflixtechblog.com/",
+        "title": "Netflix TechBlog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Freedom and Responsibility",
+        "description": "Empower engineers with broad autonomy while expecting high accountability and sound judgment."
+      },
+      {
+        "name": "Context, Not Control",
+        "description": "Leaders share objectives, strategy, and context so teams make decisions without approval bottlenecks."
+      },
+      {
+        "name": "Highly Aligned, Loosely Coupled",
+        "description": "Align deeply on company priorities while letting services and teams deploy independently."
+      },
+      {
+        "name": "Informed Captains",
+        "description": "Give single decision-makers clear responsibility for critical product and architectural bets."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://jobs.netflix.com/culture",
+        "title": "Netflix Culture — Seeking Excellence",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter conversation exploring senior leveling and alignment with culture memo",
+      "Technical screen with hiring manager or technical lead",
+      "Panel loop covering system architecture, resilient distributed systems, and deep culture alignment"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://jobs.netflix.com/faq",
+        "title": "Netflix Careers FAQ & Interviewing",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Pioneers of Chaos Engineering (Chaos Monkey, fault injection in production)",
+      "Hiring only seasoned, autonomous engineers who thrive without micro-management",
+      "Radical transparency: open financial data and architectural strategy shared company-wide"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://netflixtechblog.com/chaos-engineering-upgraded-870d41e631d5",
+        "title": "Chaos Engineering at Netflix",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

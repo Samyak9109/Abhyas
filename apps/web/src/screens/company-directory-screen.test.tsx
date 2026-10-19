@@ -11,9 +11,7 @@ describe("PG-20: CompanyDirectoryScreen (M4.3)", () => {
     render(<CompanyDirectoryScreen storage={storage} />);
 
     expect(screen.getByText(/Company Directory/i)).toBeTruthy();
-    expect(
-      screen.getByText(/Browse vetted company packs/i)
-    ).toBeTruthy();
+    expect(screen.getByText(/Browse vetted company packs/i)).toBeTruthy();
 
     // Check presence of seed companies
     expect(screen.getByText("Google")).toBeTruthy();
@@ -166,6 +164,46 @@ describe("PG-20: CompanyDirectoryScreen (M4.3)", () => {
     expect(screen.getByText(/Report Incorrect Company Data/i)).toBeTruthy();
     expect(screen.getByText(/Target Pack:/i)).toBeTruthy();
     expect(screen.getAllByText("Google").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("displays 'REQUESTED ✓' without demand counts when a company is requested (M5.4, FR-026)", async () => {
+    const storage = new MemoryStorageAdapter();
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        {
+          slug: "datadog",
+          name: "Datadog",
+          domain: "datadoghq.com",
+          aliases: [],
+          status: "requested",
+          coverage: null,
+          last_researched_at: null,
+        },
+      ],
+    } as Response);
+
+    render(
+      <CompanyDirectoryScreen
+        storage={storage}
+        initialCompanySlug="datadog"
+        apiUrl="http://api.test"
+      />
+    );
+
+    await waitFor(() => {
+      const badge = screen.getByTestId("company-status-requested");
+      expect(badge).toBeTruthy();
+      expect(badge.textContent).toBe("REQUESTED ✓");
+      // Must not display demand numbers / counts to users (M5.4 acceptance criteria)
+      expect(badge.textContent).not.toMatch(/\d+/);
+    });
+
+    // Detail panel explains research pending state without showing demand counts
+    await waitFor(() => {
+      expect(screen.getByTestId("company-status-detail-panel")).toBeTruthy();
+      expect(screen.getByText(/Research for Datadog has been requested/i)).toBeTruthy();
+    });
   });
 
   describe("Accessibility (axe)", () => {

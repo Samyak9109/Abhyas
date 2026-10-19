@@ -21,7 +21,14 @@ import {
 import { Button, Callout, RadioCard, Stepper } from "../components";
 import { Dialog } from "../components/Dialog";
 import { CompanyContextPanel } from "../components/CompanyContextPanel";
-import { loadCompanyPack, searchCompanies } from "../services/company-pack-service";
+import { CompanyReportDialog } from "../components/CompanyReportDialog";
+import {
+  fetchCompanyDirectory,
+  getCompanyDirectory,
+  loadCompanyPack,
+  searchCompanies,
+  type CompanyDirectoryItem,
+} from "../services/company-pack-service";
 import { getBrowserSpeechInput } from "../services/speech";
 
 interface SessionSetupScreenProps {
@@ -33,6 +40,7 @@ interface SessionSetupScreenProps {
   onNavigateSettings?: () => void;
   hardwareRuntime?: HardwareRuntime;
   initialCompanySlug?: string | null;
+  apiUrl?: string;
 }
 
 const SETUP_STEPS = [
@@ -148,6 +156,7 @@ export function SessionSetupScreen({
   onNavigateSettings,
   hardwareRuntime,
   initialCompanySlug,
+  apiUrl,
 }: SessionSetupScreenProps) {
   const [sessionType, setSessionType] = useState<SessionType>("mixed");
   const [length, setLength] = useState<SessionLength>(10);
@@ -180,6 +189,23 @@ export function SessionSetupScreen({
   const [companySearch, setCompanySearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isContextModalOpen, setIsContextModalOpen] = useState(false);
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+  const [allCompanies, setAllCompanies] = useState<CompanyDirectoryItem[]>(() => getCompanyDirectory());
+
+  // Fetch live or mirror directory on mount / search
+  useEffect(() => {
+    let mounted = true;
+    fetchCompanyDirectory({ apiUrl, query: companySearch })
+      .then((items) => {
+        if (mounted && items.length > 0) {
+          setAllCompanies(items);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [apiUrl, companySearch]);
 
   // Sync initialCompanySlug prop if it changes
   useEffect(() => {
@@ -214,8 +240,8 @@ export function SessionSetupScreen({
   }, [selectedCompanySlug, storage]);
 
   const matchingCompanies = useMemo(() => {
-    return searchCompanies(companySearch);
-  }, [companySearch]);
+    return companySearch.trim() ? searchCompanies(companySearch) : allCompanies;
+  }, [companySearch, allCompanies]);
 
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
@@ -503,9 +529,7 @@ export function SessionSetupScreen({
                       {selectedPack.slug.slice(0, 2).toUpperCase()}
                     </span>
                     <div>
-                      <div
-                        style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}
-                      >
+                      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
                         <strong style={{ fontSize: "15px" }}>{selectedPack.name}</strong>
                         <span className="abh-company-domain">({selectedPack.domain})</span>
                       </div>
@@ -627,9 +651,42 @@ export function SessionSetupScreen({
                             >
                               {c.coverage.toUpperCase()}
                             </span>
-                            {c.isStale ? (
+                            {c.status === "requested" ? (
+                              <span
+                                className="abh-badge abh-badge--info"
+                                data-testid="company-picker-status-requested"
+                                style={{ fontSize: "10px" }}
+                              >
+                                REQUESTED ✓
+                              </span>
+                            ) : c.status === "queued" ? (
                               <span
                                 className="abh-badge abh-badge--warning"
+                                data-testid="company-picker-status-queued"
+                                style={{ fontSize: "10px" }}
+                              >
+                                QUEUED
+                              </span>
+                            ) : c.status === "researching" ? (
+                              <span
+                                className="abh-badge abh-badge--accent"
+                                data-testid="company-picker-status-researching"
+                                style={{ fontSize: "10px" }}
+                              >
+                                RESEARCHING
+                              </span>
+                            ) : c.status === "insufficient_data" ? (
+                              <span
+                                className="abh-badge abh-badge--neutral"
+                                data-testid="company-picker-status-insufficient"
+                                style={{ fontSize: "10px" }}
+                              >
+                                INSUFFICIENT
+                              </span>
+                            ) : c.isStale ? (
+                              <span
+                                className="abh-badge abh-badge--warning"
+                                data-testid="company-picker-status-stale"
                                 style={{ fontSize: "10px" }}
                               >
                                 STALE
@@ -637,6 +694,7 @@ export function SessionSetupScreen({
                             ) : (
                               <span
                                 className="abh-badge abh-badge--success"
+                                data-testid="company-picker-status-ready"
                                 style={{ fontSize: "10px" }}
                               >
                                 READY ✓
@@ -645,6 +703,25 @@ export function SessionSetupScreen({
                           </div>
                         </li>
                       ))}
+                      {companySearch.trim().length >= 2 && (
+                        <li
+                          className="abh-company-autocomplete-item abh-company-autocomplete-item--request"
+                          role="option"
+                          aria-selected={false}
+                          data-testid="request-company-picker-btn"
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                            setIsRequestDialogOpen(true);
+                          }}
+                        >
+                          <div style={{ color: "var(--accent)" }}>
+                            <strong>+ Request pack for &quot;{companySearch.trim()}&quot;</strong>
+                          </div>
+                          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                            Demand-gated research (no personal data)
+                          </span>
+                        </li>
+                      )}
                     </ul>
                   )}
                 </div>
@@ -691,6 +768,27 @@ export function SessionSetupScreen({
           />
         </Dialog>
       )}
+
+      {/* Company pack research request Dialog (PG-21, FR-026) */}
+      <CompanyReportDialog
+        isOpen={isRequestDialogOpen}
+        onClose={() => setIsRequestDialogOpen(false)}
+        initialMode="request"
+        storage={storage}
+        apiUrl={apiUrl}
+        company={
+          companySearch.trim()
+            ? {
+                name: companySearch.trim(),
+                slug: companySearch
+                  .trim()
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "-"),
+                domain: "",
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }

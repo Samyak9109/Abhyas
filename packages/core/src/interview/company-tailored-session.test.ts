@@ -92,7 +92,11 @@ describe("company-tailored interview session (FR-025, AI-014, AI-021)", () => {
           criteria: {
             relevance: { score: 3, reason: "Good relevance", evidence: "idempotency key" },
             structure: { score: 3, reason: "Clear structure", evidence: "first step" },
-            depth: { score: 2, reason: "Needs deeper distributed race discussion", evidence: "Redis lock" },
+            depth: {
+              score: 2,
+              reason: "Needs deeper distributed race discussion",
+              evidence: "Redis lock",
+            },
             clarity: { score: 3, reason: "Clear", evidence: "returns 200" },
             levelFit: { score: 3, reason: "Fits level", evidence: "solid baseline" },
           },
@@ -108,7 +112,10 @@ describe("company-tailored interview session (FR-025, AI-014, AI-021)", () => {
       stream: async function* (messages) {
         const sysMsg = messages.find((m) => m.role === "system")?.content ?? "";
         streamCalledWithContext = sysMsg;
-        yield { delta: "How do you handle lock expiration if the payment gateway times out?", isComplete: true };
+        yield {
+          delta: "How do you handle lock expiration if the payment gateway times out?",
+          isComplete: true,
+        };
       },
     };
 
@@ -128,7 +135,8 @@ describe("company-tailored interview session (FR-025, AI-014, AI-021)", () => {
     // Submit answer to question 1
     await runner.dispatch({
       type: "SUBMIT",
-      answerText: "I store a unique idempotency key in Redis with a TTL and check it inside a transaction.",
+      answerText:
+        "I store a unique idempotency key in Redis with a TTL and check it inside a transaction.",
     });
 
     await vi.waitFor(() => {
@@ -137,7 +145,9 @@ describe("company-tailored interview session (FR-025, AI-014, AI-021)", () => {
 
     // 1. Verify evaluator received company values context
     const userPrompt = evaluatorCalls[0]?.find((m) => m.role === "user")?.content ?? "";
-    expect(userPrompt).toContain("Company Values Considered: Users First: Prioritize merchant prosperity., Meticulous Craftsmanship: Polish APIs to highest standard.");
+    expect(userPrompt).toContain(
+      "Company Values Considered: Users First: Prioritize merchant prosperity., Meticulous Craftsmanship: Polish APIs to highest standard."
+    );
 
     // 2. Wait for follow-up probe stream to be called
     await vi.waitFor(() => {
@@ -145,7 +155,9 @@ describe("company-tailored interview session (FR-025, AI-014, AI-021)", () => {
     });
 
     // Verify follow-up generation received company context in Layer 1 and Layer 4
-    expect(streamCalledWithContext).toContain("You are conducting a realistic mock interview tailored for Stripe");
+    expect(streamCalledWithContext).toContain(
+      "You are conducting a realistic mock interview tailored for Stripe"
+    );
     expect(streamCalledWithContext).toContain('<company_data name="Stripe">');
     expect(streamCalledWithContext).toContain("Documented Tech Stack: Ruby, Go, PostgreSQL, Kafka");
   });

@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-19T13:50:44.778Z",
+  "companies": [
+    {
+      "slug": "airbnb",
+      "name": "Airbnb",
+      "domain": "airbnb.com",
+      "aliases": [
+        "Airbnb, Inc.",
+        "ABNB"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "amazon",
+      "name": "Amazon",
+      "domain": "amazon.com",
+      "aliases": [
+        "Amazon.com, Inc.",
+        "AWS",
+        "Amazon Web Services"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "apple",
+      "name": "Apple",
+      "domain": "apple.com",
+      "aliases": [
+        "Apple Inc.",
+        "AAPL"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "github",
+      "name": "GitHub",
+      "domain": "github.com",
+      "aliases": [
+        "GitHub, Inc.",
+        "Git Hub"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "google",
+      "name": "Google",
+      "domain": "google.com",
+      "aliases": [
+        "Google LLC",
+        "Alphabet",
+        "Google Cloud"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "meta",
+      "name": "Meta",
+      "domain": "meta.com",
+      "aliases": [
+        "Meta Platforms, Inc.",
+        "Facebook",
+        "Instagram",
+        "WhatsApp"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "microsoft",
+      "name": "Microsoft",
+      "domain": "microsoft.com",
+      "aliases": [
+        "Microsoft Corporation",
+        "Azure",
+        "MSFT"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "netflix",
+      "name": "Netflix",
+      "domain": "netflix.com",
+      "aliases": [
+        "Netflix, Inc.",
+        "NFLX"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "salesforce",
+      "name": "Salesforce",
+      "domain": "salesforce.com",
+      "aliases": [
+        "Salesforce, Inc.",
+        "CRM",
+        "Salesforce.com"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "spotify",
+      "name": "Spotify",
+      "domain": "spotify.com",
+      "aliases": [
+        "Spotify Technology S.A.",
+        "Spotify AB",
+        "SPOT"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "stripe",
+      "name": "Stripe",
+      "domain": "stripe.com",
+      "aliases": [
+        "Stripe, Inc.",
+        "Stripe Payments"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    },
+    {
+      "slug": "uber",
+      "name": "Uber",
+      "domain": "uber.com",
+      "aliases": [
+        "Uber Technologies, Inc.",
+        "Uber Eats",
+        "Uber Freight"
+      ],
+      "coverage": "high",
+      "status": "ready",
+      "retrievedAt": "2026-10-18T10:00:00.000Z",
+      "ttlDays": 90
+    }
+  ]
+}

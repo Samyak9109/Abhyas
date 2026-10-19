@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "slug": "microsoft",
+  "name": "Microsoft",
+  "domain": "microsoft.com",
+  "aliases": [
+    "Microsoft Corporation",
+    "Azure",
+    "MSFT"
+  ],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Global technology enterprise developing software, cloud infrastructure, personal computers, developer tools, and enterprise productivity services.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.microsoft.com/about",
+        "title": "About Microsoft",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Microsoft Azure",
+      "Microsoft 365",
+      "Windows",
+      "GitHub",
+      "LinkedIn",
+      "Visual Studio Code",
+      "Microsoft Copilot"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.microsoft.com/en-us/about/products-and-services",
+        "title": "Microsoft Products & Services",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "C#",
+      ".NET",
+      "TypeScript",
+      "C++",
+      "Python",
+      "Rust",
+      "Azure Cosmos DB",
+      "Kubernetes",
+      "PostgreSQL",
+      "React"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://devblogs.microsoft.com/engineering-at-microsoft/",
+        "title": "Engineering at Microsoft Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Growth Mindset",
+        "description": "Embrace curiosity, learn continuously from failures, and welcome diverse perspectives."
+      },
+      {
+        "name": "Customer-Obsessed",
+        "description": "Listen deeply to customers and build solutions that make a tangible difference in productivity."
+      },
+      {
+        "name": "Diverse and Inclusive",
+        "description": "Foster environments where everyone can share ideas and perform at their best."
+      },
+      {
+        "name": "One Microsoft",
+        "description": "Collaborate cross-organizationally to build seamless enterprise experiences."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://careers.microsoft.com/v2/global/en/culture",
+        "title": "Microsoft Culture and Values",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter conversation and role exploration",
+      "Technical screen (coding or architecture exercise)",
+      "Virtual onsite interviews (4 rounds: algorithmic problem solving, system design, behavioral mindset)",
+      "Senior engineering or director conversation ('As Appropriate' interview)"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://careers.microsoft.com/v2/global/en/hiring-process",
+        "title": "Microsoft Hiring Process",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Shift from 'know-it-all' to 'learn-it-all' engineering culture",
+      "Strong emphasis on developer ergonomics and open-source stewardship",
+      "Focus on accessibility, security, and responsible AI governance"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.microsoft.com/en-us/about/values",
+        "title": "Microsoft Core Values & Principles",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

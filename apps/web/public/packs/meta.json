@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "slug": "meta",
+  "name": "Meta",
+  "domain": "meta.com",
+  "aliases": [
+    "Meta Platforms, Inc.",
+    "Facebook",
+    "Instagram",
+    "WhatsApp"
+  ],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Technology company building social connection platforms, virtual reality, augmented reality, and open-source artificial intelligence infrastructure.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://about.meta.com/company-info/",
+        "title": "Meta Company Info",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Facebook",
+      "Instagram",
+      "WhatsApp",
+      "Messenger",
+      "Meta Quest",
+      "Threads",
+      "Llama AI models"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://about.meta.com/technologies/",
+        "title": "Meta Technologies and Products",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "React",
+      "React Native",
+      "PyTorch",
+      "Hack / PHP",
+      "C++",
+      "Python",
+      "Rust",
+      "GraphQL",
+      "Presto / Trino",
+      "RocksDB"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://engineering.fb.com/",
+        "title": "Meta Engineering Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Move Fast",
+        "description": "Act with urgency, remove barriers, and test hypotheses in production rapidly."
+      },
+      {
+        "name": "Focus on Long-Term Impact",
+        "description": "Prioritize transformative, durable value over quick short-term optics."
+      },
+      {
+        "name": "Build Awesome Things",
+        "description": "Craft delightful, useful products that inspire and bring people closer together."
+      },
+      {
+        "name": "Live in the Future",
+        "description": "Pioneer cutting-edge technologies like open AI and spatial computing before they are mainstream."
+      },
+      {
+        "name": "Be Direct and Respect Your Colleagues",
+        "description": "Give candid feedback, speak openly, and respect diverse working styles."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.metacareers.com/culture",
+        "title": "Meta Careers — Our Culture",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter screen regarding background and leveling expectations",
+      "Technical coding screen (2 coding questions in 45 minutes on coderpad)",
+      "Full onsite interview loop (2 coding rounds, 1-2 system architecture rounds, 1 behavioral round)"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://www.metacareers.com/how-we-hire",
+        "title": "How We Hire — Meta Careers",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Bottom-up engineering culture where engineers frequently propose and execute technical roadmaps",
+      "Continuous deployment with trunk-based development and push-to-production pipelines",
+      "High value placed on speed of execution, pragmatic prototypes, and measured user metric impact"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://engineering.fb.com/category/core-infra/",
+        "title": "Meta Engineering Core Infrastructure",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

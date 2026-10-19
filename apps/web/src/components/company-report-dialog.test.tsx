@@ -37,9 +37,7 @@ describe("PG-21: CompanyReportDialog (M4.5)", () => {
     const submitBtn = screen.getByTestId("open-report-issue-btn");
     fireEvent.click(submitBtn);
 
-    expect(
-      screen.getByText(/Please describe the issue in at least 10 characters/i)
-    ).toBeTruthy();
+    expect(screen.getByText(/Please describe the issue in at least 10 characters/i)).toBeTruthy();
   });
 
   it("opens prefilled GitHub issue URL when report is valid", async () => {
@@ -49,7 +47,9 @@ describe("PG-21: CompanyReportDialog (M4.5)", () => {
 
     const textarea = screen.getByLabelText(/Inaccuracy Details/i);
     fireEvent.change(textarea, {
-      target: { value: "The documented tech stack lists Ruby, but Stripe also heavily uses Sorbet and Go." },
+      target: {
+        value: "The documented tech stack lists Ruby, but Stripe also heavily uses Sorbet and Go.",
+      },
     });
 
     const submitBtn = screen.getByTestId("open-report-issue-btn");
@@ -76,7 +76,9 @@ describe("PG-21: CompanyReportDialog (M4.5)", () => {
 
     const textarea = screen.getByLabelText(/Inaccuracy Details/i);
     fireEvent.change(textarea, {
-      target: { value: "The interview process stages are missing the practical pair-programming stage." },
+      target: {
+        value: "The interview process stages are missing the practical pair-programming stage.",
+      },
     });
 
     const copyBtn = screen.getByTestId("copy-report-btn");
@@ -151,6 +153,97 @@ describe("PG-21: CompanyReportDialog (M4.5)", () => {
 
     fireEvent.keyDown(document, { key: "Escape" });
     expect(onCloseMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("submits research demand via API and displays 'Requested ✓' without demand counts (M5.4)", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        status: "requested",
+        slug: "snowflake",
+        message: "Demand registered",
+      }),
+    } as Response);
+
+    render(
+      <CompanyReportDialog
+        isOpen={true}
+        onClose={() => {}}
+        initialMode="request"
+        apiUrl="http://api.test"
+      />
+    );
+
+    const nameInput = screen.getByLabelText(/Company Name/i);
+    fireEvent.change(nameInput, { target: { value: "Snowflake" } });
+
+    const submitBtn = screen.getByTestId("submit-request-api-btn");
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("request-success-panel")).toBeTruthy();
+      const calloutTitle = screen.getByText("Requested ✓");
+      expect(calloutTitle).toBeTruthy();
+      // Verifies zero demand counts are shown to the candidate
+      const successText = screen.getByTestId("request-success-panel").textContent || "";
+      expect(successText).not.toMatch(/\d+ users|\d+ requests/);
+    });
+  });
+
+  it("submits inaccuracy report via API and displays confirmation (M5.4)", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: 99, status: "received" }),
+    } as Response);
+
+    render(
+      <CompanyReportDialog
+        isOpen={true}
+        onClose={() => {}}
+        initialMode="report"
+        company={testCompany}
+        apiUrl="http://api.test"
+      />
+    );
+
+    const textarea = screen.getByLabelText(/Inaccuracy Details/i);
+    fireEvent.change(textarea, {
+      target: {
+        value: "The documented tech stack is missing Kafka and Sorbet typing.",
+      },
+    });
+
+    const submitBtn = screen.getByTestId("submit-report-api-btn");
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("report-success-panel")).toBeTruthy();
+      expect(screen.getByText("Report Submitted ✓")).toBeTruthy();
+    });
+  });
+
+  it("falls back to GitHub issue instructions when API is unreachable (M5.4)", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("Connection refused"));
+
+    render(
+      <CompanyReportDialog
+        isOpen={true}
+        onClose={() => {}}
+        initialMode="request"
+        apiUrl="http://api.test"
+      />
+    );
+
+    const nameInput = screen.getByLabelText(/Company Name/i);
+    fireEvent.change(nameInput, { target: { value: "Notion" } });
+
+    const submitBtn = screen.getByTestId("submit-request-api-btn");
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Offline \/ GitHub Issue Fallback/i)).toBeTruthy();
+      expect(screen.getByTestId("open-request-issue-btn")).toBeTruthy();
+    });
   });
 
   it("passes automated accessibility checks (WCAG 2.2 AA in Ink and Paper themes)", async () => {

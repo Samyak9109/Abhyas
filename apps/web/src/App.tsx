@@ -160,7 +160,9 @@ export function App() {
   const [resultsSessionId, setResultsSessionId] = useState<string | null>(null);
   const [practiceSkillId, setPracticeSkillId] = useState<string | null>(null);
   const [historySessionId, setHistorySessionId] = useState<string | null>(null);
-  const [selectedCompanySlugForSession, setSelectedCompanySlugForSession] = useState<string | null>(null);
+  const [selectedCompanySlugForSession, setSelectedCompanySlugForSession] = useState<string | null>(
+    null
+  );
   const [init, setInit] = useState<InitState>({ status: "loading" });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);

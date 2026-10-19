@@ -83,3 +83,21 @@ form-action 'self';
 1. **Automated CI Network Allowlist Test:** An automated test (`network-allowlist.test.ts`) inspects all outbound request URLs in mock and end-to-end environments, failing builds if any unlisted domain is queried.
 2. **License Compliance Check:** Automated dependency auditing blocks copyleft licenses (GPL, AGPL) to preserve permissible commercial and personal use (`ADR-003`).
 3. **Redaction Layer:** Error logging boundaries redact API keys, session tokens, and personal details before displaying error diagnostics in the UI (`ADR-005`).
+
+---
+
+## 6. Company Research Service Privacy Model (Phase 5, ADR-009, ADR-010)
+
+The optional backend company research service (`apps/api`) adheres strictly to Abhyas privacy principles:
+
+1. **No User Accounts or Personal Data Transmitted:**
+   - Client requests transmit only the requested company slug/domain, a Turnstile challenge token, and an anonymous 16-byte random hex token (`client_token`) generated locally.
+   - The server computes a daily salted hash (`SHA-256(client_token + daily_salt)`) strictly for deduplicating demand counts. Raw IP addresses, user identifiers, and device fingerprints are never stored or logged.
+2. **Zero Prompt or Resume Ingestion:**
+   - The research service exposes no endpoints that accept free-form prompts, resumes, job descriptions, or user transcripts. It cannot function as a generic AI proxy.
+3. **Server-Side API Key Isolation:**
+   - Server research utilizes a dedicated project key (`PROJECT_AI_API_KEY`) used exclusively for autonomous fact synthesis from publicly verified web pages.
+   - Client applications never access or communicate with the server project key.
+4. **Offline and Disabled Fallback:**
+   - If the research API is unreachable or disabled, the application continues to operate without degradation using local IndexedDB caching, the static mirror, bundled seed packs, or general session fallback.
+

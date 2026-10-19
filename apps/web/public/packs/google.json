@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "slug": "google",
+  "name": "Google",
+  "domain": "google.com",
+  "aliases": [
+    "Google LLC",
+    "Alphabet",
+    "Google Cloud"
+  ],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Global technology company specializing in internet-related services and products, including search engine technology, cloud computing, artificial intelligence, online advertising, and computer software and hardware.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://about.google/",
+        "title": "About Google",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Google Search",
+      "Google Cloud Platform",
+      "Android",
+      "YouTube",
+      "Google Workspace",
+      "Gemini",
+      "Google Chrome"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://about.google/products/",
+        "title": "Google Products & Services",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "C++",
+      "Java",
+      "Python",
+      "Go",
+      "TypeScript",
+      "Borg",
+      "Spanner",
+      "Bigtable",
+      "TensorFlow",
+      "Kubernetes",
+      "gRPC",
+      "Protobuf"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://research.google/pubs/",
+        "title": "Google Research Publications & Systems",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Focus on the user and all else will follow",
+        "description": "Prioritize user utility and clear experiences above short-term business gains."
+      },
+      {
+        "name": "Fast is better than slow",
+        "description": "Build high-throughput, low-latency systems and iterate quickly to solve problems."
+      },
+      {
+        "name": "Democracy on the web works",
+        "description": "Rely on web standards, distributed collaboration, and open ecosystems."
+      },
+      {
+        "name": "Great just isn't good enough",
+        "description": "Set ambitious technical benchmarks and anticipate future scale and user needs."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://about.google/philosophy/",
+        "title": "Ten things we know to be true — Google Philosophy",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter screening and resume alignment",
+      "Technical phone screen (coding in shared editor or systems discussion)",
+      "Virtual onsite interviews (4-5 rounds: coding, system design, Googliness and leadership)",
+      "Hiring committee review and team matching"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://careers.google.com/how-we-hire/",
+        "title": "Google Hiring Process",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Blameless postmortems and rigorous design doc review culture",
+      "Data-driven engineering decisions with continuous measurement and A/B experimentation",
+      "Emphasis on Googliness: intellectual humility, bias to action, collaborative problem solving"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://careers.google.com/culture/",
+        "title": "Working at Google — Life and Culture",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

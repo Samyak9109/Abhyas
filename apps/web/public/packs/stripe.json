@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "slug": "stripe",
+  "name": "Stripe",
+  "domain": "stripe.com",
+  "aliases": [
+    "Stripe, Inc.",
+    "Stripe Payments"
+  ],
+  "retrievedAt": "2026-10-18T10:00:00.000Z",
+  "ttlDays": 90,
+  "coverage": "high",
+  "overview": {
+    "value": "Financial infrastructure platform for businesses, providing payment processing, billing APIs, banking-as-a-service, and global treasury solutions.",
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://stripe.com/about",
+        "title": "About Stripe",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "products": {
+    "value": [
+      "Stripe Payments",
+      "Stripe Billing",
+      "Stripe Connect",
+      "Stripe Radar",
+      "Stripe Terminal",
+      "Stripe Climate"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://stripe.com/products",
+        "title": "Stripe Products",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "techStack": {
+    "value": [
+      "Ruby",
+      "Sorbet",
+      "TypeScript",
+      "Java",
+      "Go",
+      "PostgreSQL",
+      "Redis",
+      "Kafka",
+      "AWS",
+      "Kubernetes",
+      "React"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://stripe.com/blog/engineering",
+        "title": "Stripe Engineering Blog",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "values": {
+    "value": [
+      {
+        "name": "Users First",
+        "description": "Prioritize long-term merchant prosperity and developer experience above internal convenience."
+      },
+      {
+        "name": "Move with Urgency and Focus",
+        "description": "Execute rapidly with precise discipline, maintaining high velocity as scale grows."
+      },
+      {
+        "name": "Meticulous Craftsmanship",
+        "description": "Polish APIs, error messages, docs, and reliability to the highest standard of excellence."
+      },
+      {
+        "name": "Macro Curiosity",
+        "description": "Seek deep understanding of global economics, regulations, and emerging technological shifts."
+      }
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://stripe.com/jobs/culture",
+        "title": "Stripe Culture and Operating Principles",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "interviewProcess": {
+    "value": [
+      "Recruiter conversation and profile discussion",
+      "Practical coding screen in user's own local development environment",
+      "Full interview loop: integration coding, debugging real production issues, system design, and values discussion"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://stripe.com/jobs/interviewing",
+        "title": "Interviewing at Stripe",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  },
+  "cultureSignals": {
+    "value": [
+      "Interviews conducted on candidate's own laptop with full access to documentation, internet, and editor of choice",
+      "High emphasis on written clarity, concise architectural proposals, and well-designed public APIs",
+      "Zero tolerance for financial transaction inaccuracies: strict idempotency and exactly-once execution"
+    ],
+    "confidence": "documented",
+    "sources": [
+      {
+        "url": "https://stripe.com/blog/sorbet-run-at-stripe",
+        "title": "Sorbet at Stripe",
+        "retrievedAt": "2026-10-18"
+      }
+    ]
+  }
+}

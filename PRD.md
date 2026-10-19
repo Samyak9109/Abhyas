@@ -961,12 +961,12 @@ Numeric targets are initial values. Measure on real devices, then tune through a
 1. Domain and handle availability for Abhyas, the trademark search, the mascot's name, and the final wordmark and logo.
 2. Which AI vendor and model powers server-side company research.
 3. Which search service (or provider grounding) is used for research.
-4. License for the pack dataset.
+4. [DECIDED] License for the pack dataset: Released under Open Data Commons Attribution License (ODC-By v1.0) and CC-BY-4.0 for factual extractions; trademarks remain property of respective companies (see docs/pack-data-license.md).
 5. Hosting vendors for static site and API.
 6. Size and authoring plan for the question bank (per skill and level).
 7. Minimum device spec to officially support local mode.
 8. Speech recognition choice for non-Chrome browsers.
-9. Threshold and cap values for company research after measuring cost per pack.
+9. [DECIDED] Threshold and cap values for company research after measuring cost per pack: Measured cost per pack is $0.0025 (0.25¢). Established caps: Daily budget $5.00 (500¢), Monthly budget $100.00 (10,000¢); Queue demand threshold: 5 distinct client-days; Per-job safety limits: max 10 pages, 50,000 tokens, 60s runtime, 10¢ cost; Pack TTL: 90 days (M5.6, Exit Gate G3).
 10. Languages beyond English.
 11. Whether the landing page gets an interactive demo (none exists; the design omits one).
 
@@ -989,3 +989,5 @@ Interactive landing-page demo; video and posture analysis; coding editor rounds;
 | 2026-10-13 | 0.2.0 | Added page and screen inventory (PG-01 to PG-23, section 3A), FR-033 (public website and docs), NFR-025 (typography and self-hosting), tightened NFR-012 and NFR-017, recorded the approved visual direction, updated open questions and parking lot |
 | 2026-10-13 | 0.2.1 | Product named Abhyas (DryRun rejected after a conflict check); name-related open questions updated |
 | 2026-10-13 | 0.2.2 | Added agent working agreements (no dead code, token economy, skills and tools) to section 0.4 and NFR-015 |
+| 2026-10-19 | 0.7.4 | Completed Phase 5 (Company research service): resolved pack data license (ODC-By/CC-BY-4.0) and research budget caps from measured pack costs ($0.0025/pack); updated scraping policy and privacy audit |
+

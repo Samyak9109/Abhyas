@@ -243,9 +243,7 @@ export function buildLayeredInterviewContext(options: LayeredContextOptions): La
         );
       }
       if (companyPack.techStack && companyPack.techStack.length > 0) {
-        packLines.push(
-          `Tech Stack: ${companyPack.techStack.map(sanitizePromptData).join(", ")}`
-        );
+        packLines.push(`Tech Stack: ${companyPack.techStack.map(sanitizePromptData).join(", ")}`);
       }
       if (companyPack.notes) {
         packLines.push(`Context Notes: ${sanitizePromptData(companyPack.notes)}`);

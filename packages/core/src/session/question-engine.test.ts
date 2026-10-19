@@ -767,7 +767,8 @@ describe("selectQuestions", () => {
           return {
             ok: true as const,
             value: {
-              personalizedText: "At Stripe, how would you design a distributed queue with Kafka and Redis for payment idempotency?",
+              personalizedText:
+                "At Stripe, how would you design a distributed queue with Kafka and Redis for payment idempotency?",
             } as T,
           };
         },
@@ -788,7 +789,9 @@ describe("selectQuestions", () => {
       // The prompt sent to adapter includes verified company context
       expect(capturedPrompts[0]).toContain("Target Company: Stripe");
       expect(capturedPrompts[0]).toContain("Verified Stack: Ruby, Go, PostgreSQL, Kafka, Redis");
-      expect(capturedPrompts[0]).toContain("Verified Values: Users First, Meticulous Craftsmanship");
+      expect(capturedPrompts[0]).toContain(
+        "Verified Values: Users First, Meticulous Craftsmanship"
+      );
 
       // The selected question text references pack fields
       expect(result.questions[0]?.text).toContain("Stripe");
@@ -816,7 +819,8 @@ describe("selectQuestions", () => {
           return {
             ok: true as const,
             value: {
-              personalizedText: "As a Mid Full Stack Developer, describe how you implement optimistic UI updates.",
+              personalizedText:
+                "As a Mid Full Stack Developer, describe how you implement optimistic UI updates.",
             } as T,
           };
         },

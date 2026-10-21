@@ -990,4 +990,6 @@ Interactive landing-page demo; video and posture analysis; coding editor rounds;
 | 2026-10-13 | 0.2.1 | Product named Abhyas (DryRun rejected after a conflict check); name-related open questions updated |
 | 2026-10-13 | 0.2.2 | Added agent working agreements (no dead code, token economy, skills and tools) to section 0.4 and NFR-015 |
 | 2026-10-19 | 0.7.4 | Completed Phase 5 (Company research service): resolved pack data license (ODC-By/CC-BY-4.0) and research budget caps from measured pack costs ($0.0025/pack); updated scraping policy and privacy audit |
+| 2026-10-21 | 0.9.0 | Phase 7: approved and completed M7.1 Claude and Hugging Face provider adapters (FR-005) with network allowlist egress update and key safety verification |
+| 2026-10-21 | 0.9.1 | M7.2: Custom local models (WebLLM & Ollama), safe format validation (ADR-017), hardware fit estimation, and sanity testing harness (FR-023, AI-006) |
 

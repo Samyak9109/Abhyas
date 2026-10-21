@@ -10,6 +10,8 @@ import {
   GeminiAdapter,
   OpenAICompatibleAdapter,
   OllamaAdapter,
+  AnthropicAdapter,
+  HuggingFaceAdapter,
   detectHardwareCapabilities,
   isPhoneDevice,
   type ModelInfo,
@@ -42,7 +44,14 @@ interface AISetupScreenProps {
   hardwareRuntime?: HardwareRuntime;
 }
 
-type ProviderChoice = "gemini" | "openai" | "openai-compatible" | "ollama" | "webllm";
+type ProviderChoice =
+  | "gemini"
+  | "openai"
+  | "openai-compatible"
+  | "ollama"
+  | "webllm"
+  | "anthropic"
+  | "huggingface";
 
 const SETUP_STEPS = [
   { id: "ai", label: "AI Setup" },
@@ -89,7 +98,9 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
           existing.kind === "openai" ||
           existing.kind === "openai-compatible" ||
           existing.kind === "ollama" ||
-          existing.kind === "webllm"
+          existing.kind === "webllm" ||
+          existing.kind === "anthropic" ||
+          existing.kind === "huggingface"
         ) {
           if ((existing.kind === "webllm" || existing.kind === "ollama") && isMobile) {
             setSelectedProvider("gemini");
@@ -134,6 +145,10 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
       setBaseUrl("https://api.openai.com/v1");
     } else if (provider === "openai-compatible") {
       setBaseUrl("https://api.groq.com/openai/v1");
+    } else if (provider === "anthropic") {
+      setBaseUrl("https://api.anthropic.com/v1");
+    } else if (provider === "huggingface") {
+      setBaseUrl("https://api-inference.huggingface.co/v1");
     } else if (provider === "ollama") {
       setBaseUrl("http://localhost:11434");
       setApiKey("");
@@ -235,6 +250,18 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
           apiKey: apiKey.trim() || undefined,
           ...(fetchFn ? { fetchFn } : {}),
         });
+      } else if (selectedProvider === "anthropic") {
+        adapter = new AnthropicAdapter({
+          apiKey: apiKey.trim(),
+          baseUrl: baseUrl || "https://api.anthropic.com/v1",
+          ...(fetchFn ? { fetchFn } : {}),
+        });
+      } else if (selectedProvider === "huggingface") {
+        adapter = new HuggingFaceAdapter({
+          apiKey: apiKey.trim(),
+          baseUrl: baseUrl || "https://api-inference.huggingface.co/v1",
+          ...(fetchFn ? { fetchFn } : {}),
+        });
       } else {
         adapter = new OpenAICompatibleAdapter({
           id: selectedProvider,
@@ -259,6 +286,7 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
         // Default to first model or recommended model
         const preferred = modelsRes.value.find(
           (m) =>
+            m.id.includes("sonnet") ||
             m.id.includes("flash") ||
             m.id.includes("4o-mini") ||
             m.id.includes("llama") ||
@@ -269,9 +297,13 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
         const fallbackModel =
           selectedProvider === "gemini"
             ? "gemini-1.5-flash"
-            : selectedProvider === "ollama"
-              ? "llama3.2"
-              : "gpt-4o-mini";
+            : selectedProvider === "anthropic"
+              ? "claude-3-5-sonnet-20241022"
+              : selectedProvider === "huggingface"
+                ? "meta-llama/Llama-3.2-3B-Instruct"
+                : selectedProvider === "ollama"
+                  ? "llama3.2"
+                  : "gpt-4o-mini";
         setModels([{ id: fallbackModel, label: fallbackModel }]);
         setSelectedModel(fallbackModel);
       }
@@ -350,15 +382,21 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
         selectedModel ||
         (selectedProvider === "gemini"
           ? "gemini-1.5-flash"
-          : selectedProvider === "ollama"
-            ? "llama3.2"
-            : "gpt-4o-mini");
+          : selectedProvider === "anthropic"
+            ? "claude-3-5-sonnet-20241022"
+            : selectedProvider === "huggingface"
+              ? "meta-llama/Llama-3.2-3B-Instruct"
+              : selectedProvider === "ollama"
+                ? "llama3.2"
+                : "gpt-4o-mini");
 
       const providerRow: ProviderRow = {
         id: selectedProvider,
         kind: selectedProvider,
         baseUrl:
-          selectedProvider === "openai-compatible" || selectedProvider === "ollama"
+          selectedProvider === "openai-compatible" ||
+          selectedProvider === "ollama" ||
+          selectedProvider === "huggingface"
             ? baseUrl || (selectedProvider === "ollama" ? "http://localhost:11434" : undefined)
             : undefined,
         modelRoles: {
@@ -477,11 +515,19 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
               />
 
               <RadioCard
-                title="More providers"
-                description="Claude & Hugging Face coming later in Phase 7"
-                monogram="⋯"
-                checked={false}
-                comingSoon={true}
+                title="Anthropic (Claude)"
+                description="Claude 3.5 Sonnet or Haiku via direct browser Messages API"
+                monogram="C"
+                checked={selectedProvider === "anthropic"}
+                onChange={() => handleProviderChange("anthropic")}
+              />
+
+              <RadioCard
+                title="Hugging Face"
+                description="Serverless inference for Llama 3.2, Qwen 2.5, or Mistral with your HF token"
+                monogram="🤗"
+                checked={selectedProvider === "huggingface"}
+                onChange={() => handleProviderChange("huggingface")}
               />
             </div>
 
@@ -601,7 +647,11 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                       ? "G"
                       : selectedProvider === "ollama"
                         ? "🦙"
-                        : "O"}
+                        : selectedProvider === "anthropic"
+                          ? "C"
+                          : selectedProvider === "huggingface"
+                            ? "🤗"
+                            : "O"}
                   </span>
                   <div>
                     <h2 className="abh-panel-title">
@@ -611,21 +661,35 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                           ? "OpenAI API Setup"
                           : selectedProvider === "ollama"
                             ? "Ollama Local Server"
-                            : "OpenAI-Compatible Endpoint"}
+                            : selectedProvider === "anthropic"
+                              ? "Anthropic Claude API Setup"
+                              : selectedProvider === "huggingface"
+                                ? "Hugging Face Serverless Inference"
+                                : "OpenAI-Compatible Endpoint"}
                     </h2>
                     <p className="abh-panel-helper">
                       {selectedProvider === "ollama"
                         ? "Direct browser connection to your local Ollama daemon (http://localhost:11434). Zero cloud egress."
-                        : "Direct browser connection using your own API key."}
+                        : selectedProvider === "anthropic"
+                          ? "Direct browser connection to Anthropic Messages API with danger header. Zero intermediary servers."
+                          : selectedProvider === "huggingface"
+                            ? "Direct browser connection to Hugging Face serverless inference. Zero intermediary servers."
+                            : "Direct browser connection using your own API key."}
                     </p>
                   </div>
                 </div>
 
-                {(selectedProvider === "openai-compatible" || selectedProvider === "ollama") && (
+                {(selectedProvider === "openai-compatible" ||
+                  selectedProvider === "ollama" ||
+                  selectedProvider === "huggingface") && (
                   <div className="abh-form-field">
                     <Input
                       label={
-                        selectedProvider === "ollama" ? "Ollama Base URL" : "Endpoint Base URL"
+                        selectedProvider === "ollama"
+                          ? "Ollama Base URL"
+                          : selectedProvider === "huggingface"
+                            ? "Hugging Face Inference URL"
+                            : "Endpoint Base URL"
                       }
                       value={baseUrl}
                       onChange={(e) => {
@@ -635,12 +699,16 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                       placeholder={
                         selectedProvider === "ollama"
                           ? "http://localhost:11434"
-                          : "https://api.groq.com/openai/v1"
+                          : selectedProvider === "huggingface"
+                            ? "https://api-inference.huggingface.co/v1"
+                            : "https://api.groq.com/openai/v1"
                       }
                       helperText={
                         selectedProvider === "ollama"
                           ? "Default is http://localhost:11434. Requires Ollama running on your PC."
-                          : "Must be an HTTPS endpoint (or http://localhost for local servers)."
+                          : selectedProvider === "huggingface"
+                            ? "Default is https://api-inference.huggingface.co/v1. You can also use https://router.huggingface.co/hf-inference/v1."
+                            : "Must be an HTTPS endpoint (or http://localhost for local servers)."
                       }
                     />
                   </div>
@@ -668,17 +736,29 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
                 {selectedProvider !== "ollama" && (
                   <>
                     <SecretInput
-                      label="API Key"
+                      label={selectedProvider === "huggingface" ? "User Access Token" : "API Key"}
                       value={apiKey}
                       onChange={(e) => {
                         setApiKey(e.target.value);
                         setTestSuccess(false);
                       }}
-                      placeholder={selectedProvider === "gemini" ? "AIzaSy..." : "sk-..."}
+                      placeholder={
+                        selectedProvider === "gemini"
+                          ? "AIzaSy..."
+                          : selectedProvider === "anthropic"
+                            ? "sk-ant-..."
+                            : selectedProvider === "huggingface"
+                              ? "hf_..."
+                              : "sk-..."
+                      }
                       helperText={
-                        baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")
-                          ? "Optional for local servers (LM Studio, LocalAI)."
-                          : "Stays in this browser. Sent only to the provider you choose."
+                        selectedProvider === "huggingface"
+                          ? "Hugging Face User Access Token with read permissions (hf_...)."
+                          : selectedProvider === "anthropic"
+                            ? "Anthropic Claude API Key (sk-ant-...). Sent directly to api.anthropic.com."
+                            : baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")
+                              ? "Optional for local servers (LM Studio, LocalAI)."
+                              : "Stays in this browser. Sent only to the provider you choose."
                       }
                     />
 

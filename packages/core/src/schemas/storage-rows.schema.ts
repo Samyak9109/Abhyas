@@ -107,6 +107,9 @@ export const ModelRowSchema = z.object({
   sizeBytes: z.number().int().nonnegative(),
   status: z.string().min(1),
   sanityResult: ModelSanityResultSchema.optional(),
+  isCustom: z.boolean().optional(),
+  format: z.string().optional(),
+  gatedToken: z.string().optional(),
 });
 export type ModelRow = z.infer<typeof ModelRowSchema>;
 

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Document | `phases.md` (authority level 4 of 4) |
-| Version | 0.7.0 |
+| Version | 0.9.0 |
 | Last updated | 2026-10-19 |
 | Governs | Order of work, milestones, acceptance criteria, validation gates |
 | Governed by | `PRD.md`, `architecture.md`, `design.md` (they win on conflict) |
@@ -194,6 +194,39 @@ Candidates from the Parking Lot and deferred FRs; each becomes its own mini-phas
 
 An agent must not start a P7 item without a written entry here approved by the owner.
 
+#### M7.1 Claude and Hugging Face Adapters (FR-005) `[COMPLETED]`
+- **Goal:** expand BYOK provider suite with Anthropic Claude (Messages API) and Hugging Face (Inference API / Serverless endpoints) adapters.
+- **In scope:** FR-005, NFR-005, NFR-017, ADR-002, ADR-005.
+- **Deliverables:**
+  1. `AnthropicAdapter` in `packages/core/src/providers/anthropic-adapter.ts` with Messages API (`/v1/messages`), streaming via SSE text deltas, schema-constrained object generation with retry, `anthropic-dangerous-direct-browser-access: true` header for direct browser calls, and classified error handling.
+  2. `HuggingFaceAdapter` in `packages/core/src/providers/huggingface-adapter.ts` with Inference API / Serverless endpoints (`/v1/chat/completions`), streaming SSE chunks, schema-constrained object generation with retry, token auth (`Bearer hf_...`), and classified error handling.
+  3. Network allowlist & CSP update: add `https://api.anthropic.com`, `https://api-inference.huggingface.co`, and `https://router.huggingface.co` to `ALLOWED_ORIGIN_PATTERNS` in `packages/core/src/network/allowlist.ts`, `apps/web/index.html`, and `apps/web/scripts/prerender.mjs`.
+  4. UI integration: update `AISetupScreen` (PG-09) to include Anthropic Claude and Hugging Face provider options, connection testing, model discovery/curated defaults, and cost estimation.
+  5. Contract and security tests: `anthropic-adapter.test.ts`, `huggingface-adapter.test.ts`, `tests/network-allowlist.test.ts`, and `key-safety.test.ts`.
+- **Acceptance criteria:**
+  1. Both adapters pass all tests in the shared `ProviderAdapter` contract test suite.
+  2. Automated key safety tests prove API keys/tokens are sent strictly to provider origins (`api.anthropic.com`, `api-inference.huggingface.co`, `router.huggingface.co`) with zero key leakage in logs or exceptions.
+  3. Network allowlist correctly permits new provider endpoints and continues blocking all unlisted origins.
+  4. `AISetupScreen` allows selecting Claude or Hugging Face, validating credentials, picking models, and persisting provider configuration.
+  5. 100% test pass rate with 0 axe accessibility violations, 0 knip dead code, 0 type errors, 0 lint errors.
+
+#### M7.2 Custom Local Models and Sanity-Test Harness (FR-023, ADR-017) `[COMPLETED]`
+- **Goal:** allow power users to bring user-chosen models across engines (in-browser WebLLM and local Ollama), validate formats against safety allowlists, provide hardware fit estimates and gated repository tokens, and run automated post-load sanity tests with "UNVERIFIED" labeling.
+- **In scope:** FR-023, AI-006, ADR-013, ADR-017, PG-19.
+- **Deliverables:**
+  1. Engine selector in PG-19 Model Manager (WebLLM vs Ollama) for custom model registration.
+  2. Format compatibility validation (allowing .safetensors, .gguf, .onnx; rejecting pickle-based .pkl, .bin, .pt, .pth).
+  3. Hardware fit estimation comparing estimated model memory requirement against detected device RAM and concurrency.
+  4. Optional gated access token field for private/gated repositories, stored locally only.
+  5. Sanity-test harness execution on custom models (evaluating inference speed, instruction following 'READY', and JSON schema validity) with persistent results in storage.
+  6. Prominent "UNVERIFIED" labeling for custom models alongside suitability verdicts ("interview-ready", "questions only", "not suitable").
+- **Acceptance criteria:**
+  1. Safe file formats pass pre-flight validation; unsafe formats (.pkl, .bin, .pt, .pth) are blocked with descriptive security errors.
+  2. Custom models are saved with `isCustom: true` and display the "UNVERIFIED" tag in card and table views.
+  3. Live sanity test harness runs and evaluates speed, instruction following, and JSON validity on custom models.
+  4. Ollama custom model tags can be registered, tested, and persisted.
+  5. Full test suite passes with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors.
+
 ---
 
 ## 4. Parallel tracks
@@ -354,7 +387,9 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | M6.2 Spaced repetition | Done | 2026-10-21 | Review queue engine with expanding intervals, daily cap enforcement (10/day), automatic session weak turn enqueuing, and PG-23 Review queue screen with 0 axe violations (FR-028, PG-23) |
 | M6.3 Google Calendar (conditional) | Done | 2026-10-21 | Client-side Google Calendar integration with narrowest scope (calendar.events), in-memory OAuth tokens, REST v3 event dispatching, free-slot suggestions, and graceful fallback to universal .ics export (FR-027, ADR-012) |
 | Phase 6 Exit Gate | Done | 2026-10-21 | Universal .ics calendar flow verified across Google Calendar, Apple Calendar (75-octet line folding), and Microsoft Outlook (strict CRLF); difficulty ramping verified; spaced repetition interval growth/reset and 10-item daily cap verified; auto-enqueuing of weak turns verified; 79 test files (764 tests) green with 0 axe violations (tests/p6-exit-gate.test.ts, FR-027, FR-028, ADR-012, PG-22, PG-23) |
-| P7 Advanced | Not started | — | Approved candidates from Parking Lot and deferred FRs (FR-005, FR-023, ADR-014, ADR-017) |
+| P7 Advanced | In progress | 2026-10-21 | M7.1 and M7.2 completed |
+| M7.1 Claude & Hugging Face | Done | 2026-10-21 | BYOK adapters for Anthropic Claude (Messages API) and Hugging Face (Serverless / Inference API), network allowlist & CSP updates, AISetupScreen options (FR-005, NFR-005, NFR-017) |
+| M7.2 Custom Local Models | Done | 2026-10-21 | Custom models for WebLLM and Ollama, format pre-flight validation, fit estimation, gated repository token, post-load sanity test, and unverified labeling (FR-023, ADR-017) |
 | Page build tracker | See section 6A | 2026-10-13 | Update the Build status column there |
 
 ---
@@ -429,6 +464,8 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | 2026-10-21 | 0.8.0 | Phase 6 begins. Completed M6.1 Prep plan and .ics: Pure domain schedule generator in @abhyas/core with ramping difficulty (foundations -> core skills -> edge cases -> final mock) and cadence options (daily, weekdays, 3 days/wk, weekends); RFC 5545 compliant .ics serializer with CRLF line breaks, 75-octet line folding, and universal floating timestamps; PG-22 Schedule screen (/app/schedule) with date picker, cadence selection, ramping plan preview, .ics file export, and Google OAuth disclaimer fallback; aside navigation and home screen integration; 74 test files (722 tests) green with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors (FR-027, ADR-012, PG-22) |
 | 2026-10-21 | 0.8.1 | Completed M6.2 Spaced repetition: Spaced repetition interval engine in @abhyas/core/review with growing intervals (1d -> 3d -> 7d -> 14d -> 30d -> 60d) on good answers and reset to 1d on poor answers; daily cap enforcement (10 items/day) prioritizing most overdue items; automatic enqueuing of weak turns (score < 70 or criterion <= 2) in ResultsScreen; PG-23 Review queue screen (/app/review) with Due Today vs All in Queue tabs, stats bar, past score badges, top fixes, and 1-click drill launch; aside navigation integration; 76 test files (745 tests) green with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors (FR-028, PG-23) |
 | 2026-10-21 | 0.8.2 | Completed M6.3 and Phase 6 Exit Gate (Phase 6 completion): Client-side Google Calendar integration with narrow scope (calendar.events), in-memory tokens with zero disk persistence, REST v3 event dispatching, and free-slot suggestion; Phase 6 Exit Gate test suite (tests/p6-exit-gate.test.ts) verifying all 5 criteria: (1) universal .ics export compatibility across Google Calendar, Apple Calendar (75-octet line folding), and Microsoft Outlook (strict CRLF), (2) difficulty ramping from foundations to final mock, (3) spaced repetition expanding intervals (1d -> 3d -> 7d -> 14d -> 30d -> 60d) and 10-item daily cap, (4) automatic weak turn enqueuing in ResultsScreen, and (5) Google OAuth in-memory token safety and graceful .ics fallback; all 79 test files (764 tests) green with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors (FR-027, FR-028, ADR-012, PG-22, PG-23) |
+| 2026-10-21 | 0.9.0 | Phase 7 begins. Completed M7.1 Claude and Hugging Face adapters: Pure BYOK provider adapters AnthropicAdapter (Anthropic Messages API with danger direct browser access header, SSE streaming text deltas, schema-constrained object generation with retry) and HuggingFaceAdapter (OpenAI-compatible /v1/chat/completions serverless endpoint, token authorization, SSE streaming chunks, schema-constrained object generation); network allowlist and CSP connect-src updated for https://api.anthropic.com, https://api-inference.huggingface.co, and https://router.huggingface.co; cost estimation for Claude models (Sonnet, Haiku, Opus); AISetupScreen (PG-09) with Anthropic and Hugging Face radio cards, API key and User Access Token fields, connection testing, model discovery/selection, and storage persistence; automated key safety and allowlist tests green with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors (FR-005, NFR-005, NFR-017, ADR-002, ADR-005, PG-09) |
+| 2026-10-21 | 0.9.1 | Completed M7.2 Custom local models and sanity-test harness: Engine selector in PG-19 Model Manager (In-Browser WebLLM vs Local Daemon Ollama); engine-aware format pre-flight validator rejecting unsafe pickle files (.pkl, .bin, .pt, .pth) and allowlisting .safetensors/.gguf/.onnx; device hardware fit estimation comparing model memory against available RAM and concurrency; optional Hugging Face gated access token input for private repositories; live sanity test runner executing speed, instruction following ('READY'), and JSON validity checks on both WebLLM and Ollama custom models with persistent results; prominent UNVERIFIED badges and engine tags displayed across card grid and accessible table views; 81 test files (818 tests) green with 0 axe accessibility violations in Ink and Paper themes, 0 knip dead code, 0 type errors, 0 lint errors (FR-023, AI-006, ADR-013, ADR-017, PG-19) |
 
 
 

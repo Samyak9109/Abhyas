@@ -6,6 +6,8 @@ import {
   decryptApiKey,
   GEMINI_FIXTURES,
   MemoryStorageAdapter,
+  ANTHROPIC_FIXTURES,
+  HUGGINGFACE_FIXTURES,
   type ProviderRow,
 } from "@abhyas/core";
 import { AISetupScreen } from "./AISetupScreen";
@@ -34,9 +36,39 @@ function createMockFetch(responseMap: {
   openaiModels?: { status: number; body: unknown };
   ollamaTags?: { status: number; body: unknown };
   ollamaError?: Error;
+  anthropicModels?: { status: number; body: unknown };
+  huggingfaceModels?: { status: number; body: unknown };
 }): typeof fetch {
   return async (input: RequestInfo | URL): Promise<Response> => {
     const url = input.toString();
+
+    if (url.includes("api.anthropic.com")) {
+      const cfg = responseMap.anthropicModels || {
+        status: 200,
+        body: ANTHROPIC_FIXTURES.modelsSuccess,
+      };
+      return new Response(JSON.stringify(cfg.body), {
+        status: cfg.status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (url.includes("huggingface.co")) {
+      if (url.includes("/chat/completions")) {
+        return new Response(
+          JSON.stringify({ choices: [{ message: { content: "pong" } }] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      const cfg = responseMap.huggingfaceModels || {
+        status: 200,
+        body: HUGGINGFACE_FIXTURES.modelsSuccess,
+      };
+      return new Response(JSON.stringify(cfg.body), {
+        status: cfg.status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     if (url.includes("11434") || url.includes("/api/tags")) {
       if (responseMap.ollamaError) {
@@ -528,6 +560,92 @@ describe("M1.2: AISetupScreen (PG-09)", () => {
         expect(screen.getByText("CORS Restriction Blocked Access")).toBeDefined();
         expect(screen.getAllByText(/LM Studio/i).length).toBeGreaterThanOrEqual(2);
       });
+    });
+
+    it("supports Anthropic Claude provider setup, connection testing, and saving (M7.1)", async () => {
+      const storage = new MemoryStorageAdapter();
+      const fetchFn = createMockFetch({});
+      let completed = false;
+
+      render(
+        <AISetupScreen
+          storage={storage}
+          onComplete={() => {
+            completed = true;
+          }}
+          fetchFn={fetchFn}
+        />
+      );
+
+      const anthropicRadio = screen.getByRole("radio", { name: /anthropic \(claude\)/i });
+      fireEvent.click(anthropicRadio);
+
+      expect(screen.getByRole("heading", { name: /anthropic claude api setup/i })).toBeTruthy();
+
+      const keyInput = screen.getByLabelText(/api key/i);
+      fireEvent.change(keyInput, { target: { value: "sk-ant-valid-key-999" } });
+
+      const testBtn = screen.getByRole("button", { name: /test connection/i });
+      expect(testBtn).toHaveProperty("disabled", false);
+      fireEvent.click(testBtn);
+
+      expect(await screen.findByText(/connection verified/i)).toBeTruthy();
+
+      const nextBtn = screen.getByRole("button", { name: /next: add your profile/i });
+      fireEvent.click(nextBtn);
+
+      await waitFor(() => {
+        expect(completed).toBe(true);
+      });
+
+      const providers = (await storage.getAll("providers")) as ProviderRow[];
+      expect(providers.length).toBe(1);
+      expect(providers[0]?.kind).toBe("anthropic");
+      expect(providers[0]?.key).toBe("sk-ant-valid-key-999");
+    });
+
+    it("supports Hugging Face provider setup, connection testing, and saving (M7.1)", async () => {
+      const storage = new MemoryStorageAdapter();
+      const fetchFn = createMockFetch({});
+      let completed = false;
+
+      render(
+        <AISetupScreen
+          storage={storage}
+          onComplete={() => {
+            completed = true;
+          }}
+          fetchFn={fetchFn}
+        />
+      );
+
+      const hfRadio = screen.getByRole("radio", { name: /hugging face/i });
+      fireEvent.click(hfRadio);
+
+      expect(
+        screen.getByRole("heading", { name: /hugging face serverless inference/i })
+      ).toBeTruthy();
+
+      const tokenInput = screen.getByLabelText(/user access token/i);
+      fireEvent.change(tokenInput, { target: { value: "hf_validToken12345" } });
+
+      const testBtn = screen.getByRole("button", { name: /test connection/i });
+      expect(testBtn).toHaveProperty("disabled", false);
+      fireEvent.click(testBtn);
+
+      expect(await screen.findByText(/connection verified/i)).toBeTruthy();
+
+      const nextBtn = screen.getByRole("button", { name: /next: add your profile/i });
+      fireEvent.click(nextBtn);
+
+      await waitFor(() => {
+        expect(completed).toBe(true);
+      });
+
+      const providers = (await storage.getAll("providers")) as ProviderRow[];
+      expect(providers.length).toBe(1);
+      expect(providers[0]?.kind).toBe("huggingface");
+      expect(providers[0]?.key).toBe("hf_validToken12345");
     });
   });
 

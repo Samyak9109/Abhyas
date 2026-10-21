@@ -2,9 +2,12 @@
 // Proves that API keys never appear in requests outside the configured provider origin,
 // and are never leaked in error messages or logs.
 import { describe, expect, it } from "vitest";
+import { ANTHROPIC_FIXTURES } from "./fixtures/anthropic-fixtures";
 import { GEMINI_FIXTURES } from "./fixtures/gemini-fixtures";
 import { OPENAI_FIXTURES } from "./fixtures/openai-fixtures";
+import { AnthropicAdapter } from "./anthropic-adapter";
 import { GeminiAdapter } from "./gemini-adapter";
+import { HuggingFaceAdapter } from "./huggingface-adapter";
 import { OpenAICompatibleAdapter } from "./openai-compatible-adapter";
 
 describe("API Key Egress and Leak Protection (FR-005, NFR-005)", () => {
@@ -75,6 +78,78 @@ describe("API Key Egress and Leak Protection (FR-005, NFR-005)", () => {
       expect(req.url).not.toContain(SECRET_KEY);
       const authHeader = (req.headers as Record<string, string>)?.["Authorization"] || "";
       expect(authHeader).toBe(`Bearer ${SECRET_KEY}`);
+    }
+  });
+
+  it("proves Anthropic API keys are only sent to api.anthropic.com and never outside (M7.1)", async () => {
+    const SECRET_KEY = "sk-ant-super-secret-claude-key-777";
+    const interceptedRequests: { url: string; headers: unknown; body: unknown }[] = [];
+
+    const interceptingFetch: typeof fetch = async (input, init) => {
+      interceptedRequests.push({
+        url: input.toString(),
+        headers: init?.headers,
+        body: init?.body,
+      });
+
+      return new Response(JSON.stringify(ANTHROPIC_FIXTURES.modelsSuccess), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    };
+
+    const adapter = new AnthropicAdapter({
+      apiKey: SECRET_KEY,
+      fetchFn: interceptingFetch,
+    });
+
+    await adapter.testConnection();
+
+    expect(interceptedRequests.length).toBeGreaterThan(0);
+    for (const req of interceptedRequests) {
+      const parsedUrl = new URL(req.url);
+      expect(parsedUrl.origin).toBe("https://api.anthropic.com");
+      expect(req.url).not.toContain(SECRET_KEY);
+      const xApiKey = (req.headers as Record<string, string>)?.["x-api-key"] || "";
+      expect(xApiKey).toBe(SECRET_KEY);
+    }
+  });
+
+  it("proves Hugging Face tokens are only sent to approved Hugging Face origins and never outside (M7.1)", async () => {
+    const SECRET_KEY = "hf_superSecretToken999";
+    const interceptedRequests: { url: string; headers: unknown; body: unknown }[] = [];
+
+    const interceptingFetch: typeof fetch = async (input, init) => {
+      interceptedRequests.push({
+        url: input.toString(),
+        headers: init?.headers,
+        body: init?.body,
+      });
+
+      return new Response(JSON.stringify({ choices: [{ message: { content: "pong" } }] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    };
+
+    const adapter = new HuggingFaceAdapter({
+      apiKey: SECRET_KEY,
+      fetchFn: interceptingFetch,
+    });
+
+    await adapter.testConnection();
+
+    expect(interceptedRequests.length).toBeGreaterThan(0);
+    for (const req of interceptedRequests) {
+      const parsedUrl = new URL(req.url);
+      expect([
+        "https://api-inference.huggingface.co",
+        "https://router.huggingface.co",
+        "https://huggingface.co",
+      ]).toContain(parsedUrl.origin);
+      expect(req.url).not.toContain(SECRET_KEY);
+      const auth = (req.headers as Record<string, string>)?.["Authorization"] || "";
+      expect(auth).toBe(`Bearer ${SECRET_KEY}`);
     }
   });
 

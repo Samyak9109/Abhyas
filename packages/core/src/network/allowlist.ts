@@ -22,6 +22,11 @@ export const ALLOWED_ORIGIN_PATTERNS: readonly (string | RegExp)[] = [
   "https://generativelanguage.googleapis.com",
   // OpenAI direct API
   "https://api.openai.com",
+  // Anthropic Claude direct API (FR-005, M7.1)
+  "https://api.anthropic.com",
+  // Hugging Face Inference API / Serverless Router (FR-005, M7.1)
+  "https://api-inference.huggingface.co",
+  "https://router.huggingface.co",
   // Local Ollama and local OpenAI-compatible servers (any port)
   /^http:\/\/localhost(:\d+)?$/,
   /^http:\/\/127\.0\.0\.1(:\d+)?$/,

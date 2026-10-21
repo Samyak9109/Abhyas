@@ -1,5 +1,10 @@
 // FR-023, ADR-017: Model format validation, safety checks, and storage formatting.
-import type { ModelFormat, ModelFormatValidation } from "./types.js";
+import type {
+  CustomModelEngine,
+  HardwareFitEstimate,
+  ModelFormat,
+  ModelFormatValidation,
+} from "./types.js";
 
 export const ALLOWED_MODEL_FORMATS: readonly ModelFormat[] = ["safetensors", "gguf", "onnx"];
 
@@ -61,6 +66,70 @@ export function validateModelFormat(filenameOrUrl: string): ModelFormatValidatio
     valid: false,
     error:
       "Unsupported format. Please provide a verified safe format: .safetensors, .gguf, or .onnx (ADR-017).",
+  };
+}
+
+/**
+ * Engine-aware validator for user-supplied custom models (FR-023, ADR-017).
+ * For WebLLM, strictly validates safe file formats; for Ollama, validates tag structure.
+ */
+export function validateCustomModel(
+  identifier: string,
+  engine: CustomModelEngine = "webllm"
+): ModelFormatValidation {
+  const clean = identifier.trim();
+  if (!clean) {
+    return { valid: false, error: "Model identifier cannot be empty." };
+  }
+
+  if (engine === "ollama") {
+    if (/\s/.test(clean)) {
+      return { valid: false, error: "Ollama model tag cannot contain whitespace." };
+    }
+    if (!/^[a-zA-Z0-9_\-./:]+$/.test(clean)) {
+      return {
+        valid: false,
+        error: "Ollama tag contains invalid characters. Use alphanumeric, dashes, dots, or colons.",
+      };
+    }
+    return { valid: true, format: "gguf" };
+  }
+
+  return validateModelFormat(clean);
+}
+
+/**
+ * Estimates device hardware fit for a model based on memory and concurrency (FR-023, FR-024).
+ */
+export function estimateHardwareFit(
+  sizeBytes: number,
+  deviceMemoryGb?: number
+): HardwareFitEstimate {
+  // Typical runtime overhead is ~1.25x model weights size
+  const estimatedMemoryBytes = Math.round(sizeBytes * 1.25);
+  const memoryGb = deviceMemoryGb ?? 8;
+  const availableBytes = memoryGb * 1024 * 1024 * 1024;
+
+  if (estimatedMemoryBytes <= availableBytes * 0.5) {
+    return {
+      fit: "optimal",
+      message: `Optimal fit: Estimated memory footprint (${formatBytes(estimatedMemoryBytes)}) fits comfortably within ${memoryGb} GB RAM.`,
+      estimatedMemoryBytes,
+    };
+  }
+
+  if (estimatedMemoryBytes <= availableBytes * 0.85) {
+    return {
+      fit: "tight",
+      message: `Tight fit: Estimated memory footprint (${formatBytes(estimatedMemoryBytes)}) approaches available device RAM (${memoryGb} GB).`,
+      estimatedMemoryBytes,
+    };
+  }
+
+  return {
+    fit: "insufficient",
+    message: `High memory demand: Estimated requirement (${formatBytes(estimatedMemoryBytes)}) exceeds recommended limits for ${memoryGb} GB RAM.`,
+    estimatedMemoryBytes,
   };
 }
 

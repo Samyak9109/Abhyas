@@ -41,6 +41,8 @@ In strict accordance with `architecture.md` Section 17, network requests are res
 | **Own Origin (`'self'`)** | HTTPS | Always | Application bundles, local woff2 fonts, static icons, Web Workers |
 | **`https://generativelanguage.googleapis.com`** | HTTPS | When Gemini adapter is active | Prompts (profile context, questions, candidate answers) |
 | **`https://api.openai.com`** | HTTPS | When OpenAI adapter is active | Prompts (profile context, questions, candidate answers) |
+| **`https://api.anthropic.com`** | HTTPS | When Anthropic Claude adapter is active (M7.1) | Prompts (profile context, questions, candidate answers) |
+| **`https://api-inference.huggingface.co`**, **`https://router.huggingface.co`** | HTTPS | When Hugging Face Inference adapter is active (M7.1) | Prompts (profile context, questions, candidate answers) |
 | **`http://localhost:*`, `http://127.0.0.1:*`** | HTTP | When Ollama / local OpenAI-compatible server is configured | Prompts (local loopback only) |
 | **Hugging Face / Model CDN** | HTTPS | P3: Local model download (user-initiated only) | Model weights download (no user data transmitted) |
 | **Static Company Pack CDN** | HTTPS | P4: Static company packs | Pack JSON manifest download (no user data transmitted) |
@@ -61,7 +63,7 @@ style-src 'self' 'unsafe-inline';
 font-src 'self';
 img-src 'self' data:;
 worker-src 'self' blob:;
-connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com http://localhost:* http://127.0.0.1:*;
+connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api-inference.huggingface.co https://router.huggingface.co https://huggingface.co https://cdn-lfs.huggingface.co http://localhost:* http://127.0.0.1:*;
 frame-ancestors 'none';
 object-src 'none';
 base-uri 'self';

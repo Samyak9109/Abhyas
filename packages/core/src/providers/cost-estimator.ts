@@ -35,6 +35,30 @@ export const DEFAULT_MODEL_PRICING: readonly ModelPricing[] = [
     promptPricePerMillionTokens: 2.5,
     completionPricePerMillionTokens: 10.0,
   },
+  {
+    modelId: "claude-3-5-sonnet",
+    label: "Claude 3.5 Sonnet",
+    promptPricePerMillionTokens: 3.0,
+    completionPricePerMillionTokens: 15.0,
+  },
+  {
+    modelId: "claude-3-5-haiku",
+    label: "Claude 3.5 Haiku",
+    promptPricePerMillionTokens: 0.8,
+    completionPricePerMillionTokens: 4.0,
+  },
+  {
+    modelId: "claude-3-opus",
+    label: "Claude 3 Opus",
+    promptPricePerMillionTokens: 15.0,
+    completionPricePerMillionTokens: 75.0,
+  },
+  {
+    modelId: "meta-llama/Llama-3.2-3B-Instruct",
+    label: "Llama 3.2 3B (Hugging Face)",
+    promptPricePerMillionTokens: 0.0,
+    completionPricePerMillionTokens: 0.0,
+  },
 ];
 
 export interface SessionCostEstimate {

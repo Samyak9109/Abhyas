@@ -4,7 +4,9 @@ import {
   ALLOWED_MODEL_FORMATS,
   DISALLOWED_MODEL_FORMATS,
   calculateStorageQuotaStatus,
+  estimateHardwareFit,
   formatBytes,
+  validateCustomModel,
   validateModelFormat,
 } from "./models.js";
 
@@ -48,6 +50,44 @@ describe("Local Models Safety & Format Validation (ADR-017, FR-023)", () => {
     const unknownRes = validateModelFormat("custom-model.unknown");
     expect(unknownRes.valid).toBe(false);
     expect(unknownRes.error).toContain("Unsupported format");
+  });
+
+  it("validates custom models based on engine (WebLLM vs Ollama)", () => {
+    // WebLLM engine format checks
+    const validWebllm = validateCustomModel("my-org/custom-model.safetensors", "webllm");
+    expect(validWebllm.valid).toBe(true);
+    expect(validWebllm.format).toBe("safetensors");
+
+    const invalidWebllm = validateCustomModel("dangerous.pt", "webllm");
+    expect(invalidWebllm.valid).toBe(false);
+
+    // Ollama engine tag checks
+    const validOllama = validateCustomModel("llama3.2:3b", "ollama");
+    expect(validOllama.valid).toBe(true);
+
+    const whitespaceOllama = validateCustomModel("llama 3.2", "ollama");
+    expect(whitespaceOllama.valid).toBe(false);
+    expect(whitespaceOllama.error).toContain("whitespace");
+
+    const invalidCharsOllama = validateCustomModel("llama; rm -rf", "ollama");
+    expect(invalidCharsOllama.valid).toBe(false);
+  });
+
+  it("estimates hardware fit based on model size and device memory", () => {
+    // 1.5 GB model on 8 GB device -> optimal
+    const optimal = estimateHardwareFit(1.5 * 1024 * 1024 * 1024, 8);
+    expect(optimal.fit).toBe("optimal");
+    expect(optimal.message).toContain("Optimal fit");
+
+    // 5 GB model on 8 GB device -> tight
+    const tight = estimateHardwareFit(5 * 1024 * 1024 * 1024, 8);
+    expect(tight.fit).toBe("tight");
+    expect(tight.message).toContain("Tight fit");
+
+    // 8 GB model on 8 GB device -> insufficient
+    const insufficient = estimateHardwareFit(8 * 1024 * 1024 * 1024, 8);
+    expect(insufficient.fit).toBe("insufficient");
+    expect(insufficient.message).toContain("High memory demand");
   });
 });
 

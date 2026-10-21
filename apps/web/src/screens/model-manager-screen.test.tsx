@@ -230,4 +230,172 @@ describe("ModelManagerScreen (PG-19, M3.2)", () => {
       expect(screen.getByRole("button", { name: "Run Sanity Test" })).toBeDefined();
     });
   });
+
+  it("handles adding custom WebLLM model with hardware fit estimate and UNVERIFIED badge", async () => {
+    render(<ModelManagerScreen storage={storage} hardwareRuntime={mockHardwareRuntime} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("In-Browser Model Manager")).toBeDefined();
+    });
+
+    const input = screen.getByLabelText(/Model Repository Identifier or File Path/i);
+    fireEvent.change(input, { target: { value: "my-custom/local-weights.safetensors" } });
+
+    await waitFor(() => {
+      expect(screen.getByText("Pre-flight Passed")).toBeDefined();
+      expect(screen.getByText("Hardware Fit Estimate")).toBeDefined();
+    });
+
+    const downloadBtn = screen.getByRole("button", {
+      name: "Pre-flight & Download Custom Model",
+    });
+    await act(async () => {
+      fireEvent.click(downloadBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Installed Custom Models (1)")).toBeDefined();
+      expect(screen.getByText("my-custom/local-weights.safetensors")).toBeDefined();
+      expect(screen.getByText("UNVERIFIED")).toBeDefined();
+    });
+
+    const installed = await storage.getAll<ModelRow>("models");
+    const customRow = installed.find((m) => m.id === "my-custom/local-weights.safetensors");
+    expect(customRow).toBeDefined();
+    expect(customRow?.isCustom).toBe(true);
+    expect(customRow?.format).toBe("safetensors");
+    expect(customRow?.engine).toBe("webllm");
+  });
+
+  it("handles adding and registering Ollama custom model and switching engines", async () => {
+    render(<ModelManagerScreen storage={storage} hardwareRuntime={mockHardwareRuntime} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("In-Browser Model Manager")).toBeDefined();
+    });
+
+    // Switch to Ollama
+    const ollamaRadio = screen.getByLabelText("Local Daemon (Ollama)");
+    fireEvent.click(ollamaRadio);
+
+    // Label should update
+    const input = screen.getByLabelText("Ollama Model Tag");
+
+    // Invalid tag with spaces
+    fireEvent.change(input, { target: { value: "mistral with spaces" } });
+    await waitFor(() => {
+      expect(screen.getByText("Format Rejected")).toBeDefined();
+      expect(screen.getByText(/cannot contain whitespace/i)).toBeDefined();
+    });
+
+    // Valid tag
+    fireEvent.change(input, { target: { value: "mistral:7b" } });
+    await waitFor(() => {
+      expect(screen.getByText("Pre-flight Passed")).toBeDefined();
+    });
+
+    const registerBtn = screen.getByRole("button", {
+      name: "Register & Verify Ollama Model",
+    });
+    await act(async () => {
+      fireEvent.click(registerBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("mistral:7b")).toBeDefined();
+      expect(screen.getByText("OLLAMA")).toBeDefined();
+      expect(screen.getByText("UNVERIFIED")).toBeDefined();
+    });
+
+    const installed = await storage.getAll<ModelRow>("models");
+    const ollamaRow = installed.find((m) => m.id === "mistral:7b");
+    expect(ollamaRow).toBeDefined();
+    expect(ollamaRow?.engine).toBe("ollama");
+    expect(ollamaRow?.isCustom).toBe(true);
+  });
+
+  it("renders custom models in accessible table view with UNVERIFIED badge", async () => {
+    await storage.put<ModelRow>("models", {
+      id: "ollama-custom-model:latest",
+      engine: "ollama",
+      sizeBytes: 2_000_000_000,
+      status: "ready",
+      isCustom: true,
+      format: "gguf",
+    });
+
+    render(<ModelManagerScreen storage={storage} hardwareRuntime={mockHardwareRuntime} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("In-Browser Model Manager")).toBeDefined();
+    });
+
+    const tableToggle = screen.getByRole("button", { name: "Table View" });
+    fireEvent.click(tableToggle);
+
+    await waitFor(() => {
+      expect(screen.getByText("ollama-custom-model:latest")).toBeDefined();
+      expect(screen.getByText("UNVERIFIED")).toBeDefined();
+    });
+  });
+
+  it("runs sanity test on Ollama custom model using OllamaAdapter", async () => {
+    await storage.put<ModelRow>("models", {
+      id: "mistral-local:latest",
+      engine: "ollama",
+      sizeBytes: 2_000_000_000,
+      status: "ready",
+      isCustom: true,
+      format: "gguf",
+    });
+
+    // Mock fetch for Ollama streaming
+    const originalFetch = globalThis.fetch;
+    const encoder = new TextEncoder();
+
+    globalThis.fetch = vi.fn().mockImplementation(() => {
+      const mockStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            encoder.encode(
+              JSON.stringify({
+                message: { role: "assistant", content: '{"status": "ok", "ready": true}' },
+                done: false,
+              }) + "\n"
+            )
+          );
+          controller.enqueue(encoder.encode(JSON.stringify({ done: true }) + "\n"));
+          controller.close();
+        },
+      });
+      return Promise.resolve(new Response(mockStream, { status: 200 }));
+    });
+
+    try {
+      render(<ModelManagerScreen storage={storage} hardwareRuntime={mockHardwareRuntime} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("mistral-local:latest")).toBeDefined();
+      });
+
+      const sanityBtns = screen.getAllByRole("button", { name: "Run Sanity Test" });
+      const targetBtn = sanityBtns[0];
+      expect(targetBtn).toBeDefined();
+
+      if (targetBtn) {
+        await act(async () => {
+          fireEvent.click(targetBtn);
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.queryByText(/Starting sanity checks/i)).toBeNull();
+      });
+
+      const updatedRow = await storage.get<ModelRow>("models", "mistral-local:latest");
+      expect(updatedRow?.sanityResult).toBeDefined();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

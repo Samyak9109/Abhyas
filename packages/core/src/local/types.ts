@@ -79,6 +79,23 @@ export interface ModelFormatValidation {
   error?: string;
 }
 
+export type CustomModelEngine = "webllm" | "ollama";
+
+export interface CustomModelConfig {
+  id: string;
+  engine: CustomModelEngine;
+  format?: ModelFormat | string;
+  sizeBytes?: number;
+  gatedToken?: string;
+  endpointUrl?: string;
+}
+
+export interface HardwareFitEstimate {
+  fit: "optimal" | "tight" | "insufficient";
+  message: string;
+  estimatedMemoryBytes: number;
+}
+
 export type ModelSanityStatus = "interview-ready" | "questions-only" | "not-suitable";
 
 export interface SanityCheckStepResult {

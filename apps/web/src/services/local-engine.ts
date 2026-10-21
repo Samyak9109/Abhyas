@@ -8,6 +8,7 @@ import {
   type LocalWorkerResponse,
   type ModelRow,
   type ModelSanityResult,
+  type ProviderAdapter,
   type SanityTestOptions,
   type StorageAdapter,
   type StorageQuotaReport,
@@ -217,7 +218,13 @@ export async function recordModelStatus(
   storage: StorageAdapter,
   modelId: string,
   status: "downloading" | "paused" | "ready" | "error",
-  sizeBytes = 1_000_000_000
+  sizeBytes = 1_000_000_000,
+  options?: {
+    engine?: string | undefined;
+    isCustom?: boolean | undefined;
+    format?: string | undefined;
+    gatedToken?: string | undefined;
+  }
 ): Promise<void> {
   try {
     const existing = await storage.get<ModelRow>("models", modelId);
@@ -226,13 +233,20 @@ export async function recordModelStatus(
         ...existing,
         status,
         sizeBytes: sizeBytes || existing.sizeBytes,
+        ...(options?.engine ? { engine: options.engine } : {}),
+        ...(options?.isCustom !== undefined ? { isCustom: options.isCustom } : {}),
+        ...(options?.format ? { format: options.format } : {}),
+        ...(options?.gatedToken ? { gatedToken: options.gatedToken } : {}),
       });
     } else {
       await storage.put<ModelRow>("models", {
         id: modelId,
-        engine: "webllm",
+        engine: options?.engine || "webllm",
         sizeBytes,
         status,
+        ...(options?.isCustom !== undefined ? { isCustom: options.isCustom } : {}),
+        ...(options?.format ? { format: options.format } : {}),
+        ...(options?.gatedToken ? { gatedToken: options.gatedToken } : {}),
       });
     }
   } catch {
@@ -281,6 +295,23 @@ export async function recordModelSanityResult(
 }
 
 /**
+ * Executes a post-load sanity test on a local model (WebLLM or Ollama adapter).
+ * Persists the result into IndexedDB if storage is provided.
+ */
+export async function runSanityTestOnModel(
+  provider: ProviderAdapter,
+  modelId: string,
+  storage?: StorageAdapter,
+  options?: SanityTestOptions
+): Promise<ModelSanityResult> {
+  const result = await runModelSanityTest(provider, modelId, options);
+  if (storage) {
+    await recordModelSanityResult(storage, modelId, result);
+  }
+  return result;
+}
+
+/**
  * Executes a post-load sanity test on the loaded local model (FR-023, AI-006).
  * Persists the result into IndexedDB if storage is provided.
  */
@@ -290,9 +321,5 @@ export async function runSanityTestOnLoadedModel(
   storage?: StorageAdapter,
   options?: SanityTestOptions
 ): Promise<ModelSanityResult> {
-  const result = await runModelSanityTest(adapter, modelId, options);
-  if (storage) {
-    await recordModelSanityResult(storage, modelId, result);
-  }
-  return result;
+  return runSanityTestOnModel(adapter, modelId, storage, options);
 }

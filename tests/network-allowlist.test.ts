@@ -25,6 +25,21 @@ describe("M0.5: Network Allowlist & Egress Protection (NFR-017)", () => {
       expect(() => assertAllowedDestination(openAiUrl)).not.toThrow();
     });
 
+    it("allows user-configured Anthropic Claude API endpoints (M7.1)", () => {
+      const anthropicUrl = "https://api.anthropic.com/v1/messages";
+      expect(isAllowedDestination(anthropicUrl)).toBe(true);
+      expect(() => assertAllowedDestination(anthropicUrl)).not.toThrow();
+    });
+
+    it("allows user-configured Hugging Face Inference API endpoints (M7.1)", () => {
+      const hfInferenceUrl = "https://api-inference.huggingface.co/v1/chat/completions";
+      const hfRouterUrl = "https://router.huggingface.co/hf-inference/v1/chat/completions";
+      expect(isAllowedDestination(hfInferenceUrl)).toBe(true);
+      expect(isAllowedDestination(hfRouterUrl)).toBe(true);
+      expect(() => assertAllowedDestination(hfInferenceUrl)).not.toThrow();
+      expect(() => assertAllowedDestination(hfRouterUrl)).not.toThrow();
+    });
+
     it("allows local Ollama servers on localhost", () => {
       const ollamaLocalhost = "http://localhost:11434/api/generate";
       expect(isAllowedDestination(ollamaLocalhost)).toBe(true);

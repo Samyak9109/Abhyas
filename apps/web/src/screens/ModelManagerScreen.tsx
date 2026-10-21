@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   detectHardwareCapabilities,
+  estimateHardwareFit,
   formatBytes,
   runHardwareBenchmark,
-  validateModelFormat,
+  validateCustomModel,
+  OllamaAdapter,
   type BenchmarkResult,
+  type CustomModelEngine,
   type HardwareCapabilityReport,
   type HardwareRuntime,
   type ModelFormatValidation,
@@ -15,7 +18,7 @@ import {
   type StorageQuotaReport,
 } from "@abhyas/core";
 import { CURATED_MODELS, type CuratedModel } from "@abhyas/content";
-import { Button, Callout, Dialog, Progress, Skeleton, Input } from "../components";
+import { Button, Callout, Dialog, Progress, Skeleton, Input, SecretInput } from "../components";
 import {
   getInstalledModels,
   getLocalEngineAdapter,
@@ -24,6 +27,7 @@ import {
   removeModelRecord,
   requestPersistentStorage,
   runSanityTestOnLoadedModel,
+  runSanityTestOnModel,
 } from "../services/local-engine";
 
 interface ModelManagerScreenProps {
@@ -56,7 +60,10 @@ export function ModelManagerScreen({
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   // Custom model pre-flight state (FR-023, ADR-017)
+  const [customEngine, setCustomEngine] = useState<CustomModelEngine>("webllm");
   const [customIdentifier, setCustomIdentifier] = useState("");
+  const [customGatedToken, setCustomGatedToken] = useState("");
+  const [customEndpointUrl, setCustomEndpointUrl] = useState("http://localhost:11434");
   const [customPreflight, setCustomPreflight] = useState<ModelFormatValidation | null>(null);
 
   // Dialog & notifications
@@ -125,14 +132,22 @@ export function ModelManagerScreen({
     }
   };
 
-  const handleDownloadModel = async (model: CuratedModel | { id: string; sizeBytes: number }) => {
+  const handleDownloadModel = async (
+    model: CuratedModel | { id: string; sizeBytes: number },
+    customOptions?: {
+      engine?: string | undefined;
+      isCustom?: boolean | undefined;
+      format?: string | undefined;
+      gatedToken?: string | undefined;
+    }
+  ) => {
     setErrorMessage(null);
     setDownloadingId(model.id);
     setPausedId(null);
     setDownloadProgress(0);
     setDownloadStatusText("Initializing download...");
 
-    await recordModelStatus(storage, model.id, "downloading", model.sizeBytes);
+    await recordModelStatus(storage, model.id, "downloading", model.sizeBytes, customOptions);
 
     try {
       const res = await engineAdapter.loadModel(model.id, (p) => {
@@ -142,14 +157,14 @@ export function ModelManagerScreen({
 
       if (!res.ok) {
         setErrorMessage(res.error.message);
-        await recordModelStatus(storage, model.id, "error", model.sizeBytes);
+        await recordModelStatus(storage, model.id, "error", model.sizeBytes, customOptions);
       } else {
-        await recordModelStatus(storage, model.id, "ready", model.sizeBytes);
+        await recordModelStatus(storage, model.id, "ready", model.sizeBytes, customOptions);
         setActiveModelId(model.id);
       }
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Model download failed.");
-      await recordModelStatus(storage, model.id, "error", model.sizeBytes);
+      await recordModelStatus(storage, model.id, "error", model.sizeBytes, customOptions);
     } finally {
       setDownloadingId(null);
       const updatedInstalled = await getInstalledModels(storage);
@@ -226,22 +241,52 @@ export function ModelManagerScreen({
     }
   };
 
+  const handleCustomEngineChange = (engine: CustomModelEngine) => {
+    setCustomEngine(engine);
+    if (customIdentifier.trim()) {
+      setCustomPreflight(validateCustomModel(customIdentifier, engine));
+    } else {
+      setCustomPreflight(null);
+    }
+  };
+
   const handleCustomIdentifierChange = (value: string) => {
     setCustomIdentifier(value);
     if (!value.trim()) {
       setCustomPreflight(null);
       return;
     }
-    const validation = validateModelFormat(value);
+    const validation = validateCustomModel(value, customEngine);
     setCustomPreflight(validation);
   };
 
   const handleAddCustomModel = async () => {
     if (!customPreflight?.valid) return;
     const cleanId = customIdentifier.trim();
-    await handleDownloadModel({ id: cleanId, sizeBytes: 1_500_000_000 });
-    setCustomIdentifier("");
-    setCustomPreflight(null);
+    if (customEngine === "ollama") {
+      await recordModelStatus(storage, cleanId, "ready", 2_000_000_000, {
+        engine: "ollama",
+        isCustom: true,
+        format: "gguf",
+      });
+      const updatedInstalled = await getInstalledModels(storage);
+      setInstalledModels(updatedInstalled);
+      setCustomIdentifier("");
+      setCustomPreflight(null);
+    } else {
+      await handleDownloadModel(
+        { id: cleanId, sizeBytes: 1_500_000_000 },
+        {
+          engine: "webllm",
+          isCustom: true,
+          format: customPreflight.format ?? undefined,
+          gatedToken: customGatedToken.trim() || undefined,
+        }
+      );
+      setCustomIdentifier("");
+      setCustomPreflight(null);
+      setCustomGatedToken("");
+    }
   };
 
   const handleRunSanityTest = async (modelId: string) => {
@@ -249,26 +294,58 @@ export function ModelManagerScreen({
       setSanityTestingId(modelId);
       setSanityStep("Starting sanity checks...");
       setErrorMessage(null);
-      await runSanityTestOnLoadedModel(engineAdapter, modelId, storage, {
-        deviceLabel: hardwareReport?.adapterInfo?.description || "In-browser WebGPU Device",
-        onStepChange: (step, status) => {
-          if (step === "speed") {
-            setSanityStep(
-              status === "running" ? "Measuring inference speed..." : `Speed check ${status}`
-            );
-          } else if (step === "instructionFollowing") {
-            setSanityStep(
-              status === "running"
-                ? "Testing instruction adherence..."
-                : `Instruction check ${status}`
-            );
-          } else if (step === "jsonValidity") {
-            setSanityStep(
-              status === "running" ? "Verifying JSON schema format..." : `JSON check ${status}`
-            );
-          }
-        },
-      });
+
+      const targetRecord = installedModels.find((m) => m.id === modelId);
+      const isOllama = targetRecord?.engine === "ollama";
+
+      if (isOllama) {
+        const ollama = new OllamaAdapter({
+          baseUrl: customEndpointUrl || "http://localhost:11434",
+          model: modelId,
+        });
+        await runSanityTestOnModel(ollama, modelId, storage, {
+          deviceLabel: "Ollama Local Daemon",
+          onStepChange: (step, status) => {
+            if (step === "speed") {
+              setSanityStep(
+                status === "running" ? "Measuring inference speed..." : `Speed check ${status}`
+              );
+            } else if (step === "instructionFollowing") {
+              setSanityStep(
+                status === "running"
+                  ? "Testing instruction adherence..."
+                  : `Instruction check ${status}`
+              );
+            } else if (step === "jsonValidity") {
+              setSanityStep(
+                status === "running" ? "Verifying JSON schema format..." : `JSON check ${status}`
+              );
+            }
+          },
+        });
+      } else {
+        await runSanityTestOnLoadedModel(engineAdapter, modelId, storage, {
+          deviceLabel: hardwareReport?.adapterInfo?.description || "In-browser WebGPU Device",
+          onStepChange: (step, status) => {
+            if (step === "speed") {
+              setSanityStep(
+                status === "running" ? "Measuring inference speed..." : `Speed check ${status}`
+              );
+            } else if (step === "instructionFollowing") {
+              setSanityStep(
+                status === "running"
+                  ? "Testing instruction adherence..."
+                  : `Instruction check ${status}`
+              );
+            } else if (step === "jsonValidity") {
+              setSanityStep(
+                status === "running" ? "Verifying JSON schema format..." : `JSON check ${status}`
+              );
+            }
+          },
+        });
+      }
+
       const updated = await getInstalledModels(storage);
       setInstalledModels(updated);
     } catch (err) {
@@ -284,6 +361,13 @@ export function ModelManagerScreen({
 
   const isModelPaused = (id: string) =>
     pausedId === id || installedModels.some((m) => m.id === id && m.status === "paused");
+
+  const customModels = installedModels.filter((m) => !CURATED_MODELS.some((c) => c.id === m.id));
+
+  const fitEstimate =
+    customPreflight?.valid && customEngine === "webllm"
+      ? estimateHardwareFit(1_500_000_000, hardwareReport?.deviceMemoryGb)
+      : null;
 
   return (
     <div className="abh-model-manager-screen" data-testid="model-manager-screen">
@@ -639,6 +723,98 @@ export function ModelManagerScreen({
                       </article>
                     );
                   })}
+
+                  {customModels.length > 0 && (
+                    <div style={{ gridColumn: "1 / -1", marginTop: "var(--space-6)" }}>
+                      <h3
+                        className="abh-mm-section-title"
+                        style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-3)" }}
+                      >
+                        Installed Custom Models ({customModels.length})
+                      </h3>
+                      <div className="abh-mm-cards-grid">
+                        {customModels.map((model) => {
+                          const ready = model.status === "ready";
+                          const isActive = activeModelId === model.id;
+                          const isTestingSanity = sanityTestingId === model.id;
+                          const sanity = model.sanityResult;
+
+                          return (
+                            <article
+                              key={model.id}
+                              className={`abh-mm-card ${isActive ? "abh-mm-card--active" : ""}`}
+                              aria-label={`${model.id} custom model`}
+                            >
+                              <div className="abh-mm-card-header">
+                                <div className="abh-mm-card-title-row">
+                                  <h3 className="abh-mm-card-title" title={model.id}>
+                                    {model.id}
+                                  </h3>
+                                  <span
+                                    className="abh-badge"
+                                    style={{
+                                      backgroundColor:
+                                        "var(--amber-surface, rgba(234, 153, 0, 0.15))",
+                                      color: "var(--amber-text, #ea9900)",
+                                      border: "1px solid var(--amber-border, #ea9900)",
+                                    }}
+                                  >
+                                    UNVERIFIED
+                                  </span>
+                                  <span className="abh-badge abh-badge--info">
+                                    {model.engine.toUpperCase()}
+                                  </span>
+                                </div>
+                                <p className="abh-mm-card-repo">
+                                  Format: {model.format || "auto"} · Size:{" "}
+                                  {formatBytes(model.sizeBytes)}
+                                </p>
+                              </div>
+
+                              <div className="abh-mm-card-sanity">
+                                <span className="abh-mm-metric-label">Sanity Status:</span>
+                                {sanity ? (
+                                  <span
+                                    className={`abh-badge abh-badge--${
+                                      sanity.status === "interview-ready"
+                                        ? "success"
+                                        : sanity.status === "questions-only"
+                                          ? "warning"
+                                          : "danger"
+                                    }`}
+                                  >
+                                    {sanity.status.toUpperCase()} ({sanity.tokensPerSecond} tps)
+                                  </span>
+                                ) : (
+                                  <span className="abh-badge abh-badge--neutral">NOT TESTED</span>
+                                )}
+                              </div>
+
+                              <div className="abh-mm-card-actions">
+                                {ready && (
+                                  <Button
+                                    variant="secondary"
+                                    onClick={() => void handleRunSanityTest(model.id)}
+                                    disabled={Boolean(sanityTestingId)}
+                                  >
+                                    {isTestingSanity
+                                      ? sanityStep || "Testing..."
+                                      : "Run Sanity Test"}
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="danger"
+                                  onClick={() => setDeleteModelTarget(model.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 /* Accessible Data Table Alternative */
@@ -748,6 +924,78 @@ export function ModelManagerScreen({
                           </tr>
                         );
                       })}
+
+                      {customModels.map((model) => {
+                        const ready = model.status === "ready";
+                        const isTestingSanity = sanityTestingId === model.id;
+                        const sanity = model.sanityResult;
+
+                        return (
+                          <tr key={`custom-${model.id}`}>
+                            <th scope="row" className="abh-mm-table-model-cell">
+                              <div>
+                                <span className="abh-mm-table-model-name">{model.id}</span>
+                                <span
+                                  className="abh-badge"
+                                  style={{
+                                    marginLeft: "var(--space-2)",
+                                    backgroundColor:
+                                      "var(--amber-surface, rgba(234, 153, 0, 0.15))",
+                                    color: "var(--amber-text, #ea9900)",
+                                    border: "1px solid var(--amber-border, #ea9900)",
+                                  }}
+                                >
+                                  UNVERIFIED
+                                </span>
+                              </div>
+                            </th>
+                            <td>
+                              <span className="abh-badge abh-badge--info">
+                                {model.engine.toUpperCase()}
+                              </span>
+                            </td>
+                            <td>{formatBytes(model.sizeBytes)}</td>
+                            <td>{model.format || "auto"}</td>
+                            <td>—</td>
+                            <td>
+                              {sanity ? (
+                                <span
+                                  className={`abh-badge abh-badge--${
+                                    sanity.status === "interview-ready"
+                                      ? "success"
+                                      : sanity.status === "questions-only"
+                                        ? "warning"
+                                        : "danger"
+                                  }`}
+                                >
+                                  {sanity.status.toUpperCase()} ({sanity.tokensPerSecond} tps)
+                                </span>
+                              ) : (
+                                <span className="abh-badge abh-badge--neutral">NOT TESTED</span>
+                              )}
+                            </td>
+                            <td>
+                              <div className="abh-mm-table-actions">
+                                {ready && (
+                                  <Button
+                                    variant="secondary"
+                                    onClick={() => void handleRunSanityTest(model.id)}
+                                    disabled={Boolean(sanityTestingId)}
+                                  >
+                                    {isTestingSanity ? "Testing..." : "Sanity Test"}
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="danger"
+                                  onClick={() => setDeleteModelTarget(model.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -765,23 +1013,122 @@ export function ModelManagerScreen({
                 </p>
 
                 <div className="abh-mm-custom-form">
+                  <fieldset
+                    className="abh-form-fieldset"
+                    style={{ border: "none", padding: 0, margin: "0 0 1rem 0" }}
+                  >
+                    <legend className="abh-label" style={{ marginBottom: "0.5rem" }}>
+                      Target Engine
+                    </legend>
+                    <div style={{ display: "flex", gap: "1rem" }}>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="customEngine"
+                          value="webllm"
+                          checked={customEngine === "webllm"}
+                          onChange={() => handleCustomEngineChange("webllm")}
+                        />
+                        <span>In-Browser WebGPU (WebLLM)</span>
+                      </label>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="customEngine"
+                          value="ollama"
+                          checked={customEngine === "ollama"}
+                          onChange={() => handleCustomEngineChange("ollama")}
+                        />
+                        <span>Local Daemon (Ollama)</span>
+                      </label>
+                    </div>
+                  </fieldset>
+
                   <div className="abh-form-field">
                     <Input
-                      label="Model Repository Identifier or File Path"
+                      label={
+                        customEngine === "ollama"
+                          ? "Ollama Model Tag"
+                          : "Model Repository Identifier or File Path"
+                      }
                       value={customIdentifier}
                       onChange={(e) => handleCustomIdentifierChange(e.target.value)}
-                      placeholder="e.g. org/repo-safetensors or local-model.gguf"
-                      helperText="Must specify a safe format: .safetensors, .gguf, or .onnx."
+                      placeholder={
+                        customEngine === "ollama"
+                          ? "e.g. llama3.2:1b or mistral:latest"
+                          : "e.g. org/repo-safetensors or local-model.gguf"
+                      }
+                      helperText={
+                        customEngine === "ollama"
+                          ? "Model tag registered in your local Ollama daemon."
+                          : "Must specify a safe format: .safetensors, .gguf, or .onnx."
+                      }
                     />
                   </div>
+
+                  {customEngine === "ollama" && (
+                    <div className="abh-form-field">
+                      <Input
+                        label="Ollama Server Endpoint"
+                        value={customEndpointUrl}
+                        onChange={(e) => setCustomEndpointUrl(e.target.value)}
+                        placeholder="http://localhost:11434"
+                        helperText="Base URL of your running Ollama instance."
+                      />
+                    </div>
+                  )}
+
+                  {customEngine === "webllm" && (
+                    <div className="abh-form-field">
+                      <SecretInput
+                        label="Hugging Face Access Token (Optional)"
+                        value={customGatedToken}
+                        onChange={(e) => setCustomGatedToken(e.target.value)}
+                        placeholder="hf_..."
+                        helperText="Required only for private or gated Hugging Face repositories."
+                      />
+                    </div>
+                  )}
 
                   {customPreflight && (
                     <div className="abh-mm-preflight-status">
                       {customPreflight.valid ? (
-                        <Callout variant="success" title="Pre-flight Passed">
-                          Format verified: safe <code>.{customPreflight.format}</code> format.
-                          Custom models are unverified by Abhyas.
-                        </Callout>
+                        <>
+                          <Callout variant="success" title="Pre-flight Passed">
+                            Format verified: safe <code>.{customPreflight.format}</code> format.
+                            Custom models are unverified by Abhyas.
+                          </Callout>
+                          {fitEstimate && (
+                            <div style={{ marginTop: "0.5rem" }}>
+                              <Callout
+                                variant={
+                                  fitEstimate.fit === "insufficient"
+                                    ? "danger"
+                                    : fitEstimate.fit === "tight"
+                                      ? "warning"
+                                      : "info"
+                                }
+                                title="Hardware Fit Estimate"
+                              >
+                                {fitEstimate.message}
+                              </Callout>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <Callout variant="danger" title="Format Rejected">
                           {customPreflight.error}
@@ -796,7 +1143,9 @@ export function ModelManagerScreen({
                       onClick={() => void handleAddCustomModel()}
                       disabled={!customPreflight?.valid || Boolean(downloadingId)}
                     >
-                      Pre-flight & Download Custom Model
+                      {customEngine === "ollama"
+                        ? "Register & Verify Ollama Model"
+                        : "Pre-flight & Download Custom Model"}
                     </Button>
                   </div>
                 </div>

@@ -4533,3 +4533,493 @@
   align-items: center;
   gap: var(--space-2);
 }
+
+/* ==========================================================================
+   Schedule Screen (PG-22, FR-027, ADR-012)
+   ========================================================================== */
+
+.abh-schedule-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-6) 0;
+}
+
+.abh-schedule-header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--space-6);
+}
+
+.abh-schedule-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.abh-schedule-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 0 0 var(--space-2) 0;
+  color: var(--text);
+}
+
+.abh-schedule-subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 65ch;
+}
+
+.abh-schedule-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.abh-schedule-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.abh-input-with-action {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.abh-schedule-cadence-group {
+  border: 1px solid var(--line);
+  background-color: var(--surface-1);
+  padding: var(--space-4);
+  margin: var(--space-2) 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-cadence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.abh-schedule-plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.abh-schedule-plan-stats {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: var(--space-1) 0 0 0;
+}
+
+.abh-schedule-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.abh-schedule-notice {
+  margin: var(--space-2) 0;
+}
+
+.abh-schedule-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.abh-session-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--surface-1);
+  border: 1px solid var(--line);
+  transition: border-color var(--dur-fast) var(--ease-standard);
+}
+
+.abh-session-card:hover {
+  border-color: var(--line-strong);
+}
+
+.abh-session-card--final {
+  border-left: 4px solid var(--accent);
+  background-color: var(--surface-2);
+}
+
+.abh-session-card-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 90px;
+  font-family: var(--font-mono);
+  gap: 2px;
+}
+
+.abh-session-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.abh-session-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.abh-session-duration {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.abh-session-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.abh-session-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.abh-stage-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: var(--radius-square);
+  font-weight: 600;
+}
+
+.abh-stage-badge--foundations {
+  background-color: rgba(109, 183, 255, 0.15);
+  color: var(--info);
+  border: 1px solid var(--info);
+}
+
+.abh-stage-badge--building {
+  background-color: rgba(123, 216, 143, 0.15);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.abh-stage-badge--deep {
+  background-color: rgba(242, 179, 61, 0.15);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.abh-stage-badge--mock {
+  background-color: rgba(255, 106, 43, 0.15);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.abh-stage-badge--rest {
+  background-color: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+}
+
+.abh-difficulty-badge,
+.abh-format-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.abh-session-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+.abh-session-card-desc {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.abh-session-card-actions {
+  align-self: center;
+}
+
+@media (max-width: 640px) {
+  .abh-session-card {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .abh-session-card-left {
+    flex-direction: row;
+    gap: var(--space-3);
+  }
+
+  .abh-session-card-actions {
+    align-self: flex-start;
+  }
+}
+
+/* ==========================================================================
+   Review Queue Screen (PG-23, FR-028)
+   ========================================================================== */
+
+.abh-review-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-6) 0;
+}
+
+.abh-review-header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.abh-review-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.abh-review-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 0 0 var(--space-2) 0;
+  color: var(--text);
+}
+
+.abh-review-subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 65ch;
+}
+
+.abh-review-stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.abh-review-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--surface-1);
+  border: 1px solid var(--line);
+}
+
+.abh-review-stat-pill--cap {
+  border-style: dashed;
+}
+
+.abh-review-stat-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.abh-review-stat-lbl {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.abh-review-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.abh-review-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.abh-review-tabs {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 2px;
+}
+
+.abh-review-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-standard);
+}
+
+.abh-review-tab:hover {
+  color: var(--text);
+}
+
+.abh-review-tab--active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.abh-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.abh-review-empty {
+  padding: var(--space-6) 0;
+}
+
+.abh-review-upcoming-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+}
+
+.abh-review-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background-color: var(--surface-1);
+  border: 1px solid var(--line);
+  transition: border-color var(--dur-fast) var(--ease-standard);
+}
+
+.abh-review-card:hover {
+  border-color: var(--line-strong);
+}
+
+.abh-review-card--due {
+  border-left: 4px solid var(--warning);
+}
+
+.abh-review-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.abh-review-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.abh-review-status-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-square);
+}
+
+.abh-review-status-badge--due {
+  background-color: rgba(242, 179, 61, 0.15);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.abh-review-status-badge--upcoming {
+  background-color: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+}
+
+.abh-review-interval-badge,
+.abh-review-score-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background-color: var(--surface-2);
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+}
+
+.abh-review-card-question {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--text);
+}
+
+.abh-review-card-fix {
+  padding: var(--space-3);
+  background-color: var(--surface-2);
+  border-left: 3px solid var(--accent);
+}
+
+.abh-review-fix-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.abh-review-fix-text {
+  font-size: 13px;
+  color: var(--text);
+  margin: 0;
+}
+
+.abh-review-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.abh-review-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-2);
+}

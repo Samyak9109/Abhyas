@@ -24,6 +24,7 @@ interface HomeScreenProps {
   onNavigateSettings?: () => void;
   onNavigateProfile?: () => void;
   onNavigateSkills?: () => void;
+  onNavigateSchedule?: () => void;
 }
 
 interface SessionSummaryItem {
@@ -42,6 +43,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigateSettings,
   onNavigateProfile,
   onNavigateSkills,
+  onNavigateSchedule,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -206,6 +208,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   Configure Keys in Settings
                 </Button>
               )}
+              {onNavigateSchedule && (
+                <Button variant="ghost" onClick={onNavigateSchedule}>
+                  📅 Schedule Prep
+                </Button>
+              )}
             </div>
           </section>
         ) : (
@@ -332,6 +339,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 {onNavigateSkills && (
                   <Button variant="secondary" onClick={onNavigateSkills}>
                     Skills Dashboard
+                  </Button>
+                )}
+                {onNavigateSchedule && (
+                  <Button variant="ghost" onClick={onNavigateSchedule}>
+                    📅 Schedule Prep
                   </Button>
                 )}
               </div>

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   computeSessionScorecard,
   generateGroundedRewrite,
+  syncSessionWeakTurnsToQueue,
   type GroundedRewrite,
   type SessionRow,
   type SessionScorecard,
@@ -70,6 +71,9 @@ export function ResultsScreen({
 
           // FR-014: Automatically update skill statistics cache in storage
           void recomputeAndStoreSkillStats(storage);
+
+          // FR-028: Automatically enqueue any weak turns for spaced repetition review
+          void syncSessionWeakTurnsToQueue(storage, sessionTurns);
         }
       } catch (err) {
         console.error("Failed to load interview results:", err);

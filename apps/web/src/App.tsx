@@ -68,6 +68,12 @@ const ModelManagerScreen = lazy(() =>
 const CompanyDirectoryScreen = lazy(() =>
   import("./screens/CompanyDirectoryScreen").then((m) => ({ default: m.CompanyDirectoryScreen }))
 );
+const ScheduleScreen = lazy(() =>
+  import("./screens/ScheduleScreen").then((m) => ({ default: m.ScheduleScreen }))
+);
+const ReviewQueueScreen = lazy(() =>
+  import("./screens/ReviewQueueScreen").then((m) => ({ default: m.ReviewQueueScreen }))
+);
 
 type AppRoute =
   | "/"
@@ -83,6 +89,8 @@ type AppRoute =
   | "/app/settings"
   | "/app/models"
   | "/app/companies"
+  | "/app/schedule"
+  | "/app/review"
   | "/app/setup/ai"
   | "/app/setup/profile"
   | "/app/setup/session"
@@ -136,6 +144,12 @@ function getInitialRoute(): AppRoute {
     }
     if (path.includes("companies") || window.location.hash.includes("companies")) {
       return "/app/companies";
+    }
+    if (path.includes("schedule") || window.location.hash.includes("schedule")) {
+      return "/app/schedule";
+    }
+    if (path.includes("review") || window.location.hash.includes("review")) {
+      return "/app/review";
     }
     if (path.includes("settings") || window.location.hash.includes("settings")) {
       return "/app/settings";
@@ -459,6 +473,32 @@ export function App() {
           <li>
             <a
               className="abh-app-nav-item"
+              href="/app/schedule"
+              aria-current={currentRoute === "/app/schedule" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/schedule");
+              }}
+            >
+              Schedule
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
+              href="/app/review"
+              aria-current={currentRoute === "/app/review" ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo("/app/review");
+              }}
+            >
+              Review
+            </a>
+          </li>
+          <li>
+            <a
+              className="abh-app-nav-item"
               href="/app/setup/ai"
               aria-current={currentRoute === "/app/setup/ai" ? "page" : undefined}
               onClick={(e) => {
@@ -744,6 +784,7 @@ export function App() {
             onNavigateSettings={() => navigateTo("/app/settings")}
             onNavigateProfile={() => navigateTo("/app/setup/profile")}
             onNavigateSkills={() => navigateTo("/app/skills")}
+            onNavigateSchedule={() => navigateTo("/app/schedule")}
           />
         </main>
       </div>
@@ -766,6 +807,46 @@ export function App() {
               onNavigateSessionSetup={() => {
                 navigateTo("/app/setup/session");
               }}
+            />
+          </Suspense>
+        </main>
+      </div>
+    );
+  }
+
+  if (route === "/app/schedule") {
+    return (
+      <div className="abh-app">
+        {renderTopBanners()}
+        {renderAppNav(route)}
+        <main className="abh-app-main">
+          <Suspense fallback={screenLoading}>
+            <ScheduleScreen
+              storage={init.storage}
+              onNavigatePractice={() => navigateTo("/app/practice")}
+              onNavigateHome={() => navigateTo("/app/home")}
+            />
+          </Suspense>
+        </main>
+      </div>
+    );
+  }
+
+  if (route === "/app/review") {
+    return (
+      <div className="abh-app">
+        {renderTopBanners()}
+        {renderAppNav(route)}
+        <main className="abh-app-main">
+          <Suspense fallback={screenLoading}>
+            <ReviewQueueScreen
+              storage={init.storage}
+              onStartReviewDrill={(plan, questions) => {
+                setActiveSession({ plan, questions });
+                navigateTo("/app/interview");
+              }}
+              onNavigatePractice={() => navigateTo("/app/practice")}
+              onNavigateHome={() => navigateTo("/app/home")}
             />
           </Suspense>
         </main>

@@ -803,4 +803,5 @@ Product runtime (see AI-014 and AI-024): condensed and cached profile and pack, 
 | 2026-10-13 | 0.2.1 | Added sections 24.6 to 24.8 (no dead code, token economy, skills and tools), dead-code CI checks, ADR-022 |
 | 2026-10-21 | 0.9.0 | M7.1: Added Anthropic Claude (Messages API) and Hugging Face (Inference API / Serverless router) to allowed egress and BYOK provider adapter suite |
 | 2026-10-21 | 0.9.1 | M7.2: Custom local models engine selection (WebLLM & Ollama), safe format validation (ADR-017), hardware fit estimation, and sanity testing harness (FR-023) |
+| 2026-10-23 | 0.9.2 | M7.3: On-device speech recognition & voice activity detection (ADR-014), Web Audio RMS energy engine, hands-free turn auto-submit |
 | 2026-10-14 | 0.2.2 | M1.1 storage layer: `StorageAdapter` implementations (Dexie with validate-on-read quarantine, in-memory fallback, persist-on-first-save), versioned export format (keys stripped by default, quarantine excluded), pre-paint theme bootstrap via localStorage mirror (FR-001, FR-020, FR-030) |

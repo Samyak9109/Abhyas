@@ -9,6 +9,7 @@ import {
   MockSpeechOutput,
   type SelectedQuestion,
   type SessionPlan,
+  type SpeechInputStartCallbacks,
 } from "@abhyas/core";
 import { LiveInterviewScreen } from "./LiveInterviewScreen";
 import * as speechModule from "../services/speech";
@@ -704,6 +705,93 @@ describe("M1.5: LiveInterviewScreen (PG-12)", () => {
       });
 
       expect((await axe(container)).violations).toEqual([]);
+    });
+  });
+
+  describe("M7.3: Hands-Free Voice Activity Detection (VAD, ADR-014)", () => {
+    it("renders hands-free badge, start hands-free button, audio level meter and countdown", async () => {
+      const storage = new MemoryStorageAdapter();
+      await storage.put("settings", {
+        key: "voice",
+        value: {
+          enabled: true,
+          autoPlay: false,
+          rate: 1.0,
+          vadEnabled: true,
+          silenceTimeoutMs: 1800,
+          speechEngine: "on-device",
+        },
+      });
+
+      let registeredCallbacks: SpeechInputStartCallbacks | undefined;
+
+      const customMockInput = {
+        isSupported: true,
+        getState: () => "idle" as const,
+        start: vi.fn(async (cb?: SpeechInputStartCallbacks) => {
+          registeredCallbacks = cb;
+          cb?.onStateChange?.("listening");
+        }),
+        stop: vi.fn(async () => "Hands-free voice answer"),
+        abort: vi.fn(),
+      };
+
+      const { container } = render(
+        <div data-theme="ink">
+          <LiveInterviewScreen
+            storage={storage}
+            plan={sampleVoicePlan}
+            questions={sampleQuestions}
+            speechInput={customMockInput}
+            onFinish={vi.fn()}
+            onExit={vi.fn()}
+          />
+        </div>
+      );
+
+      await screen.findByRole("heading", {
+        name: "When a web page experiences poor INP, how do you diagnose the bottleneck?",
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("Hands-Free Auto-Submit")).toBeTruthy();
+        expect(screen.getByText("Private On-Device")).toBeTruthy();
+        expect(
+          screen.getByRole("button", {
+            name: /Start speaking \(hands-free auto-submit on pause\)/i,
+          })
+        ).toBeTruthy();
+      });
+
+      // Start hands-free listening
+      const startBtn = screen.getByRole("button", {
+        name: /Start speaking \(hands-free auto-submit on pause\)/i,
+      });
+      fireEvent.click(startBtn);
+
+      await waitFor(() => {
+        expect(screen.getByRole("meter", { name: "Microphone input level" })).toBeTruthy();
+      });
+
+      // Trigger audio level and silence countdown
+      registeredCallbacks?.onAudioLevel?.(0.6, true);
+      registeredCallbacks?.onSilenceCountdown?.(1200, 1800);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Auto-submitting in 1.2s/i)).toBeTruthy();
+      });
+
+      // Zero axe violations while in hands-free listening state
+      expect((await axe(container)).violations).toEqual([]);
+
+      // Stop listening (auto-commit or manual button click)
+      const stopBtn = screen.getByRole("button", { name: "Stop speaking and review answer" });
+      fireEvent.click(stopBtn);
+
+      await waitFor(() => {
+        expect(screen.getByText("Review Your Answer Before Submitting")).toBeTruthy();
+        expect(screen.getByDisplayValue("Hands-free voice answer")).toBeTruthy();
+      });
     });
   });
 });

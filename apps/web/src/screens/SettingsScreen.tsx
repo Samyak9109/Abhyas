@@ -59,6 +59,32 @@ const SPEECH_RATES: {
   },
 ];
 
+const SILENCE_TIMEOUTS: {
+  timeoutMs: number;
+  label: string;
+  description: string;
+  monogram: string;
+}[] = [
+  {
+    timeoutMs: 1200,
+    label: "1.2s Fast",
+    description: "Quick turns for confident, continuous answers",
+    monogram: "⚡",
+  },
+  {
+    timeoutMs: 1800,
+    label: "1.8s Balanced",
+    description: "Standard conversational pause before submit",
+    monogram: "🎯",
+  },
+  {
+    timeoutMs: 2500,
+    label: "2.5s Relaxed",
+    description: "Generous pauses for structured thinking",
+    monogram: "🧘",
+  },
+];
+
 const SUBTITLE_SIZES: {
   id: SubtitleSize;
   title: string;
@@ -220,6 +246,45 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     } catch (error) {
       onWriteError(error);
       setActionError("Failed to save speech rate.");
+    }
+  };
+
+  const handleVadToggle = async (vadEnabled: boolean) => {
+    const updated: VoiceSettings = { ...voiceSettings, vadEnabled };
+    setVoiceSettings(updated);
+    try {
+      await saveVoiceSettings(storage, updated);
+      setToast(vadEnabled ? "Hands-free auto-submit enabled." : "Hands-free auto-submit disabled.");
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to save hands-free voice settings.");
+    }
+  };
+
+  const handleSilenceTimeoutChange = async (silenceTimeoutMs: number) => {
+    const updated: VoiceSettings = { ...voiceSettings, silenceTimeoutMs };
+    setVoiceSettings(updated);
+    try {
+      await saveVoiceSettings(storage, updated);
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to save silence timeout.");
+    }
+  };
+
+  const handleSpeechEngineChange = async (speechEngine: "browser" | "on-device") => {
+    const updated: VoiceSettings = { ...voiceSettings, speechEngine };
+    setVoiceSettings(updated);
+    try {
+      await saveVoiceSettings(storage, updated);
+      setToast(
+        speechEngine === "on-device"
+          ? "Private on-device speech enabled."
+          : "Browser native speech enabled."
+      );
+    } catch (error) {
+      onWriteError(error);
+      setActionError("Failed to save speech engine.");
     }
   };
 
@@ -532,6 +597,68 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
         <hr className="abh-divider" style={{ margin: "var(--space-4) 0" }} />
 
+        {/* Speech Recognition Engine (ADR-014, M7.3) */}
+        <div>
+          <p className="abh-data-label" style={{ marginBottom: "var(--space-2)" }}>
+            Speech Recognition Engine
+          </p>
+          <div className="abh-theme-grid" role="radiogroup" aria-label="Speech recognition engine">
+            <RadioCard
+              title="Browser Native"
+              description="Fast recognition using your browser's built-in Web Speech API."
+              monogram="WEB"
+              checked={voiceSettings.speechEngine === "browser"}
+              onChange={() => void handleSpeechEngineChange("browser")}
+            />
+            <RadioCard
+              title="Private On-Device"
+              description="Zero cloud egress. Audio is captured locally with complete privacy."
+              monogram="PRIV"
+              checked={voiceSettings.speechEngine === "on-device"}
+              onChange={() => void handleSpeechEngineChange("on-device")}
+            />
+          </div>
+        </div>
+
+        {/* Hands-Free Auto-Submit (VAD, ADR-014) */}
+        <div className="abh-data-row" style={{ alignItems: "center", marginTop: "var(--space-3)" }}>
+          <div>
+            <p className="abh-data-label">Hands-Free Auto-Submit (VAD)</p>
+            <p className="abh-data-value">
+              Voice Activity Detection automatically finishes and reviews your answer when you pause
+              speaking.
+            </p>
+          </div>
+          <Switch
+            label="Hands-Free Auto-Submit"
+            checked={voiceSettings.vadEnabled}
+            onChange={(checked) => void handleVadToggle(checked)}
+          />
+        </div>
+
+        {/* Silence Timeout Picker */}
+        {voiceSettings.vadEnabled && (
+          <div style={{ marginTop: "var(--space-3)" }}>
+            <p className="abh-data-label" style={{ marginBottom: "var(--space-2)" }}>
+              Silence Pause Duration (Before Auto-Submit)
+            </p>
+            <div className="abh-theme-grid" role="radiogroup" aria-label="Silence pause duration">
+              {SILENCE_TIMEOUTS.map((opt) => (
+                <RadioCard
+                  key={opt.timeoutMs}
+                  title={opt.label}
+                  description={opt.description}
+                  monogram={opt.monogram}
+                  checked={voiceSettings.silenceTimeoutMs === opt.timeoutMs}
+                  onChange={() => void handleSilenceTimeoutChange(opt.timeoutMs)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <hr className="abh-divider" style={{ margin: "var(--space-4) 0" }} />
+
         {/* Subtitles toggle */}
         <div className="abh-data-row" style={{ alignItems: "center" }}>
           <div>
@@ -587,14 +714,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </>
         )}
 
-        {/* Voice Privacy Disclosure (FR-021) */}
+        {/* Voice Privacy Disclosure (FR-021, ADR-014) */}
         <div style={{ marginTop: "var(--space-4)" }}>
-          <Callout variant="info" title="Voice Privacy & Web Speech API">
-            Voice recognition uses your browser&apos;s native Web Speech API. Depending on your
-            browser vendor (such as Google or Apple), audio may be sent to their cloud servers for
-            transcription. Your AI provider API keys are never used for speech recognition, and no
-            audio or transcripts are stored on any Abhyas servers.
-          </Callout>
+          {voiceSettings.speechEngine === "on-device" ? (
+            <Callout variant="success" title="Private On-Device Voice Active">
+              Microphone audio is captured locally using the Web Audio API with zero cloud
+              transmission. Audio data never leaves your device.
+            </Callout>
+          ) : (
+            <Callout variant="info" title="Voice Privacy & Web Speech API">
+              Voice recognition uses your browser&apos;s native Web Speech API. Depending on your
+              browser vendor (such as Google or Apple), audio may be sent to their cloud servers for
+              transcription. Your AI provider API keys are never used for speech recognition, and no
+              audio or transcripts are stored on any Abhyas servers.
+            </Callout>
+          )}
         </div>
       </section>
 

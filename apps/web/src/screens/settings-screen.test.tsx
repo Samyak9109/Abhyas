@@ -275,6 +275,49 @@ describe("M1.1: Settings screen", () => {
       });
     });
 
+    it("toggles hands-free VAD, changes silence timeout, and switches to on-device engine", async () => {
+      const { storage } = renderScreen();
+
+      // Switch to Private On-Device engine
+      const onDeviceRadio = screen.getByRole("radio", { name: /Private On-Device/i });
+      fireEvent.click(onDeviceRadio);
+
+      await waitFor(async () => {
+        const stored = await storage.get<{ key: string; value: { speechEngine: string } }>(
+          "settings",
+          "voice"
+        );
+        expect(stored?.value.speechEngine).toBe("on-device");
+        expect(screen.getByText(/Private On-Device Voice Active/i)).toBeTruthy();
+      });
+
+      // Toggle Hands-Free Auto-Submit (VAD)
+      const vadSwitch = screen.getByRole("switch", { name: /Hands-Free Auto-Submit/i });
+      expect(vadSwitch.getAttribute("aria-checked")).toBe("false");
+      fireEvent.click(vadSwitch);
+
+      await waitFor(async () => {
+        const stored = await storage.get<{ key: string; value: { vadEnabled: boolean } }>(
+          "settings",
+          "voice"
+        );
+        expect(stored?.value.vadEnabled).toBe(true);
+        expect(vadSwitch.getAttribute("aria-checked")).toBe("true");
+      });
+
+      // Change silence timeout to 2.5s Relaxed
+      const relaxedRadio = screen.getByRole("radio", { name: /2.5s Relaxed/i });
+      fireEvent.click(relaxedRadio);
+
+      await waitFor(async () => {
+        const stored = await storage.get<{ key: string; value: { silenceTimeoutMs: number } }>(
+          "settings",
+          "voice"
+        );
+        expect(stored?.value.silenceTimeoutMs).toBe(2500);
+      });
+    });
+
     it("toggles live subtitles and changes subtitle size in storage", async () => {
       const { storage } = renderScreen();
       const largeRadio = screen.getByRole("radio", { name: /Large/i });

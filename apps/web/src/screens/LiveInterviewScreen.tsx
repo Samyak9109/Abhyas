@@ -21,7 +21,11 @@ import {
   type CompanyPack,
 } from "@abhyas/core";
 import { Button, Callout, Dialog, Progress, SubtitleLanes } from "../components";
-import { getBrowserSpeechInput, getBrowserSpeechOutput } from "../services/speech";
+import {
+  createConfiguredSpeechInput,
+  getBrowserSpeechInput,
+  getBrowserSpeechOutput,
+} from "../services/speech";
 
 interface LiveInterviewScreenProps {
   storage: StorageAdapter;
@@ -59,13 +63,20 @@ export function LiveInterviewScreen({
     return supported ? "voice" : "text";
   });
 
+  // Settings
+  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(DEFAULT_VOICE_SETTINGS);
+  const [subtitleSettings, setSubtitleSettings] =
+    useState<SubtitleSettings>(DEFAULT_SUBTITLE_SETTINGS);
+  const [isMuted, setIsMuted] = useState(false);
+  const [subtitlesCollapsed, setSubtitlesCollapsed] = useState(false);
+
   // Speech services: NEVER construct speech services in local mode or text mode (FR-022, ADR-013)
   const inputService = useMemo<SpeechInput | null>(() => {
     if (isLocalMode || effectiveMode === "text") {
       return speechInput ?? null;
     }
-    return speechInput ?? getBrowserSpeechInput();
-  }, [isLocalMode, effectiveMode, speechInput]);
+    return speechInput ?? createConfiguredSpeechInput(voiceSettings);
+  }, [isLocalMode, effectiveMode, speechInput, voiceSettings]);
 
   const outputService = useMemo<SpeechOutput | null>(() => {
     if (isLocalMode || effectiveMode === "text") {
@@ -73,13 +84,6 @@ export function LiveInterviewScreen({
     }
     return speechOutput ?? getBrowserSpeechOutput();
   }, [isLocalMode, effectiveMode, speechOutput]);
-
-  // Settings
-  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(DEFAULT_VOICE_SETTINGS);
-  const [subtitleSettings, setSubtitleSettings] =
-    useState<SubtitleSettings>(DEFAULT_SUBTITLE_SETTINGS);
-  const [isMuted, setIsMuted] = useState(false);
-  const [subtitlesCollapsed, setSubtitlesCollapsed] = useState(false);
 
   // Initialize the SessionRunner once per plan
   const runner = useMemo(() => {
@@ -108,6 +112,12 @@ export function LiveInterviewScreen({
   const [speechError, setSpeechError] = useState<{ message: string; isPermission: boolean } | null>(
     null
   );
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [silenceCountdown, setSilenceCountdown] = useState<{
+    remainingMs: number;
+    totalMs: number;
+  } | null>(null);
 
   // Load voice & subtitle settings from storage on mount
   useEffect(() => {
@@ -253,18 +263,41 @@ export function LiveInterviewScreen({
         },
         onError: (err) => {
           setPttState("idle");
+          setAudioLevel(0);
+          setIsSpeaking(false);
+          setSilenceCountdown(null);
           setSpeechError({
             message: err.message,
             isPermission: err.kind === "not_allowed",
           });
         },
         onStateChange: (s) => {
-          if (s === "listening") setPttState("listening");
+          if (s === "listening") {
+            setPttState("listening");
+          } else if (s === "idle") {
+            setAudioLevel(0);
+            setIsSpeaking(false);
+            setSilenceCountdown(null);
+          }
+        },
+        onAudioLevel: (level, speechActive) => {
+          setAudioLevel(level);
+          setIsSpeaking(speechActive);
+        },
+        onSilenceCountdown: (remainingMs, totalMs) => {
+          if (remainingMs > 0) {
+            setSilenceCountdown({ remainingMs, totalMs });
+          } else {
+            setSilenceCountdown(null);
+          }
         },
       });
       setPttState("listening");
     } catch (err) {
       setPttState("idle");
+      setAudioLevel(0);
+      setIsSpeaking(false);
+      setSilenceCountdown(null);
       setSpeechError({
         message: err instanceof Error ? err.message : "Failed to start speech recognition",
         isPermission: true,
@@ -275,6 +308,9 @@ export function LiveInterviewScreen({
   const stopListening = async () => {
     if (pttState !== "listening" || !inputService) return;
     try {
+      setAudioLevel(0);
+      setIsSpeaking(false);
+      setSilenceCountdown(null);
       const finalTranscript = await inputService.stop();
       const combined = (finalTranscript || interimSpeech || typedAnswer).trim();
       setTypedAnswer(combined);
@@ -768,6 +804,39 @@ export function LiveInterviewScreen({
             ) : (
               /* Push-To-Talk Button */
               <div className="abh-ptt-container">
+                {voiceSettings.vadEnabled && (
+                  <div
+                    className="abh-vad-badge-row"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "var(--space-2)",
+                      marginBottom: "var(--space-2)",
+                    }}
+                  >
+                    <span
+                      className="abh-badge abh-badge--info"
+                      style={{ fontSize: "var(--text-xs)" }}
+                    >
+                      Hands-Free Auto-Submit
+                    </span>
+                    {voiceSettings.speechEngine === "on-device" && (
+                      <span
+                        className="abh-badge"
+                        style={{
+                          fontSize: "var(--text-xs)",
+                          backgroundColor: "var(--green-surface, rgba(46, 125, 50, 0.15))",
+                          color: "var(--green-text, #2e7d32)",
+                          border: "1px solid var(--green-border, #4caf50)",
+                        }}
+                      >
+                        Private On-Device
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 <button
                   type="button"
                   className={`abh-ptt-button ${
@@ -778,21 +847,85 @@ export function LiveInterviewScreen({
                   aria-label={
                     pttState === "listening"
                       ? "Stop speaking and review answer"
-                      : "Start speaking answer"
+                      : voiceSettings.vadEnabled
+                        ? "Start speaking (hands-free auto-submit on pause)"
+                        : "Start speaking answer"
                   }
                 >
                   <div className="abh-ptt-label">
                     <span className="abh-ptt-icon" aria-hidden="true">
                       {pttState === "listening" ? "⏹" : "🎙"}
                     </span>
-                    <span>{pttState === "listening" ? "Stop & Review" : "Push to Talk"}</span>
+                    <span>
+                      {pttState === "listening"
+                        ? "Stop & Review"
+                        : voiceSettings.vadEnabled
+                          ? "Start Hands-Free"
+                          : "Push to Talk"}
+                    </span>
                     {pttState === "listening" && (
                       <span className="abh-ptt-elapsed">{formatTime(pttSeconds)}</span>
                     )}
                   </div>
                 </button>
+
+                {/* Live Audio Level Meter & Silence Countdown */}
+                {pttState === "listening" && (
+                  <div
+                    className="abh-vad-status-area"
+                    style={{
+                      marginTop: "var(--space-2)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "140px",
+                        height: "6px",
+                        backgroundColor: "var(--border-subtle, #e0e0e0)",
+                        borderRadius: "3px",
+                        overflow: "hidden",
+                      }}
+                      role="meter"
+                      aria-label="Microphone input level"
+                      aria-valuenow={Math.round(audioLevel * 100)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    >
+                      <div
+                        style={{
+                          width: `${Math.round(audioLevel * 100)}%`,
+                          height: "100%",
+                          backgroundColor: isSpeaking
+                            ? "var(--accent-primary, #1976d2)"
+                            : "var(--text-muted, #9e9e9e)",
+                          transition: "width 80ms ease",
+                        }}
+                      />
+                    </div>
+
+                    {silenceCountdown && silenceCountdown.remainingMs > 0 && (
+                      <span
+                        className="abh-vad-countdown-hint"
+                        style={{
+                          fontSize: "var(--text-xs)",
+                          color: "var(--amber-text, #ea9900)",
+                          fontWeight: 500,
+                        }}
+                      >
+                        Auto-submitting in {(silenceCountdown.remainingMs / 1000).toFixed(1)}s...
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 <span className="abh-ptt-shortcut-hint">
-                  Tap button or press Space to {pttState === "listening" ? "stop" : "talk"}
+                  {voiceSettings.vadEnabled
+                    ? "Speak naturally; auto-submits on pause, or press Space/tap to stop"
+                    : `Tap button or press Space to ${pttState === "listening" ? "stop" : "talk"}`}
                 </span>
                 <button
                   type="button"

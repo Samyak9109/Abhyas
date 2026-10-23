@@ -91,6 +91,9 @@ describe("M1.6: Core Speech Contracts & Settings", () => {
         enabled: true,
         autoPlay: true,
         rate: 1.0,
+        vadEnabled: false,
+        silenceTimeoutMs: 1800,
+        speechEngine: "browser",
       });
 
       const parsed = VoiceSettingsSchema.parse({

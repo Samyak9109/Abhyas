@@ -30,6 +30,8 @@ export interface SpeechInputStartCallbacks {
   onFinal?: ((text: string) => void) | undefined;
   onError?: ((error: SpeechInputError) => void) | undefined;
   onStateChange?: ((state: SpeechInputState) => void) | undefined;
+  onAudioLevel?: ((level: number, isSpeech: boolean) => void) | undefined;
+  onSilenceCountdown?: ((remainingMs: number, totalMs: number) => void) | undefined;
 }
 
 /**

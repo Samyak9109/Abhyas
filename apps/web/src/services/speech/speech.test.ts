@@ -1,7 +1,11 @@
 // FR-009, FR-010: Tests for BrowserSpeechInput and BrowserSpeechOutput.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { MockSpeechInput } from "@abhyas/core";
 import { BrowserSpeechInput } from "./browser-speech-input";
 import { BrowserSpeechOutput } from "./browser-speech-output";
+import { HandsFreeSpeechInput } from "./handsfree-speech-input";
+import { OnDeviceSpeechInput } from "./on-device-speech-input";
+import { createConfiguredSpeechInput } from "./index";
 
 describe("M1.6: Browser Speech Services", () => {
   describe("BrowserSpeechInput without SpeechRecognition", () => {
@@ -215,6 +219,131 @@ describe("M1.6: Browser Speech Services", () => {
       expect(voices.length).toBe(1);
       expect(voices[0]?.name).toBe("Samantha");
       expect(voices[0]?.lang).toBe("en-US");
+    });
+  });
+
+  describe("HandsFreeSpeechInput (VAD, ADR-014, M7.3)", () => {
+    let mockTrack: { stop: ReturnType<typeof vi.fn> };
+    let mockStream: MediaStream;
+    let mockAudioContext: AudioContext;
+    let mockAnalyser: {
+      fftSize: number;
+      getFloatTimeDomainData: ReturnType<typeof vi.fn>;
+    };
+
+    beforeEach(() => {
+      mockTrack = { stop: vi.fn() };
+      mockStream = {
+        getTracks: vi.fn(() => [mockTrack]),
+      } as unknown as MediaStream;
+
+      mockAnalyser = {
+        fftSize: 1024,
+        getFloatTimeDomainData: vi.fn((buf: Float32Array) => {
+          buf.fill(0);
+        }),
+      };
+
+      mockAudioContext = {
+        createMediaStreamSource: vi.fn(() => ({
+          connect: vi.fn(),
+        })),
+        createAnalyser: vi.fn(() => mockAnalyser),
+        close: vi.fn().mockResolvedValue(undefined),
+      } as unknown as AudioContext;
+    });
+
+    it("starts audio stream and delegates speech recognition to inner provider", async () => {
+      const inner = new MockSpeechInput({ transcript: "Answer via hands-free" });
+      const handsFree = new HandsFreeSpeechInput({
+        innerInput: inner,
+        audioContext: mockAudioContext,
+        getUserMedia: vi.fn().mockResolvedValue(mockStream),
+      });
+
+      expect(handsFree.isSupported).toBe(true);
+
+      const states: string[] = [];
+      await handsFree.start({
+        onStateChange: (s) => states.push(s),
+      });
+
+      expect(handsFree.getState()).toBe("listening");
+      expect(mockAudioContext.createAnalyser).toHaveBeenCalled();
+
+      const transcript = await handsFree.stop();
+      expect(transcript).toBe("Answer via hands-free");
+      expect(mockTrack.stop).toHaveBeenCalled();
+    });
+
+    it("configures handsfree vs browser vs on-device via createConfiguredSpeechInput", () => {
+      const defaultInput = createConfiguredSpeechInput();
+      expect(defaultInput instanceof BrowserSpeechInput).toBe(true);
+
+      const handsFree = createConfiguredSpeechInput({
+        enabled: true,
+        autoPlay: true,
+        rate: 1.0,
+        vadEnabled: true,
+        silenceTimeoutMs: 2200,
+        speechEngine: "browser",
+      });
+      expect(handsFree instanceof HandsFreeSpeechInput).toBe(true);
+
+      const onDevice = createConfiguredSpeechInput({
+        enabled: true,
+        autoPlay: true,
+        rate: 1.0,
+        vadEnabled: false,
+        silenceTimeoutMs: 1800,
+        speechEngine: "on-device",
+      });
+      expect(onDevice instanceof OnDeviceSpeechInput).toBe(true);
+    });
+  });
+
+  describe("OnDeviceSpeechInput (ADR-014, M7.3)", () => {
+    it("reports supported when getUserMedia is present and handles mock recording lifecycle", async () => {
+      const input = new OnDeviceSpeechInput({ transcript: "Private on-device answer" });
+      expect(input.getState()).toBe("idle");
+
+      // Mock navigator.mediaDevices.getUserMedia
+      const mockTrack = { stop: vi.fn() };
+      const originalMediaDevices = navigator.mediaDevices;
+      Object.defineProperty(navigator, "mediaDevices", {
+        value: {
+          getUserMedia: vi.fn().mockResolvedValue({
+            getTracks: () => [mockTrack],
+          }),
+        },
+        configurable: true,
+      });
+
+      try {
+        let interimReceived = "";
+        let finalReceived = "";
+        await input.start({
+          onInterim: (t) => {
+            interimReceived = t;
+          },
+          onFinal: (t) => {
+            finalReceived = t;
+          },
+        });
+
+        expect(input.getState()).toBe("listening");
+        expect(interimReceived).toContain("Listening on-device");
+
+        const result = await input.stop();
+        expect(result).toBe("Private on-device answer");
+        expect(finalReceived).toBe("Private on-device answer");
+        expect(mockTrack.stop).toHaveBeenCalled();
+      } finally {
+        Object.defineProperty(navigator, "mediaDevices", {
+          value: originalMediaDevices,
+          configurable: true,
+        });
+      }
     });
   });
 });

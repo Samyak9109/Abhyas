@@ -992,4 +992,5 @@ Interactive landing-page demo; video and posture analysis; coding editor rounds;
 | 2026-10-19 | 0.7.4 | Completed Phase 5 (Company research service): resolved pack data license (ODC-By/CC-BY-4.0) and research budget caps from measured pack costs ($0.0025/pack); updated scraping policy and privacy audit |
 | 2026-10-21 | 0.9.0 | Phase 7: approved and completed M7.1 Claude and Hugging Face provider adapters (FR-005) with network allowlist egress update and key safety verification |
 | 2026-10-21 | 0.9.1 | M7.2: Custom local models (WebLLM & Ollama), safe format validation (ADR-017), hardware fit estimation, and sanity testing harness (FR-023, AI-006) |
+| 2026-10-23 | 0.9.2 | M7.3: On-device speech recognition & voice activity detection (ADR-014), Web Audio RMS VAD engine, hands-free auto-commit (FR-009, FR-010, FR-021) |
 

@@ -227,6 +227,23 @@ An agent must not start a P7 item without a written entry here approved by the o
   4. Ollama custom model tags can be registered, tested, and persisted.
   5. Full test suite passes with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors.
 
+#### M7.3 On-Device Speech Recognition & Automatic End-of-Speech Detection (ADR-014) `[COMPLETED]`
+- **Goal:** enable hands-free conversational turn-taking via Web Audio API Voice Activity Detection (VAD) and privacy-preserving speech input, eliminating cloud transcription leaks and manual push-to-talk friction.
+- **In scope:** FR-009, FR-010, FR-021, ADR-014, PG-12, PG-18.
+- **Deliverables:**
+  1. `VadEngine` in `packages/core/src/speech/vad.ts` with configurable RMS thresholds, speech onset/offset state machine, and audio energy analysis.
+  2. `HandsFreeSpeechInput` in `apps/web/src/services/speech/handsfree-speech-input.ts` wrapping `SpeechInput` with automatic silence-triggered submission and manual override.
+  3. Updated `VoiceSettingsSchema` with `vadEnabled: boolean`, `silenceTimeoutMs: number`, and `speechEngine: "browser" | "on-device"`.
+  4. Visual microphone level meter and countdown progress ring in `LiveInterviewScreen` (PG-12).
+  5. Voice settings controls in `SettingsScreen` (PG-18).
+  6. Comprehensive test suite with Web Audio mocks, state machine tests, and 0 axe accessibility violations in both themes.
+- **Acceptance criteria:**
+  1. When hands-free mode is enabled, speaking initiates the listening state, and stopping speech for the configured silence timeout (default 1.8s) automatically triggers answer review/submission.
+  2. Manual push-to-talk button and instant "Submit Answer" button remain functional as manual overrides.
+  3. Speech settings persist to local IndexedDB and apply across sessions.
+  4. Privacy disclosure banner is displayed when using browser native speech, but suppressed in private on-device mode.
+  5. All tests pass with 0 axe violations, 0 knip dead code, 0 type errors, and 0 lint errors.
+
 ---
 
 ## 4. Parallel tracks
@@ -387,9 +404,10 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | M6.2 Spaced repetition | Done | 2026-10-21 | Review queue engine with expanding intervals, daily cap enforcement (10/day), automatic session weak turn enqueuing, and PG-23 Review queue screen with 0 axe violations (FR-028, PG-23) |
 | M6.3 Google Calendar (conditional) | Done | 2026-10-21 | Client-side Google Calendar integration with narrowest scope (calendar.events), in-memory OAuth tokens, REST v3 event dispatching, free-slot suggestions, and graceful fallback to universal .ics export (FR-027, ADR-012) |
 | Phase 6 Exit Gate | Done | 2026-10-21 | Universal .ics calendar flow verified across Google Calendar, Apple Calendar (75-octet line folding), and Microsoft Outlook (strict CRLF); difficulty ramping verified; spaced repetition interval growth/reset and 10-item daily cap verified; auto-enqueuing of weak turns verified; 79 test files (764 tests) green with 0 axe violations (tests/p6-exit-gate.test.ts, FR-027, FR-028, ADR-012, PG-22, PG-23) |
-| P7 Advanced | In progress | 2026-10-21 | M7.1 and M7.2 completed |
+| P7 Advanced | In progress | 2026-10-23 | M7.1, M7.2, and M7.3 completed |
 | M7.1 Claude & Hugging Face | Done | 2026-10-21 | BYOK adapters for Anthropic Claude (Messages API) and Hugging Face (Serverless / Inference API), network allowlist & CSP updates, AISetupScreen options (FR-005, NFR-005, NFR-017) |
 | M7.2 Custom Local Models | Done | 2026-10-21 | Custom models for WebLLM and Ollama, format pre-flight validation, fit estimation, gated repository token, post-load sanity test, and unverified labeling (FR-023, ADR-017) |
+| M7.3 On-Device Speech & VAD | Done | 2026-10-23 | Web Audio API VAD, hands-free silence detection, level meter, voice settings (ADR-014) |
 | Page build tracker | See section 6A | 2026-10-13 | Update the Build status column there |
 
 ---
@@ -466,6 +484,7 @@ Status values: Not started, In progress, Blocked, Done. Add a date and a short n
 | 2026-10-21 | 0.8.2 | Completed M6.3 and Phase 6 Exit Gate (Phase 6 completion): Client-side Google Calendar integration with narrow scope (calendar.events), in-memory tokens with zero disk persistence, REST v3 event dispatching, and free-slot suggestion; Phase 6 Exit Gate test suite (tests/p6-exit-gate.test.ts) verifying all 5 criteria: (1) universal .ics export compatibility across Google Calendar, Apple Calendar (75-octet line folding), and Microsoft Outlook (strict CRLF), (2) difficulty ramping from foundations to final mock, (3) spaced repetition expanding intervals (1d -> 3d -> 7d -> 14d -> 30d -> 60d) and 10-item daily cap, (4) automatic weak turn enqueuing in ResultsScreen, and (5) Google OAuth in-memory token safety and graceful .ics fallback; all 79 test files (764 tests) green with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors (FR-027, FR-028, ADR-012, PG-22, PG-23) |
 | 2026-10-21 | 0.9.0 | Phase 7 begins. Completed M7.1 Claude and Hugging Face adapters: Pure BYOK provider adapters AnthropicAdapter (Anthropic Messages API with danger direct browser access header, SSE streaming text deltas, schema-constrained object generation with retry) and HuggingFaceAdapter (OpenAI-compatible /v1/chat/completions serverless endpoint, token authorization, SSE streaming chunks, schema-constrained object generation); network allowlist and CSP connect-src updated for https://api.anthropic.com, https://api-inference.huggingface.co, and https://router.huggingface.co; cost estimation for Claude models (Sonnet, Haiku, Opus); AISetupScreen (PG-09) with Anthropic and Hugging Face radio cards, API key and User Access Token fields, connection testing, model discovery/selection, and storage persistence; automated key safety and allowlist tests green with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors (FR-005, NFR-005, NFR-017, ADR-002, ADR-005, PG-09) |
 | 2026-10-21 | 0.9.1 | Completed M7.2 Custom local models and sanity-test harness: Engine selector in PG-19 Model Manager (In-Browser WebLLM vs Local Daemon Ollama); engine-aware format pre-flight validator rejecting unsafe pickle files (.pkl, .bin, .pt, .pth) and allowlisting .safetensors/.gguf/.onnx; device hardware fit estimation comparing model memory against available RAM and concurrency; optional Hugging Face gated access token input for private repositories; live sanity test runner executing speed, instruction following ('READY'), and JSON validity checks on both WebLLM and Ollama custom models with persistent results; prominent UNVERIFIED badges and engine tags displayed across card grid and accessible table views; 81 test files (818 tests) green with 0 axe accessibility violations in Ink and Paper themes, 0 knip dead code, 0 type errors, 0 lint errors (FR-023, AI-006, ADR-013, ADR-017, PG-19) |
+| 2026-10-23 | 0.9.2 | Completed M7.3 On-device speech recognition & automatic end-of-speech detection: Pure domain VadEngine in @abhyas/core/speech with RMS energy analysis, speech onset state machine, and trailing silence countdown; HandsFreeSpeechInput service wrapping speech recognition with auto-commit on conversational pause; OnDeviceSpeechInput capturing audio locally with zero cloud transmission; VoiceSettings extended with vadEnabled, silenceTimeoutMs, and speechEngine options; LiveInterviewScreen (PG-12) integration with hands-free auto-submit badge, live microphone audio level meter, and silence countdown indicator; SettingsScreen (PG-18) integration with hands-free toggle, silence duration selector (1.2s, 1.8s, 2.5s), speech engine cards, and dynamic privacy disclosures; 82 test files (829 tests) green with 0 axe violations, 0 knip dead code, 0 type errors, 0 lint errors (FR-009, FR-010, FR-021, ADR-014, PG-12, PG-18) |
 
 
 

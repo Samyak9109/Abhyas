@@ -30,6 +30,9 @@ export const VoiceSettingsSchema = z.object({
   autoPlay: z.boolean().default(true),
   rate: z.number().min(0.5).max(2.0).default(1.0),
   voiceURI: z.string().optional(),
+  vadEnabled: z.boolean().default(false),
+  silenceTimeoutMs: z.number().min(1000).max(5000).default(1800),
+  speechEngine: z.enum(["browser", "on-device"]).default("browser"),
 });
 export type VoiceSettings = z.infer<typeof VoiceSettingsSchema>;
 
@@ -37,6 +40,9 @@ export const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
   enabled: true,
   autoPlay: true,
   rate: 1.0,
+  vadEnabled: false,
+  silenceTimeoutMs: 1800,
+  speechEngine: "browser",
 };
 
 export function readVoiceSettings(value: unknown): VoiceSettings {
@@ -51,9 +57,10 @@ export async function loadVoiceSettings(storage: StorageAdapter): Promise<VoiceS
 
 export async function saveVoiceSettings(
   storage: StorageAdapter,
-  settings: VoiceSettings
+  settings: VoiceSettings | Partial<VoiceSettings>
 ): Promise<void> {
-  await storage.put("settings", { key: VOICE_SETTINGS_KEY, value: settings });
+  const merged = { ...DEFAULT_VOICE_SETTINGS, ...settings };
+  await storage.put("settings", { key: VOICE_SETTINGS_KEY, value: merged });
 }
 
 export const SUBTITLE_SETTINGS_KEY = "subtitles";

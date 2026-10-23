@@ -440,6 +440,8 @@
   justify-content: center;
   z-index: 1000;
   padding: var(--space-4);
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .abh-dialog {
@@ -447,10 +449,15 @@
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-square);
   box-shadow: var(--shadow-hard);
-  max-width: 520px;
+  max-width: 560px;
   width: 100%;
+  max-height: calc(100vh - 2 * var(--space-6));
+  max-height: calc(100dvh - 2 * var(--space-6));
+  display: flex;
+  flex-direction: column;
   padding: var(--space-6);
   box-sizing: border-box;
+  margin: auto;
 }
 
 .abh-dialog-header {
@@ -458,6 +465,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-4);
+  flex-shrink: 0;
 }
 
 .abh-dialog-title {
@@ -475,12 +483,20 @@
   line-height: 1.5;
   color: var(--text-muted);
   margin-bottom: var(--space-6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-right: var(--space-1);
 }
 
 .abh-dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
+  flex-shrink: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
 }
 
 /* --- Toast --- */
@@ -514,6 +530,9 @@
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--text);
+  width: 100%;
+  flex-basis: 100%;
+  box-sizing: border-box;
 }
 
 .abh-banner--warning {

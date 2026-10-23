@@ -148,6 +148,13 @@
 @media (min-width: 1024px) {
   .abh-app {
     flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+  }
+
+  .abh-app--standalone {
+    flex-direction: column;
+    flex-wrap: nowrap;
   }
 
   .abh-app-nav {
@@ -183,6 +190,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
+  flex: 1;
+  box-sizing: border-box;
   background-color: var(--bg);
   color: var(--text);
 }
@@ -217,13 +227,23 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-8);
+  align-items: start;
 }
 
 @media (min-width: 900px) {
   .abh-setup-grid {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-12);
+    align-items: start;
   }
+}
+
+.abh-setup-col-left,
+.abh-setup-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
 }
 
 .abh-step-badge {
@@ -505,26 +525,26 @@
 .abh-resume-tab {
   flex: 1;
   padding: var(--space-2) var(--space-4);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   background-color: transparent;
   color: var(--text-muted);
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-square);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .abh-resume-tab:hover {
-  background-color: var(--surface-raised);
+  background-color: var(--surface-2);
   color: var(--text);
 }
 
 .abh-resume-tab.active {
-  background-color: var(--primary);
-  color: var(--bg);
-  border-color: var(--primary);
+  background-color: var(--surface-2);
+  color: var(--accent-text);
+  border-color: var(--accent-text);
 }
 
 .abh-dropzone {
@@ -534,7 +554,7 @@
   justify-content: center;
   padding: var(--space-8) var(--space-4);
   border: 2px dashed var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-square);
   background-color: var(--surface);
   cursor: pointer;
   text-align: center;
@@ -545,8 +565,8 @@
 
 .abh-dropzone:hover,
 .abh-dropzone.dragging {
-  border-color: var(--primary);
-  background-color: var(--surface-raised);
+  border-color: var(--accent);
+  background-color: var(--surface-2);
 }
 
 .abh-dropzone:focus-visible {
@@ -580,6 +600,55 @@
   color: var(--text-muted);
 }
 
+/* Form primitives used across screens */
+.abh-textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-square);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 96px;
+  max-width: 100%;
+}
+
+.abh-textarea:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-color: var(--focus);
+}
+
+.abh-textarea:disabled {
+  background-color: var(--surface-2);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  border-color: var(--line);
+}
+
+.abh-form-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-1);
+}
+
+.abh-form-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: var(--space-1);
+}
+
 .abh-parsing-box {
   display: flex;
   flex-direction: column;
@@ -587,7 +656,7 @@
   padding: var(--space-4);
   background-color: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-square);
   margin-top: var(--space-4);
 }
 
@@ -614,7 +683,7 @@
   padding: var(--space-5);
   background-color: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-square);
   margin-top: var(--space-6);
   display: flex;
   flex-direction: column;
@@ -623,7 +692,7 @@
 
 .abh-structured-title {
   margin: 0;
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 700;
   color: var(--text);
@@ -634,6 +703,9 @@
   flex-wrap: wrap;
   gap: var(--space-2);
   margin: var(--space-2) 0;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: var(--space-1);
 }
 
 .abh-skill-pill {
@@ -644,9 +716,9 @@
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 500;
-  background-color: var(--surface-raised);
+  background-color: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 9999px;
+  border-radius: var(--radius-square);
   color: var(--text);
 }
 
@@ -672,12 +744,30 @@
 
 .abh-add-skill-form {
   display: flex;
+  align-items: flex-end;
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
 
+.abh-add-skill-form .abh-form-field {
+  flex: 1;
+}
+
+.abh-add-skill-form button {
+  height: 42px;
+  white-space: nowrap;
+}
+
 .abh-gaps-list,
 .abh-claims-list {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  max-height: 180px;
+  overflow-y: auto;
+}
   margin: var(--space-2) 0 0;
   padding-left: var(--space-4);
   font-size: 13px;

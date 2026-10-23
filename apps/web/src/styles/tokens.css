@@ -46,6 +46,22 @@
   --mascot-shirt: #e8e1d2;
   --mascot-outline: #121110;
   --mascot-bezel: #1c1a17;
+
+  /* Compatibility aliases for design tokens */
+  --primary: var(--accent);
+  --accent-primary: var(--accent);
+  --accent-bg: rgba(255, 106, 43, 0.12);
+  --accent-subtle: rgba(255, 106, 43, 0.08);
+  --surface-1: var(--surface);
+  --surface-raised: var(--surface-2);
+  --font-sans: var(--font-body);
+  --radius-sm: var(--radius-square);
+  --radius-md: var(--radius-square);
+  --warning-text: var(--warning);
+  --cat-tech: var(--cat-technical);
+  --cat-behav: var(--cat-behavioral);
+  --transition-fast: var(--dur-fast) var(--ease-standard);
+  --text-xs: 11px;
 }
 
 /* Default Theme: Dark "Ink" */

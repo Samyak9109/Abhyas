@@ -63,9 +63,12 @@ async function main() {
     />
     <title>${page.title}</title>
     <meta name="description" content="${page.description}" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <meta name="theme-color" content="#121110" />
+    <meta property="og:image" content="/abhyas-og-1200x630.png" />
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${url}" />

@@ -60,6 +60,48 @@ export function LandingPage() {
                   No sign up. Your data. Your device.
                 </span>
               </div>
+
+              <div
+                className="abh-hero-meta"
+                style={{
+                  marginTop: "var(--space-6)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--space-4)",
+                  flexWrap: "wrap",
+                  fontSize: "13px",
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
+                <a
+                  href="https://github.com/Samyak9109/Abhyas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="abh-boxed-link"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "6px 14px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                  }}
+                >
+                  <span>★</span> GitHub (Samyak9109/Abhyas) ↗
+                </a>
+                <span style={{ color: "var(--text-muted)" }}>
+                  Created by{" "}
+                  <a
+                    href="https://github.com/Samyak9109"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "var(--text)", fontWeight: 600, textDecoration: "none" }}
+                  >
+                    Samyak Jain
+                  </a>
+                </span>
+              </div>
+
             </div>
 
             {/* Mascot Collage */}

@@ -1,6 +1,7 @@
 // FR-033, ADR-019, design.md section 8: Public header with brand lockup, navigation, theme toggle and CTA.
 import { useState, useEffect } from "react";
 import { mirrorThemePreference } from "../../services/theme";
+import { BrandMark } from "../../components/BrandMark";
 
 interface PublicHeaderProps {
   currentPath?: string;
@@ -11,10 +12,30 @@ interface PublicHeaderProps {
 export function PublicHeader({
   currentPath = "/",
   onThemeToggle,
-  currentTheme = "ink",
+  currentTheme: propTheme,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [targetAppUrl, setTargetAppUrl] = useState("/app/setup/ai");
+  const [theme, setTheme] = useState<"ink" | "paper">(() => {
+    if (propTheme) return propTheme;
+    if (typeof document !== "undefined") {
+      const active = document.documentElement.getAttribute("data-theme");
+      if (active === "paper" || active === "ink") return active;
+      try {
+        const stored = localStorage.getItem("abhyas.theme");
+        if (stored === "paper" || stored === "ink") return stored;
+      } catch {
+        // Storage disabled
+      }
+    }
+    return "ink";
+  });
+
+  useEffect(() => {
+    if (propTheme) {
+      setTheme(propTheme);
+    }
+  }, [propTheme]);
 
   useEffect(() => {
     // Check if the user has a prior session or profile in local storage
@@ -34,26 +55,24 @@ export function PublicHeader({
   }, []);
 
   const handleThemeClick = () => {
-    if (onThemeToggle) {
-      onThemeToggle();
-      return;
-    }
+    const nextTheme = theme === "paper" ? "ink" : "paper";
+    setTheme(nextTheme);
     if (typeof document !== "undefined") {
-      const nextTheme =
-        document.documentElement.getAttribute("data-theme") === "paper" ? "ink" : "paper";
       document.documentElement.setAttribute("data-theme", nextTheme);
       mirrorThemePreference(nextTheme);
+    }
+    if (onThemeToggle) {
+      onThemeToggle();
     }
   };
 
   return (
     <header className="abh-public-header" role="banner">
       <a href="/" className="abh-brand-lockup" aria-label="Abhyas Home">
-        <span className="abh-brand-mark" aria-hidden="true">
-          ■
-        </span>
+        <BrandMark size={32} />
         <span className="abh-brand-name">ABHYAS</span>
       </a>
+
 
       {/* Desktop Navigation */}
       <nav className="abh-public-nav" aria-label="Public site navigation">
@@ -106,7 +125,17 @@ export function PublicHeader({
         >
           &#123; Open Source &#125;
         </a>
+        <a
+          href="https://github.com/Samyak9109/Abhyas"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="abh-nav-link"
+          aria-label="GitHub Repository"
+        >
+          &#123; GitHub ↗ &#125;
+        </a>
       </nav>
+
 
       {/* Actions */}
       <div className="abh-header-actions">
@@ -114,10 +143,11 @@ export function PublicHeader({
           type="button"
           onClick={handleThemeClick}
           className="abh-theme-toggle"
-          aria-label={`Switch to ${currentTheme === "ink" ? "Paper (light)" : "Ink (dark)"} theme`}
+          aria-label={`Switch to ${theme === "ink" ? "Paper (light)" : "Ink (dark)"} theme`}
         >
-          {currentTheme === "ink" ? "PAPER ☼" : "INK ☾"}
+          {theme === "ink" ? "PAPER ☼" : "INK ☾"}
         </button>
+
 
         <a
           href={targetAppUrl}
@@ -176,7 +206,17 @@ export function PublicHeader({
           <a href="/open-source" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
             &#123; Open Source &#125;
           </a>
+          <a
+            href="https://github.com/Samyak9109/Abhyas"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="abh-nav-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            &#123; GitHub ↗ &#125;
+          </a>
         </div>
+
       )}
     </header>
   );

@@ -7,7 +7,7 @@ import {
   type StorageAdapter,
   type CompanyPack,
 } from "@abhyas/core";
-import { Banner, Button, Callout, Skeleton } from "./components";
+import { AbhyasLoader, Banner, BrandMark, Button, Callout, Skeleton } from "./components";
 import { HomeScreen } from "./screens/HomeScreen";
 import { DEFAULT_QUESTION_BANK } from "./services/question-bank";
 import { loadCompanyPack } from "./services/company-pack-service";
@@ -22,6 +22,7 @@ import { useTheme } from "./services/use-theme";
 import { registerPwa } from "./services/pwa";
 import { getLocalEngineAdapter } from "./services/local-engine";
 import "./styles/tokens.css";
+import "./styles/preloader.css";
 import "./styles/components.css";
 import "./styles/app.css";
 import "./styles/public.css";
@@ -256,6 +257,12 @@ export function App() {
   const storage = init.status === "ready" ? init.storage : null;
   const { preference, setThemePreference } = useTheme(storage);
 
+  useEffect(() => {
+    if (isPublicRoute(route) || init.status !== "loading") {
+      (window as unknown as { AbhyasPreloader?: { hide: () => void } }).AbhyasPreloader?.hide();
+    }
+  }, [init.status, route]);
+
   const handleWriteError = useCallback((error: unknown) => {
     if (isQuotaExceededError(error)) setQuotaExceeded(true);
   }, []);
@@ -317,11 +324,9 @@ export function App() {
 
   if (init.status === "loading") {
     return (
-      <div className="abh-app">
+      <div className="abh-app abh-app--standalone">
         <div className="abh-app-loading" aria-busy="true" aria-label="Loading Abhyas">
-          <Skeleton height="40px" />
-          <Skeleton height="140px" />
-          <Skeleton height="140px" />
+          <AbhyasLoader label="Loading Abhyas..." />
         </div>
       </div>
     );
@@ -389,19 +394,35 @@ export function App() {
     </>
   );
 
-  const screenLoading = (
-    <div className="abh-app-loading" role="status" aria-label="Loading view">
-      <Skeleton height="36px" />
-      <Skeleton height="140px" />
-      <Skeleton height="140px" />
-    </div>
-  );
+  function DelayedViewFallback() {
+    const [show, setShow] = useState(false);
+    useEffect(() => {
+      const timer = setTimeout(() => setShow(true), 250);
+      return () => clearTimeout(timer);
+    }, []);
+
+    if (!show) return null;
+
+    return (
+      <div className="abh-app-loading" role="status" aria-label="Loading view">
+        <Skeleton height="32px" width="35%" style={{ marginBottom: "var(--space-4)" }} />
+        <Skeleton height="120px" width="100%" style={{ marginBottom: "var(--space-4)" }} />
+        <Skeleton height="180px" width="100%" />
+      </div>
+    );
+  }
+
+  const screenLoading = <DelayedViewFallback />;
+
 
   const renderAppNav = (currentRoute: AppRoute) => (
     <aside className="abh-app-nav">
-      <span className="abh-wordmark" aria-hidden="true">
-        Abhyas
-      </span>
+      <div className="abh-brand-lockup">
+        <BrandMark size={24} />
+        <span className="abh-wordmark" aria-hidden="true">
+          Abhyas
+        </span>
+      </div>
       <nav aria-label="App">
         <ul className="abh-app-nav-list">
           <li>
@@ -568,7 +589,7 @@ export function App() {
 
   if (route === "/app/setup/ai") {
     return (
-      <div className="abh-app">
+      <div className="abh-app abh-app--standalone">
         {renderTopBanners()}
         <Suspense fallback={screenLoading}>
           <AISetupScreen
@@ -584,7 +605,7 @@ export function App() {
 
   if (route === "/app/setup/profile") {
     return (
-      <div className="abh-app">
+      <div className="abh-app abh-app--standalone">
         {renderTopBanners()}
         <Suspense fallback={screenLoading}>
           <ProfileScreen
@@ -600,7 +621,7 @@ export function App() {
 
   if (route === "/app/setup/session") {
     return (
-      <div className="abh-app">
+      <div className="abh-app abh-app--standalone">
         {renderTopBanners()}
         <Suspense fallback={screenLoading}>
           <SessionSetupScreen
@@ -619,7 +640,7 @@ export function App() {
   if (route === "/app/interview") {
     if (!activeSession) {
       return (
-        <div className="abh-app">
+        <div className="abh-app abh-app--standalone">
           <main className="abh-app-main" style={{ padding: "var(--space-6)" }}>
             <Callout variant="info" title="No active interview session">
               Please configure your interview settings to begin a session.
@@ -635,7 +656,7 @@ export function App() {
     }
 
     return (
-      <div className="abh-app">
+      <div className="abh-app abh-app--standalone">
         {renderTopBanners()}
         <Suspense fallback={screenLoading}>
           <LiveInterviewScreen

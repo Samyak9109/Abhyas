@@ -5,6 +5,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { axe } from "vitest-axe";
 import {
+  AbhyasLoader,
   Banner,
   Button,
   Callout,
@@ -203,6 +204,16 @@ describe("M0.2: Base Component Suite", () => {
         const { container } = render(
           <div data-theme={theme}>
             <Disclosure summary="Frequently asked question">Answer body</Disclosure>
+          </div>
+        );
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      });
+
+      it("renders AbhyasLoader without axe violations", async () => {
+        const { container } = render(
+          <div data-theme={theme}>
+            <AbhyasLoader />
           </div>
         );
         const results = await axe(container);

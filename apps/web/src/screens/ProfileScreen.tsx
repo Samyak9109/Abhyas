@@ -12,7 +12,7 @@ import {
   type StructuredProfile,
   type StructuredProfileRow,
 } from "@abhyas/core";
-import { Button, Callout, Input, Progress, RadioCard, Stepper, Switch } from "../components";
+import { BrandMark, Button, Callout, Input, Progress, RadioCard, Stepper, Switch } from "../components";
 import { parseDocument } from "../services/document-parser";
 
 interface ProfileScreenProps {
@@ -328,7 +328,10 @@ export function ProfileScreen({
     <div className="abh-setup-page">
       <header className="abh-setup-header">
         <div className="abh-setup-header-inner">
-          <span className="abh-wordmark">Abhyas</span>
+          <div className="abh-brand-lockup">
+            <BrandMark size={24} />
+            <span className="abh-wordmark">Abhyas</span>
+          </div>
           <Stepper steps={SETUP_STEPS} currentStepIndex={1} />
           {onNavigateSettings && (
             <Button variant="ghost" onClick={onNavigateSettings}>
@@ -650,24 +653,26 @@ export function ProfileScreen({
                 )}
               </div>
             )}
-
-            {/* Validation & Error Callouts */}
-            {validationError && (
-              <Callout variant="danger" title="Validation Note">
-                {validationError}
-              </Callout>
-            )}
-
-            {/* Navigation Actions */}
-            <div className="abh-setup-actions">
-              <Button type="button" variant="secondary" onClick={onBack}>
-                Back to AI Setup
-              </Button>
-              <Button type="button" variant="primary" onClick={handleContinue} isLoading={isSaving}>
-                Continue to Session Setup
-              </Button>
-            </div>
           </section>
+        </div>
+
+        {/* Validation & Error Callouts */}
+        {validationError && (
+          <div style={{ marginTop: "var(--space-4)" }}>
+            <Callout variant="danger" title="Validation Note">
+              {validationError}
+            </Callout>
+          </div>
+        )}
+
+        {/* Navigation Actions */}
+        <div className="abh-setup-actions">
+          <Button type="button" variant="secondary" onClick={onBack}>
+            Back to AI Setup
+          </Button>
+          <Button type="button" variant="primary" onClick={handleContinue} isLoading={isSaving}>
+            Continue to Session Setup
+          </Button>
         </div>
       </main>
     </div>

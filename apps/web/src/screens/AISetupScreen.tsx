@@ -22,6 +22,7 @@ import {
 } from "@abhyas/core";
 import { CURATED_MODELS } from "@abhyas/content";
 import {
+  BrandMark,
   Button,
   Callout,
   HardwareBenchmarkCard,
@@ -429,7 +430,10 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
     <div className="abh-setup-page">
       <header className="abh-setup-header">
         <div className="abh-setup-header-inner">
-          <span className="abh-wordmark">Abhyas</span>
+          <div className="abh-brand-lockup">
+            <BrandMark size={24} />
+            <span className="abh-wordmark">Abhyas</span>
+          </div>
           <Stepper steps={SETUP_STEPS} currentStepIndex={0} />
           {onNavigateSettings && (
             <Button variant="ghost" onClick={onNavigateSettings}>

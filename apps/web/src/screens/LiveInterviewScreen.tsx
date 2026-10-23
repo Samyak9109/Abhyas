@@ -20,7 +20,7 @@ import {
   type VoiceSettings,
   type CompanyPack,
 } from "@abhyas/core";
-import { Button, Callout, Dialog, Progress, SubtitleLanes } from "../components";
+import { BrandMark, Button, Callout, Dialog, Progress, SubtitleLanes } from "../components";
 import {
   createConfiguredSpeechInput,
   getBrowserSpeechInput,
@@ -551,7 +551,10 @@ export function LiveInterviewScreen({
       <header className="abh-interview-topbar">
         <div className="abh-interview-topbar-inner">
           <div className="abh-topbar-left">
-            <span className="abh-wordmark">Abhyas</span>
+            <div className="abh-brand-lockup">
+              <BrandMark size={20} />
+              <span className="abh-wordmark">Abhyas</span>
+            </div>
             {plan.isDrill && (
               <span className="abh-drill-badge" role="status">
                 🎯 {plan.drillFormat === "quick_fire" ? "Quick-Fire Drill" : "Deep-Dive Drill"}

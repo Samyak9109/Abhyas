@@ -1,0 +1,131 @@
+/*
+ * Abhyas full-page preloader.
+ *
+ * Design intent: reuse the logo's own construction (pixel grid, amber crossbar)
+ * so the loader reads as the brand "assembling" rather than a generic spinner.
+ * All motion uses steps() timing on purpose: stepped easing keeps the retro-pixel
+ * language consistent and avoids smooth tweens that would clash with the mark.
+ */
+:root {
+  --ap-ink: #14213D;
+  --ap-amber: #FCA311;
+  --ap-cream: #F5F3EC;
+  --ap-dim: rgba(245, 243, 236, 0.16);
+}
+
+/* Prevent background scroll while the overlay is up; removed by preloader.js. */
+html.ap-lock { overflow: hidden; }
+
+#abhyas-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000; /* above app chrome, modals and toasts */
+  display: grid;
+  place-items: center;
+  background: var(--ap-ink);
+  color: var(--ap-cream);
+  font-family: 'Pixelify Sans', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.ap-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* ---- Mark: pixels pop in top-to-bottom, then the crossbar sweeps across ---- */
+/* 105px => 15px cells; whole-pixel cells avoid hairline seams between rects. */
+.ap-mark { width: 105px; height: 105px; display: block; overflow: visible; }
+
+.ap-px, .ap-bar { transform-box: fill-box; }
+
+.ap-px {
+  fill: var(--ap-cream);
+  transform-origin: center;
+  opacity: 0;
+  animation: ap-pop 0.24s steps(3, end) forwards;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+.ap-bar {
+  fill: var(--ap-amber);
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation:
+    ap-sweep 0.42s steps(7, end) 0.85s forwards,
+    /* Subtle hold-state flicker signals "still working" once the intro is done. */
+    ap-flicker 1.6s steps(1, end) 1.6s infinite;
+}
+
+/* ---- Wordmark: typed in character by character with a blinking block cursor ---- */
+.ap-word {
+  display: flex;
+  align-items: center;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.ap-word-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  /* max-width (not width) so the final state fits the text even if the font
+     falls back to different metrics; the cap only needs to exceed the word. */
+  max-width: 0;
+  animation: ap-type 0.66s steps(6, end) 1.05s forwards;
+}
+
+.ap-cursor {
+  width: 0.5em;
+  height: 0.8em;
+  margin-left: 4px;
+  background: var(--ap-amber);
+  animation: ap-blink 0.9s steps(1, end) infinite;
+}
+
+/* ---- Meter: indeterminate on purpose; real progress is unknowable for arbitrary assets ---- */
+.ap-meter {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  animation: ap-fade-in 0.3s steps(3, end) 1.5s forwards;
+}
+
+.ap-meter span {
+  width: 14px;
+  height: 10px;
+  background: var(--ap-dim);
+  animation: ap-seg 1.6s steps(1, end) infinite;
+  animation-delay: calc(var(--s) * 0.2s + 1.5s);
+}
+
+/* ---- Exit: stepped dissolve, then the script removes the node ---- */
+#abhyas-preloader.ap-leaving {
+  pointer-events: none;
+  animation: ap-exit 0.4s steps(4, end) forwards;
+}
+
+@keyframes ap-pop     { 0% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes ap-sweep   { to { transform: scaleX(1); } }
+@keyframes ap-flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes ap-type    { to { max-width: 10ch; } }
+@keyframes ap-blink   { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes ap-fade-in { to { opacity: 1; } }
+@keyframes ap-seg     { 0% { background: var(--ap-amber); } 12.5%, 100% { background: var(--ap-dim); } }
+@keyframes ap-exit    { to { opacity: 0; } }
+
+/* Reduced motion: show the finished logo statically and skip the intro entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .ap-px, .ap-bar, .ap-word-text, .ap-meter, .ap-meter span, .ap-cursor {
+    animation: none !important;
+  }
+  .ap-px { opacity: 1; }
+  .ap-bar { transform: none; }
+  .ap-word-text { max-width: none; }
+  .ap-meter { opacity: 1; }
+  .ap-meter span:nth-child(-n+4) { background: var(--ap-amber); }
+  #abhyas-preloader.ap-leaving { animation-duration: 0.01s; }
+}

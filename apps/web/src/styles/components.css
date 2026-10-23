@@ -403,6 +403,15 @@
   background-color: var(--line);
 }
 
+@media (max-width: 680px) {
+  .abh-stepper-label {
+    display: none;
+  }
+  .abh-stepper-connector {
+    width: 20px;
+  }
+}
+
 /* --- Callout --- */
 .abh-callout {
   display: flex;
@@ -686,3 +695,48 @@
   line-height: 1.5;
   color: var(--text-muted);
 }
+
+/* --- Brand Lockup & Mark --- */
+.abh-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: var(--text);
+}
+
+.abh-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.abh-brand-mark-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.abh-brand-mark-img--paper {
+  display: none;
+}
+
+.abh-brand-mark-img--ink {
+  display: block;
+}
+
+[data-theme="paper"] .abh-brand-mark-img--paper {
+  display: block;
+}
+
+[data-theme="paper"] .abh-brand-mark-img--ink {
+  display: none;
+}
+

@@ -18,7 +18,7 @@ import {
   type SpeechInput,
   type StorageAdapter,
 } from "@abhyas/core";
-import { Button, Callout, RadioCard, Stepper } from "../components";
+import { BrandMark, Button, Callout, RadioCard, Stepper } from "../components";
 import { Dialog } from "../components/Dialog";
 import { CompanyContextPanel } from "../components/CompanyContextPanel";
 import { CompanyReportDialog } from "../components/CompanyReportDialog";
@@ -334,7 +334,10 @@ export function SessionSetupScreen({
     <div className="abh-setup-page">
       <header className="abh-setup-header">
         <div className="abh-setup-header-inner">
-          <span className="abh-wordmark">Abhyas</span>
+          <div className="abh-brand-lockup">
+            <BrandMark size={24} />
+            <span className="abh-wordmark">Abhyas</span>
+          </div>
           <Stepper steps={SETUP_STEPS} currentStepIndex={2} />
           {onNavigateSettings && (
             <Button variant="ghost" onClick={onNavigateSettings}>
@@ -727,30 +730,32 @@ export function SessionSetupScreen({
                 </div>
               )}
             </div>
-
-            {/* Validation error */}
-            {validationError && (
-              <Callout variant="danger" title="Cannot start session">
-                {validationError}
-              </Callout>
-            )}
-
-            {/* Navigation */}
-            <div className="abh-setup-actions">
-              <Button type="button" variant="secondary" onClick={onBack}>
-                Back to Profile
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                onClick={handleStart}
-                isLoading={isStarting}
-                disabled={hasProvider === false || (isMobile && isLocalProvider)}
-              >
-                Start Session
-              </Button>
-            </div>
           </section>
+        </div>
+
+        {/* Validation error */}
+        {validationError && (
+          <div style={{ marginTop: "var(--space-4)" }}>
+            <Callout variant="danger" title="Cannot start session">
+              {validationError}
+            </Callout>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="abh-setup-actions">
+          <Button type="button" variant="secondary" onClick={onBack}>
+            Back to Profile
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleStart}
+            isLoading={isStarting}
+            disabled={hasProvider === false || (isMobile && isLocalProvider)}
+          >
+            Start Session
+          </Button>
         </div>
       </main>
 

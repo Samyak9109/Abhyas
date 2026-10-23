@@ -83,12 +83,12 @@ SOFTWARE.`}
               <p>The entire source code for Abhyas is hosted publicly on GitHub:</p>
               <p>
                 <a
-                  href="https://github.com/samyak/abhyas"
+                  href="https://github.com/Samyak9109/Abhyas"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="abh-boxed-link"
                 >
-                  View repository on GitHub (github.com/samyak/abhyas) ↗
+                  View repository on GitHub (github.com/Samyak9109/Abhyas) ↗
                 </a>
               </p>
               <h3 className="abh-content-h3">Contribution Guidelines</h3>

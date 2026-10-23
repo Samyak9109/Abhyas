@@ -57,6 +57,24 @@
   color: var(--text);
 }
 
+[data-theme="paper"] [data-band="ink"],
+[data-theme="paper"] .abh-band[data-band="ink"] {
+  --bg: #efe9dc;
+  --surface: #f7f3ea;
+  --surface-2: #e6dfcf;
+  --line: #cfc6b4;
+  --line-strong: #7a7266;
+  --text: #121110;
+  --text-muted: #5a5348;
+  --accent: #ff6a2b;
+  --accent-text: #a83409;
+  --on-accent: #121110;
+  --focus: #a83409;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+
 /* Background Texture: Dotted Grid on Ink */
 .abh-dotted-grid {
   background-image: radial-gradient(var(--surface-2) 1.5px, transparent 1.5px);
@@ -82,8 +100,8 @@
   margin-bottom: var(--space-3);
 }
 
-/* Section Headings */
-.abh-section-heading {
+/* Section Headings (Public pages only) */
+.abh-public-page .abh-section-heading {
   font-family: var(--font-display);
   font-size: 52px;
   line-height: 1.05;
@@ -94,7 +112,7 @@
 }
 
 @media (max-width: 768px) {
-  .abh-section-heading {
+  .abh-public-page .abh-section-heading {
     font-size: 32px;
   }
 }
@@ -155,12 +173,8 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background-color: var(--accent);
-  color: var(--on-accent);
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 16px;
-  border-radius: var(--radius-square);
+  background: transparent;
+  flex-shrink: 0;
 }
 
 .abh-brand-name {
@@ -208,7 +222,16 @@
   padding: 6px 10px;
   cursor: pointer;
   border-radius: var(--radius-square);
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
 }
+
+.abh-theme-toggle:hover {
+  border-color: var(--accent-text);
+  color: var(--accent-text);
+}
+
 
 .abh-mobile-menu-btn {
   display: none;
@@ -222,11 +245,33 @@
 }
 
 @media (max-width: 900px) {
+  .abh-public-header {
+    flex-wrap: wrap;
+  }
   .abh-public-nav {
     display: none;
   }
   .abh-mobile-menu-btn {
     display: block;
+  }
+  .abh-mobile-drawer {
+    width: 100%;
+    flex-basis: 100%;
+    order: 10;
+    margin-top: var(--space-3);
+  }
+}
+
+@media (max-width: 600px) {
+  .abh-header-actions .abh-hero-cta-btn {
+    display: none;
+  }
+  .abh-brand-name {
+    font-size: 20px;
+  }
+  .abh-brand-mark {
+    width: 26px;
+    height: 26px;
   }
 }
 
@@ -238,6 +283,7 @@
   background-color: var(--surface);
   border-bottom: 1px solid var(--line);
 }
+
 
 /* Hero */
 .abh-hero-band {
@@ -280,6 +326,30 @@
     line-height: 1;
   }
 }
+
+@media (max-width: 600px) {
+  .abh-hero-headline {
+    font-size: clamp(30px, 8.5vw, 40px);
+    line-height: 1.05;
+    word-break: break-word;
+  }
+  .abh-hero-promise {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: var(--space-6);
+  }
+  .abh-hero-cta-group {
+    gap: var(--space-4);
+  }
+  .abh-hero-cta-btn {
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+  .abh-hand-note {
+    font-size: 20px;
+  }
+}
+
 
 .abh-hero-promise {
   font-size: 20px;
@@ -408,6 +478,28 @@
   box-shadow: var(--shadow-hard);
   z-index: 4;
 }
+
+@media (max-width: 600px) {
+  .abh-mascot-collage {
+    min-height: 280px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .abh-orange-disc {
+    width: 180px;
+    height: 180px;
+  }
+  .abh-sticky-note {
+    left: 0;
+    bottom: -10px;
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+  .abh-pixel-dissolve {
+    right: 0;
+  }
+}
+
 
 /* Ticker */
 .abh-ticker-strip {
@@ -582,6 +674,39 @@
   box-shadow: var(--shadow-hard);
   border: 1px solid var(--text);
 }
+
+@media (max-width: 600px) {
+  .abh-device-laptop {
+    padding: 8px;
+    border-radius: 8px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .abh-laptop-screen {
+    padding: 12px;
+    gap: 8px;
+  }
+  .abh-floating-tag {
+    right: 0;
+    top: -12px;
+  }
+  .abh-fact-box {
+    padding: var(--space-5);
+  }
+  .abh-fact-numeral {
+    font-size: 48px;
+  }
+  .abh-step-card {
+    padding: var(--space-4);
+  }
+  .abh-closing-heading {
+    font-size: clamp(28px, 7vw, 36px);
+  }
+  .abh-closing-sub {
+    font-size: 15px;
+  }
+}
+
 
 .abh-experience-bullets {
   list-style: none;
@@ -1013,7 +1138,8 @@
   gap: var(--space-3);
 }
 
-.abh-step-badge {
+.abh-step-head .abh-step-badge,
+.abh-guide-step .abh-step-badge {
   display: flex;
   align-items: center;
   justify-content: center;

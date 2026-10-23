@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Abhyas – preloader demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+/*
+ * Abhyas full-page preloader.
+ *
+ * Design intent: reuse the logo's own construction (pixel grid, amber crossbar)
+ * so the loader reads as the brand "assembling" rather than a generic spinner.
+ * All motion uses steps() timing on purpose: stepped easing keeps the retro-pixel
+ * language consistent and avoids smooth tweens that would clash with the mark.
+ */
+:root {
+  --ap-ink: #14213D;
+  --ap-amber: #FCA311;
+  --ap-cream: #F5F3EC;
+  --ap-dim: rgba(245, 243, 236, 0.16);
+}
+
+/* Prevent background scroll while the overlay is up; removed by preloader.js. */
+html.ap-lock { overflow: hidden; }
+
+#abhyas-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000; /* above app chrome, modals and toasts */
+  display: grid;
+  place-items: center;
+  background: var(--ap-ink);
+  color: var(--ap-cream);
+  font-family: 'Pixelify Sans', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.ap-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* ---- Mark: pixels pop in top-to-bottom, then the crossbar sweeps across ---- */
+/* 105px => 15px cells; whole-pixel cells avoid hairline seams between rects. */
+.ap-mark { width: 105px; height: 105px; display: block; overflow: visible; }
+
+.ap-px, .ap-bar { transform-box: fill-box; }
+
+.ap-px {
+  fill: var(--ap-cream);
+  transform-origin: center;
+  opacity: 0;
+  animation: ap-pop 0.24s steps(3, end) forwards;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+.ap-bar {
+  fill: var(--ap-amber);
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation:
+    ap-sweep 0.42s steps(7, end) 0.85s forwards,
+    /* Subtle hold-state flicker signals "still working" once the intro is done. */
+    ap-flicker 1.6s steps(1, end) 1.6s infinite;
+}
+
+/* ---- Wordmark: typed in character by character with a blinking block cursor ---- */
+.ap-word {
+  display: flex;
+  align-items: center;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.ap-word-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  /* max-width (not width) so the final state fits the text even if the font
+     falls back to different metrics; the cap only needs to exceed the word. */
+  max-width: 0;
+  animation: ap-type 0.66s steps(6, end) 1.05s forwards;
+}
+
+.ap-cursor {
+  width: 0.5em;
+  height: 0.8em;
+  margin-left: 4px;
+  background: var(--ap-amber);
+  animation: ap-blink 0.9s steps(1, end) infinite;
+}
+
+/* ---- Meter: indeterminate on purpose; real progress is unknowable for arbitrary assets ---- */
+.ap-meter {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  animation: ap-fade-in 0.3s steps(3, end) 1.5s forwards;
+}
+
+.ap-meter span {
+  width: 14px;
+  height: 10px;
+  background: var(--ap-dim);
+  animation: ap-seg 1.6s steps(1, end) infinite;
+  animation-delay: calc(var(--s) * 0.2s + 1.5s);
+}
+
+/* ---- Exit: stepped dissolve, then the script removes the node ---- */
+#abhyas-preloader.ap-leaving {
+  pointer-events: none;
+  animation: ap-exit 0.4s steps(4, end) forwards;
+}
+
+@keyframes ap-pop     { 0% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes ap-sweep   { to { transform: scaleX(1); } }
+@keyframes ap-flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes ap-type    { to { max-width: 10ch; } }
+@keyframes ap-blink   { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes ap-fade-in { to { opacity: 1; } }
+@keyframes ap-seg     { 0% { background: var(--ap-amber); } 12.5%, 100% { background: var(--ap-dim); } }
+@keyframes ap-exit    { to { opacity: 0; } }
+
+/* Reduced motion: show the finished logo statically and skip the intro entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .ap-px, .ap-bar, .ap-word-text, .ap-meter, .ap-meter span, .ap-cursor {
+    animation: none !important;
+  }
+  .ap-px { opacity: 1; }
+  .ap-bar { transform: none; }
+  .ap-word-text { max-width: none; }
+  .ap-meter { opacity: 1; }
+  .ap-meter span:nth-child(-n+4) { background: var(--ap-amber); }
+  #abhyas-preloader.ap-leaving { animation-duration: 0.01s; }
+}
+
+</style>
+  <style>
+    body { margin: 0; background: #F5F3EC; color: #14213D; font-family: 'Pixelify Sans', monospace;
+           display: grid; place-items: center; min-height: 100vh; }
+    button { font: inherit; padding: 10px 18px; background: #14213D; color: #F5F3EC; border: 0; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <!-- data-manual: demo hides it itself after a simulated 2.5s load -->
+  <div id="abhyas-preloader" data-manual role="status" aria-live="polite" aria-label="Loading Abhyas">
+    <div class="ap-stage">
+      <svg class="ap-mark" viewBox="0 0 70 70" shape-rendering="crispEdges" aria-hidden="true">
+        <rect class="ap-px" style="--i:0"  x="20" y="0"  width="30" height="10"/>
+        <rect class="ap-px" style="--i:1"  x="10" y="10" width="20" height="10"/>
+        <rect class="ap-px" style="--i:2"  x="40" y="10" width="20" height="10"/>
+        <rect class="ap-px" style="--i:3"  x="0"  y="20" width="20" height="10"/>
+        <rect class="ap-px" style="--i:4"  x="50" y="20" width="20" height="10"/>
+        <rect class="ap-px" style="--i:5"  x="0"  y="30" width="20" height="10"/>
+        <rect class="ap-px" style="--i:6"  x="50" y="30" width="20" height="10"/>
+        <rect class="ap-bar" x="0" y="40" width="70" height="10"/>
+        <rect class="ap-px" style="--i:8"  x="0"  y="50" width="20" height="10"/>
+        <rect class="ap-px" style="--i:9"  x="50" y="50" width="20" height="10"/>
+        <rect class="ap-px" style="--i:10" x="0"  y="60" width="20" height="10"/>
+        <rect class="ap-px" style="--i:11" x="50" y="60" width="20" height="10"/>
+      </svg>
+      <div class="ap-word" aria-hidden="true"><span class="ap-word-text">abhyas</span><span class="ap-cursor"></span></div>
+      <div class="ap-meter" aria-hidden="true">
+        <span style="--s:0"></span><span style="--s:1"></span><span style="--s:2"></span><span style="--s:3"></span>
+        <span style="--s:4"></span><span style="--s:5"></span><span style="--s:6"></span><span style="--s:7"></span>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <h1>Abhyas</h1>
+    <p>App content is ready.</p>
+    <button id="replay">Replay loader</button>
+  </main>
+
+  <script>
+/*
+ * Abhyas preloader controller.
+ *
+ * Default: auto-hides on window "load". For SPAs, add `data-manual` to the
+ * #abhyas-preloader element and call AbhyasPreloader.hide() once the app has
+ * mounted and its first data is ready, because "load" fires before client
+ * rendering finishes and would reveal an empty shell.
+ */
+(() => {
+  const MIN_VISIBLE_MS = 900;   // avoids a distracting flash on fast connections
+  const MAX_VISIBLE_MS = 10000; // failsafe so a hung asset can never trap the user
+  const EXIT_FALLBACK_MS = 600; // covers environments where animationend never fires
+
+  const root = document.documentElement;
+  let el = document.getElementById('abhyas-preloader');
+  if (!el) return;
+
+  // Keep a pristine copy so show() can replay the intro from frame zero.
+  const template = el.cloneNode(true);
+  const manual = el.hasAttribute('data-manual');
+  let shownAt = performance.now();
+  let leaving = false;
+
+  root.classList.add('ap-lock');
+  document.body && document.body.setAttribute('aria-busy', 'true');
+
+  function teardown() {
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+    el = null;
+    root.classList.remove('ap-lock');
+    document.body.removeAttribute('aria-busy');
+    window.dispatchEvent(new CustomEvent('abhyas:ready'));
+  }
+
+  function hide() {
+    if (!el || leaving) return;
+    leaving = true;
+    const wait = Math.max(0, MIN_VISIBLE_MS - (performance.now() - shownAt));
+    setTimeout(() => {
+      if (!el) return;
+      el.classList.add('ap-leaving');
+      el.addEventListener('animationend', teardown, { once: true });
+      setTimeout(() => el && teardown(), EXIT_FALLBACK_MS);
+    }, wait);
+  }
+
+  function show() {
+    if (el) return;
+    el = template.cloneNode(true);
+    document.body.insertBefore(el, document.body.firstChild);
+    root.classList.add('ap-lock');
+    document.body.setAttribute('aria-busy', 'true');
+    shownAt = performance.now();
+    leaving = false;
+  }
+
+  window.AbhyasPreloader = { hide, show };
+
+  if (!manual) {
+    if (document.readyState === 'complete') hide();
+    else window.addEventListener('load', hide, { once: true });
+  }
+  setTimeout(hide, MAX_VISIBLE_MS);
+})();
+
+</script>
+  <script>
+    const simulateLoad = () => setTimeout(() => AbhyasPreloader.hide(), 2500);
+    simulateLoad();
+    document.getElementById('replay').addEventListener('click', () => {
+      AbhyasPreloader.show();
+      simulateLoad();
+    });
+  </script>
+</body>
+</html>

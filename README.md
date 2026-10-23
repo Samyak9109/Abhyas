@@ -28,7 +28,7 @@ It interviews you from your resume, a job description, or your target field, and
 ## 📖 Table of Contents
 
 - [💡 Why Abhyas](#-why-abhyas)
-- [🎬 Demo](#-demo)
+- [🎬 Demo & Screenshots](#-demo--screenshots)
 - [✨ Features](#-features)
 - [🔄 How It Works](#-how-it-works)
 - [🤖 Supported AI Models](#-supported-ai-models)
@@ -61,27 +61,47 @@ Abhyas fixes that:
 
 ---
 
-## 🎬 Demo
+## 🎬 Demo & Screenshots
 
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="Assets/svg/abhyas-lockup-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="Assets/svg/abhyas-lockup.svg">
-  <img alt="Abhyas Brand Lockup" src="Assets/svg/abhyas-lockup.svg" width="380">
-</picture>
+### ⚡ Interactive Walkthrough
 
-<p><em>Visual preview of the Abhyas retro-pixel interview suite:</em></p>
+<img alt="Abhyas Walkthrough Demo" src="./Assets/Project%20Screenshots/demo.gif" width="100%">
 
-<img alt="Abhyas Visual Preview" src="Assets/png/abhyas-og-1200x630.png" width="760">
+<p align="center">
+  <em>Walkthrough of the Abhyas landing page, navigation, and retro-pixel terminal experience.</em>
+</p>
+
+<p align="center">
+  <a href="./Assets/Project%20Screenshots/walkthrough.mp4">
+    <img src="https://img.shields.io/badge/🎬%20Watch%20Full%20Quality%20Video-MP4%20(1080p)-ff6a2b?style=for-the-badge&labelColor=121110" alt="Watch Video MP4">
+  </a>
+</p>
+
+<video src="./Assets/Project%20Screenshots/walkthrough.mp4" controls="controls" muted="muted" width="100%"></video>
 
 </div>
+
+### 📸 Project Screenshots
+
+#### 1. Landing Page & Retro Terminal Hero
+> *Local-first, zero telemetry landing page with custom retro pixel typography, brand mascot, and live ticker banner.*
+
+<p align="center">
+  <img alt="Abhyas Landing Page" src="./Assets/Project%20Screenshots/landing-page.png" width="100%">
+</p>
+
+#### 2. Step 1: Choose Your AI Source (BYOK & Local Models)
+> *Configure your private AI provider — Google Gemini, OpenAI, Groq, Ollama (local server), or in-browser WebLLM. Encrypted at rest with zero central server leakage.*
+
+<p align="center">
+  <img alt="Abhyas AI Source Setup" src="./Assets/Project%20Screenshots/ai-setup.png" width="100%">
+</p>
 
 | Live Interview Room | Results Scorecard | AI Model Picker |
 | :---: | :---: | :---: |
 | `PG-12`: Voice push-to-talk, live subtitles & editable transcript *(Phase 1)* | `PG-13`: STAR rubric breakdown & grounded rewrites *(Phase 1)* | `PG-09`: Gemini, OpenAI & local model configuration *(Phase 1)* |
-
-> 📸 *Live interface capture walkthroughs will be recorded upon Phase 1 release.*
 
 ---
 
@@ -401,6 +421,7 @@ Please keep the locked typefaces, token-based styling, and local-first invariant
       <em>Creator & Maintainer of Abhyas</em><br/>
       <a href="https://github.com/Samyak9109"><img src="https://img.shields.io/badge/GitHub-Samyak9109-181717?style=flat-square&logo=github" alt="GitHub"></a>
       <a href="https://www.linkedin.com/in/samyak-jain-122aaa273/"><img src="https://img.shields.io/badge/LinkedIn-Samyak%20Jain-0A66C2?style=flat-square&logo=linkedin" alt="LinkedIn"></a>
+      <a href="https://buymeacoffee.com/samyak9109"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=flat-square&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee"></a>
     </td>
   </tr>
 </table>

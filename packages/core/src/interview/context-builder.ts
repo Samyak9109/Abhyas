@@ -204,15 +204,20 @@ export function buildLayeredInterviewContext(options: LayeredContextOptions): La
   const profileBudgetChars = isSmallModel ? 1000 : 2500;
   let condensedProfile = "";
   if (profile) {
+    let profileBody = "";
     if (profile.condensed && profile.condensed.length <= profileBudgetChars) {
-      condensedProfile = `Candidate Verified Profile:\n${profile.condensed}`;
+      profileBody = sanitizePromptData(profile.condensed);
     } else {
       const condensed = condenseProfile(
         {
-          skills: profile.skills,
-          experiences: profile.experiences,
-          gaps: profile.gaps,
-          quantifiedClaims: profile.quantifiedClaims,
+          skills: profile.skills.map(sanitizePromptData),
+          experiences: profile.experiences.map((exp) => ({
+            role: sanitizePromptData(exp.role),
+            company: exp.company ? sanitizePromptData(exp.company) : undefined,
+            highlights: exp.highlights.map(sanitizePromptData),
+          })),
+          gaps: profile.gaps?.map(sanitizePromptData),
+          quantifiedClaims: profile.quantifiedClaims?.map(sanitizePromptData),
         },
         {
           targetRole,
@@ -220,8 +225,9 @@ export function buildLayeredInterviewContext(options: LayeredContextOptions): La
           maxChars: profileBudgetChars,
         }
       );
-      condensedProfile = `Candidate Verified Profile:\n${condensed}`;
+      profileBody = sanitizePromptData(condensed);
     }
+    condensedProfile = `<candidate_profile>\nCandidate Verified Profile:\n${profileBody}\n</candidate_profile>`;
   }
 
   // Layer 4: Delimited Company Pack (as data per AI-013 / ADR-008 injection safety)

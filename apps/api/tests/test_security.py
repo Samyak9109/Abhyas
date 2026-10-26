@@ -87,3 +87,40 @@ async def test_secrets_never_exposed_in_api_responses(client: AsyncClient) -> No
     non_existent = await client.get("/some/broken/path")
     for secret in active_secrets:
         assert secret not in non_existent.text
+
+
+def test_rate_limiter_pruning() -> None:
+    """Verify that SlidingWindowRateLimiter prunes expired buckets."""
+    from app.security.rate_limit import SlidingWindowRateLimiter
+
+    limiter = SlidingWindowRateLimiter()
+    limiter.is_allowed("old_client", max_requests=5, window_seconds=10)
+    assert "old_client" in limiter._history
+
+    # Pruning with max_age=0 immediately cleans keys whose newest timestamp <= now
+    pruned = limiter.prune(max_age=0.0)
+    assert pruned == 1
+    assert "old_client" not in limiter._history
+
+
+def test_get_client_ip_trusted_proxies(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify get_client_ip extracts client IP correctly with and without TRUSTED_PROXIES."""
+    from unittest.mock import MagicMock
+    from app.security.rate_limit import get_client_ip
+
+    req = MagicMock()
+    req.client.host = "10.0.0.1"
+    req.headers = {"x-forwarded-for": "203.0.113.195, 10.0.0.1"}
+
+    # Without TRUSTED_PROXIES, returns direct host (ignoring X-Forwarded-For)
+    monkeypatch.delenv("TRUSTED_PROXIES", raising=False)
+    assert get_client_ip(req) == "10.0.0.1"
+
+    # With TRUSTED_PROXIES containing the proxy IP, returns true client IP
+    monkeypatch.setenv("TRUSTED_PROXIES", "10.0.0.1, 127.0.0.1")
+    assert get_client_ip(req) == "203.0.113.195"
+
+    # If direct host is not in TRUSTED_PROXIES, ignore header
+    req.client.host = "198.51.100.2"
+    assert get_client_ip(req) == "198.51.100.2"
+

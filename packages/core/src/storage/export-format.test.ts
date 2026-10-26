@@ -47,6 +47,13 @@ async function filledStorage(): Promise<StorageAdapter> {
     error: "schema",
     at: "2026-10-14T00:00:00.000Z",
   });
+  await storage.put("models", {
+    id: "llama-3-8b",
+    engine: "transformers",
+    sizeBytes: 4000000000,
+    status: "ready",
+    gatedToken: "HF_GATED_SECRET_TOKEN",
+  });
   return storage;
 }
 
@@ -73,11 +80,15 @@ describe("M1.1: export format", () => {
     const provider = defaultExport.tables.providers[0] as Record<string, unknown>;
     expect(provider.key).toBeUndefined();
     expect(provider.encryptedKey).toBeUndefined();
+    const model = defaultExport.tables.models[0] as Record<string, unknown>;
+    expect(model.gatedToken).toBeUndefined();
     expect(provider.modelRoles).toEqual({ interviewer: "m1", evaluator: "m2" });
 
     const withKeys = await buildExport(storage, { includeKeys: true, now: NOW });
     const providerWithKey = withKeys.tables.providers[0] as Record<string, unknown>;
     expect(providerWithKey.key).toBe("SECRET_KEY_MATERIAL");
+    const modelWithKey = withKeys.tables.models[0] as Record<string, unknown>;
+    expect(modelWithKey.gatedToken).toBe("HF_GATED_SECRET_TOKEN");
   });
 
   it("never exports the quarantine table", async () => {

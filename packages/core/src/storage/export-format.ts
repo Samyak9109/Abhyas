@@ -71,6 +71,9 @@ export async function buildExport(
     tables.providers = (tables.providers as Record<string, unknown>[]).map(
       ({ key: _key, encryptedKey: _encryptedKey, ...rest }) => rest
     );
+    tables.models = (tables.models as Record<string, unknown>[]).map(
+      ({ gatedToken: _gatedToken, ...rest }) => rest
+    );
   }
   return {
     schemaVersion: EXPORT_SCHEMA_VERSION,

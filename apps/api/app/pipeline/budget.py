@@ -1,6 +1,7 @@
 """Budget guard, spending tracker, and kill-switch manager (M5.3, ADR-010, architecture 15.3)."""
 
 from datetime import UTC, date, datetime
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -156,13 +156,13 @@ class QueueManager:
 
         # 5. Update job and company records based on pipeline execution outcome
         job.tokens_used = state.tokens_used
-        job.cost_estimate = state.cost_cents
+        job.cost_estimate = state.cost_estimate_cents
         job.error = state.error
 
         if state.status == "ready":
             job.status = "completed"
             company.status = "ready"
-            company.coverage = state.coverage_score
+            company.coverage = state.coverage
             company.last_researched_at = now
         elif state.status == "insufficient_data":
             job.status = "completed"
@@ -213,7 +213,7 @@ class QueueManager:
                     "status": status_result,
                     "error": error,
                     "tokens_used": state.tokens_used if state else 0,
-                    "cost_cents": state.cost_cents if state else 0.0,
+                    "cost_cents": state.cost_estimate_cents if state else 0.0,
                 }
             )
 

@@ -178,16 +178,53 @@ async def test_safe_fetcher_redirect_ssrf_blocking(monkeypatch: pytest.MonkeyPat
 
     monkeypatch.setattr(socket, "getaddrinfo", mock_getaddrinfo)
 
-    async def mock_get(self, url, headers=None):
-        return httpx.Response(
+    from contextlib import asynccontextmanager
+
+    @asynccontextmanager
+    async def mock_stream(self, method, url, headers=None):
+        yield httpx.Response(
             status_code=302,
             headers={"Location": "http://169.254.169.254/latest/meta-data"},
             request=httpx.Request("GET", url),
         )
 
-    monkeypatch.setattr(httpx.AsyncClient, "get", mock_get)
+    monkeypatch.setattr(httpx.AsyncClient, "stream", mock_stream)
     with pytest.raises(ValueError, match="SSRF blocked"):
         await fetcher.fetch_page("https://example.com")
+
+
+@pytest.mark.asyncio
+async def test_safe_fetcher_bounded_memory_stream(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify streaming stops at MAX_PAGE_SIZE_BYTES (Finding 3)."""
+    fetcher = SafeFetcher()
+    import httpx
+    import socket
+    from contextlib import asynccontextmanager
+
+    def mock_getaddrinfo(host, port, *args, **kwargs):
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 80))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", mock_getaddrinfo)
+
+    chunk_size = 100_000
+    # Create generator for huge payload (1MB total > 500KB limit)
+    async def huge_content():
+        for _ in range(10):
+            yield b"a" * chunk_size
+
+    @asynccontextmanager
+    async def mock_stream(self, method, url, headers=None):
+        response = httpx.Response(
+            status_code=200,
+            headers={"Content-Type": "text/html; charset=utf-8"},
+            content=huge_content(),
+            request=httpx.Request("GET", url),
+        )
+        yield response
+
+    monkeypatch.setattr(httpx.AsyncClient, "stream", mock_stream)
+    title, text = await fetcher.fetch_page("https://example.com")
+    assert len(text) <= 40_000  # MAX_CLEANED_CHARS
 
 
 @pytest.mark.asyncio

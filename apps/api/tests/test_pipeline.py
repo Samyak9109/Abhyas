@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Company, Pack, ResearchJob
 from app.pipeline.fetcher import SafeFetcher
 from app.pipeline.graph import ResearchPipeline
+from app.pipeline.types import SourceDocument
 from app.pipeline.validator import PipelineValidator
 
 
@@ -525,3 +526,58 @@ async def test_extractor_llm_invocation_and_fallback(monkeypatch: pytest.MonkeyP
         sources=[doc],
     )
     assert fallback_pack["overview"]["summary"] == "Acme Cloud operates at acme-cloud.com."
+
+
+def test_pack_validator_rejects_hallucinated_urls() -> None:
+    """Verify PipelineValidator rejects unvetted URLs not in verified_sources (finding 12)."""
+    verified = [
+        SourceDocument(
+            url="https://acme-cloud.com/about",
+            title="About Us",
+            text="Real content",
+            content_length=12,
+            retrieved_at="2026-10-26T12:00:00Z",
+            sha256="abc",
+            domain="acme-cloud.com",
+        )
+    ]
+    raw_pack = {
+        "slug": "acme-cloud",
+        "name": "Acme Cloud",
+        "domain": "acme-cloud.com",
+        "overview": {
+            "summary": "Valid overview summary.",
+            "sources": [
+                {
+                    "url": "https://acme-cloud.com/about",
+                    "title": "About Us",
+                    "retrievedAt": "2026-10-26T12:00:00Z",
+                },
+                {
+                    "url": "https://hallucinated-source.com/blog",
+                    "title": "Fake Source",
+                    "retrievedAt": "2026-10-26T12:00:00Z",
+                },
+            ],
+        },
+        "cultureSignals": {
+            "summary": "Culture summary with only fake source.",
+            "sources": [
+                {
+                    "url": "https://unverified-culture-site.com",
+                    "title": "Unverified Site",
+                    "retrievedAt": "2026-10-26T12:00:00Z",
+                }
+            ],
+        },
+    }
+
+    cleaned, dropped = PipelineValidator.validate_and_filter_sections(raw_pack, verified)
+    # Overview sources should contain only the verified URL
+    assert len(cleaned["overview"]["sources"]) == 1
+    assert cleaned["overview"]["sources"][0]["url"] == "https://acme-cloud.com/about"
+
+    # cultureSignals has no valid sources in verified_sources, so it should be dropped
+    assert "cultureSignals" in dropped
+    assert "cultureSignals" not in cleaned
+

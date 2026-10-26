@@ -87,8 +87,8 @@ class PipelineValidator:
                 if not url or not title or not retrieved_at:
                     continue
 
-                # URL must be among discovered sources or valid HTTP(S) URL
-                if url in valid_urls or url.startswith(("http://", "https://")):
+                # URL must be among discovered sources
+                if url in valid_urls:
                     valid_section_sources.append(
                         {
                             "url": url,

@@ -1,22 +1,78 @@
 // FR-012, FR-013, ADR-006, design.md 8 (PG-13): Session results and scorecard screen.
 import { useCallback, useEffect, useState } from "react";
 import {
+  AnthropicAdapter,
   computeSessionScorecard,
   generateGroundedRewrite,
+  GeminiAdapter,
+  HuggingFaceAdapter,
+  MockProviderAdapter,
+  OllamaAdapter,
+  OpenAICompatibleAdapter,
   syncSessionWeakTurnsToQueue,
   type GroundedRewrite,
+  type ProviderAdapter,
+  type ProviderRow,
   type SessionRow,
   type SessionScorecard,
+  type SettingRow,
   type StorageAdapter,
   type StructuredProfile,
   type TurnRow,
 } from "@abhyas/core";
 import { Button, Callout, Disclosure, Progress, Skeleton, Tabs } from "../components";
+import { getLocalEngineAdapter } from "../services/local-engine";
 import { recomputeAndStoreSkillStats } from "../services/skills-recompute";
+
+function createProviderFromRow(row: ProviderRow | null | undefined): ProviderAdapter | null {
+  if (!row) return null;
+  if (row.kind === "gemini") {
+    return new GeminiAdapter({
+      apiKey: row.key ?? "",
+      ...(row.baseUrl ? { baseUrl: row.baseUrl } : {}),
+    });
+  }
+  if (row.kind === "ollama") {
+    return new OllamaAdapter({
+      baseUrl: row.baseUrl || "http://localhost:11434",
+      apiKey: row.key,
+      model: row.modelRoles?.evaluator || row.modelRoles?.interviewer,
+    });
+  }
+  if (row.kind === "anthropic") {
+    return new AnthropicAdapter({
+      apiKey: row.key ?? "",
+      baseUrl: row.baseUrl || "https://api.anthropic.com/v1",
+      model: row.modelRoles?.evaluator || row.modelRoles?.interviewer,
+    });
+  }
+  if (row.kind === "huggingface") {
+    return new HuggingFaceAdapter({
+      apiKey: row.key ?? "",
+      baseUrl: row.baseUrl || "https://api-inference.huggingface.co/v1",
+      model: row.modelRoles?.evaluator || row.modelRoles?.interviewer,
+    });
+  }
+  if (row.kind === "webllm") {
+    return getLocalEngineAdapter();
+  }
+  if (row.kind === "mock") {
+    return new MockProviderAdapter();
+  }
+  const openAiId = row.id === "openai" ? "openai" : "openai-compatible";
+  return new OpenAICompatibleAdapter({
+    id: openAiId,
+    apiKey: row.key,
+    baseUrl: row.baseUrl,
+    allowCustomOrigin: true,
+    model: row.modelRoles?.evaluator || row.modelRoles?.interviewer,
+  });
+}
 
 interface ResultsScreenProps {
   storage: StorageAdapter;
   sessionId: string;
+  provider?: ProviderAdapter | undefined;
   onRetryQuestion?: (questionId: string) => void;
   onPracticeSkill?: (skillId: string) => void;
   onNavigateSkills?: () => void;
@@ -27,6 +83,7 @@ interface ResultsScreenProps {
 export function ResultsScreen({
   storage,
   sessionId,
+  provider: propProvider,
   onRetryQuestion,
   onPracticeSkill,
   onNavigateSkills,
@@ -38,23 +95,34 @@ export function ResultsScreen({
   const [turns, setTurns] = useState<TurnRow[]>([]);
   const [profile, setProfile] = useState<StructuredProfile | null>(null);
   const [scorecard, setScorecard] = useState<SessionScorecard | null>(null);
+  const [activeProvider, setActiveProvider] = useState<ProviderAdapter | null>(propProvider ?? null);
   const [rewrites, setRewrites] = useState<Record<string, GroundedRewrite>>({});
   const [loadingRewrites, setLoadingRewrites] = useState<Record<string, boolean>>({});
   const [selectedTab, setSelectedTab] = useState("scorecard");
 
-  // Load session, turns, and profile from storage
+  // Load session, turns, profile, and provider from storage
   useEffect(() => {
     let active = true;
     void (async () => {
       try {
         setIsLoading(true);
-        const [loadedSession, allTurns, allProfiles] = await Promise.all([
+        const [loadedSession, allTurns, allProfiles, activeSetting, allProviders] = await Promise.all([
           storage.get<SessionRow>("sessions", sessionId),
           storage.getAll<TurnRow>("turns"),
           storage.getAll<StructuredProfile>("structuredProfiles"),
+          storage.get<SettingRow>("settings", "activeProviderId"),
+          storage.getAll<ProviderRow>("providers"),
         ]);
 
         if (!active) return;
+
+        if (propProvider) {
+          setActiveProvider(propProvider);
+        } else {
+          const activeId = loadedSession?.providerId ?? activeSetting?.value ?? allProviders[0]?.id;
+          const activeRow = allProviders.find((p) => p.id === activeId) ?? allProviders[0] ?? null;
+          setActiveProvider(createProviderFromRow(activeRow));
+        }
 
         if (loadedSession) {
           const sessionTurns = allTurns
@@ -85,7 +153,7 @@ export function ResultsScreen({
     return () => {
       active = false;
     };
-  }, [storage, sessionId]);
+  }, [storage, sessionId, propProvider]);
 
   // Generate grounded rewrite on demand for a turn
   const handleLoadRewrite = useCallback(
@@ -105,6 +173,7 @@ export function ResultsScreen({
               ? (session.plan as { targetRole: string }).targetRole
               : "Software Engineer",
           profile,
+          provider: activeProvider ?? undefined,
         });
         setRewrites((prev) => ({ ...prev, [turn.id]: result }));
       } catch (err) {
@@ -113,7 +182,7 @@ export function ResultsScreen({
         setLoadingRewrites((prev) => ({ ...prev, [turn.id]: false }));
       }
     },
-    [rewrites, loadingRewrites, session, profile]
+    [rewrites, loadingRewrites, session, profile, activeProvider]
   );
 
   if (isLoading) {

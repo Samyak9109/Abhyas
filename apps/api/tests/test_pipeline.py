@@ -142,6 +142,36 @@ def sample_evidenced_pack() -> dict[str, Any]:
     }
 
 
+def test_html_text_extractor_nested_ignored_tags() -> None:
+    """Verify HTML parser stack does not pop prematurely on nested tags inside ignored containers (Finding 8)."""
+    from app.pipeline.fetcher import HTMLTextExtractor
+
+    html = """
+    <html>
+        <body>
+            <nav>
+                <ul>
+                    <li><a href="/home">Home</a></li>
+                    <li><a href="/about">About Us</a></li>
+                </ul>
+            </nav>
+            <main>
+                <h1>Visible Header</h1>
+                <p>Visible content after navigation.</p>
+            </main>
+        </body>
+    </html>
+    """
+    extractor = HTMLTextExtractor()
+    extractor.feed(html)
+    text = extractor.get_text()
+
+    assert "Home" not in text
+    assert "About Us" not in text
+    assert "Visible Header" in text
+    assert "Visible content after navigation." in text
+
+
 @pytest.mark.asyncio
 async def test_safe_fetcher_ssrf_blocking() -> None:
     """Verify SafeFetcher blocks private subnets, loopbacks, and non-HTTP schemes."""

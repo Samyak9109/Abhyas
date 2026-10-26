@@ -36,22 +36,22 @@ class HTMLTextExtractor(HTMLParser):
         self._pieces: list[str] = []
         self._title: str | None = None
         self._in_title = False
-        self._ignored_depth = 0
+        self._ignored_stack: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag_lower = tag.lower()
         if tag_lower in BLOCKED_TAGS:
-            self._ignored_depth += 1
+            self._ignored_stack.append(tag_lower)
             return
 
         # Check for hidden attributes
         attr_dict = {k.lower(): (v.lower() if v else "") for k, v in attrs}
         if attr_dict.get("aria-hidden") == "true" or "hidden" in attr_dict:
-            self._ignored_depth += 1
+            self._ignored_stack.append(tag_lower)
             return
         style = attr_dict.get("style", "")
         if "display:none" in style or "visibility:hidden" in style:
-            self._ignored_depth += 1
+            self._ignored_stack.append(tag_lower)
             return
 
         if tag_lower == "title" and self._title is None:
@@ -59,14 +59,13 @@ class HTMLTextExtractor(HTMLParser):
 
     def handle_endtag(self, tag: str) -> None:
         tag_lower = tag.lower()
-        if tag_lower in BLOCKED_TAGS or self._ignored_depth > 0:
-            if self._ignored_depth > 0:
-                self._ignored_depth -= 1
+        if self._ignored_stack and self._ignored_stack[-1] == tag_lower:
+            self._ignored_stack.pop()
         if tag_lower == "title":
             self._in_title = False
 
     def handle_data(self, data: str) -> None:
-        if self._ignored_depth > 0:
+        if self._ignored_stack:
             return
         text = data.strip()
         if not text:

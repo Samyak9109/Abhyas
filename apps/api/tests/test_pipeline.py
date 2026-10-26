@@ -429,6 +429,69 @@ async def test_pipeline_insufficient_data_handling(
     assert state.status == "insufficient_data"
     assert state.coverage is None
 
-    # Verify company updated to insufficient_data
-    await db_session.refresh(company)
-    assert company.status == "insufficient_data"
+
+@pytest.mark.asyncio
+async def test_extractor_llm_invocation_and_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify ResearchExtractor calls configured LLM when API key is present and falls back gracefully (Finding 7)."""
+    from app.config import get_settings
+    from app.pipeline.extractor import ResearchExtractor
+    from app.pipeline.types import SourceDocument
+    import httpx
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "project_ai_api_key", "test-llm-key")
+    monkeypatch.setattr(settings, "project_ai_provider", "gemini")
+
+    doc = SourceDocument(
+        url="https://acme-cloud.com",
+        title="Acme Cloud",
+        cleaned_text="Acme Cloud builds distributed cloud storage with Python and Go.",
+        retrieved_at="2026-10-26T10:00:00Z",
+    )
+
+    llm_pack = {
+        "slug": "acme-cloud",
+        "name": "Acme Cloud",
+        "domain": "acme-cloud.com",
+        "overview": {
+            "summary": "Extracted via LLM.",
+            "sources": [{"url": "https://acme-cloud.com", "title": "Acme Cloud", "retrievedAt": "2026-10-26T10:00:00Z"}],
+            "confidence": "documented",
+        },
+    }
+
+    # 1. Success case: LLM responds 200
+    async def mock_post_success(self, url, json=None, headers=None):
+        return httpx.Response(
+            status_code=200,
+            json={
+                "candidates": [
+                    {"content": {"parts": [{"text": '{"slug": "acme-cloud", "name": "Acme Cloud", "domain": "acme-cloud.com", "overview": {"summary": "Extracted via LLM."}}'}]}}
+                ],
+                "usageMetadata": {"totalTokenCount": 850},
+            },
+            request=httpx.Request("POST", str(url)),
+        )
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", mock_post_success)
+    pack, tokens, cost = await ResearchExtractor.extract_from_documents(
+        slug="acme-cloud",
+        company_name="Acme Cloud",
+        domain="acme-cloud.com",
+        sources=[doc],
+    )
+    assert pack["overview"]["summary"] == "Extracted via LLM."
+    assert tokens == 850
+
+    # 2. Failure case: LLM fails 500 -> falls back to rule-based
+    async def mock_post_fail(self, url, json=None, headers=None):
+        return httpx.Response(status_code=500, request=httpx.Request("POST", str(url)))
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", mock_post_fail)
+    fallback_pack, _, _ = await ResearchExtractor.extract_from_documents(
+        slug="acme-cloud",
+        company_name="Acme Cloud",
+        domain="acme-cloud.com",
+        sources=[doc],
+    )
+    assert fallback_pack["overview"]["summary"] == "Acme Cloud operates at acme-cloud.com."

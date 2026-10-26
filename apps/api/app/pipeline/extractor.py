@@ -1,7 +1,12 @@
 """Schema-constrained LLM field extraction with delimiter isolation (AI-011, AI-019)."""
 
+import json
+import re
 from typing import Any
 
+import httpx
+
+from app.config import get_settings
 from app.pipeline.types import SourceDocument
 
 RESEARCH_PROMPT_TEMPLATE = """You are an objective corporate research extraction agent for Abhyas.
@@ -108,7 +113,87 @@ class ResearchExtractor:
         if not sources:
             return {}, 0, 0.0
 
-        # Deterministic rule-based extraction fallback when AI provider key is not configured
+        settings = get_settings()
+        api_key = settings.project_ai_api_key.strip()
+        provider = settings.project_ai_provider.lower().strip()
+
+        if api_key:
+            try:
+                prompt = cls.format_prompt(slug, company_name, domain, sources)
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    if provider == "openai":
+                        resp = await client.post(
+                            "https://api.openai.com/v1/chat/completions",
+                            headers={"Authorization": f"Bearer {api_key}"},
+                            json={
+                                "model": "gpt-4o-mini",
+                                "messages": [{"role": "user", "content": prompt}],
+                                "response_format": {"type": "json_object"},
+                            },
+                        )
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            content = data["choices"][0]["message"]["content"]
+                            tokens = data.get("usage", {}).get("total_tokens", 1000)
+                            cost = round(tokens * 0.0001, 4)
+                            return json.loads(content), tokens, cost
+                    elif provider == "anthropic":
+                        resp = await client.post(
+                            "https://api.anthropic.com/v1/messages",
+                            headers={
+                                "x-api-key": api_key,
+                                "anthropic-version": "2023-06-01",
+                                "content-type": "application/json",
+                            },
+                            json={
+                                "model": "claude-3-5-sonnet-20241022",
+                                "max_tokens": 4096,
+                                "messages": [{"role": "user", "content": prompt}],
+                            },
+                        )
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            content = data["content"][0]["text"]
+                            if content.startswith("```"):
+                                content = re.sub(r"^```(?:json)?\s*", "", content)
+                                content = re.sub(r"\s*```$", "", content)
+                            tokens = (
+                                data.get("usage", {}).get("input_tokens", 0)
+                                + data.get("usage", {}).get("output_tokens", 0)
+                            )
+                            cost = round(tokens * 0.0001, 4)
+                            return json.loads(content), tokens, cost
+                    else:
+                        # Default: Google Gemini
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+                        resp = await client.post(
+                            url,
+                            json={
+                                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                                "generationConfig": {"responseMimeType": "application/json"},
+                            },
+                        )
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            content = data["candidates"][0]["content"]["parts"][0]["text"]
+                            tokens = data.get("usageMetadata", {}).get("totalTokenCount", 1000)
+                            cost = round(tokens * 0.0001, 4)
+                            return json.loads(content), tokens, cost
+            except Exception:
+                # LLM call or parsing failed; fallback to rule-based extraction
+                pass
+
+        return cls._rule_based_fallback(slug, company_name, domain, sources)
+
+    @classmethod
+    def _rule_based_fallback(
+        cls,
+        slug: str,
+        company_name: str,
+        domain: str,
+        sources: list[SourceDocument],
+    ) -> tuple[dict[str, Any], int, float]:
+        """Deterministic rule-based extraction fallback when AI provider is not configured or fails."""
         tokens_est = sum(len(s.cleaned_text.split()) for s in sources) + 200
         cost_est = round(tokens_est * 0.0001, 4)
 

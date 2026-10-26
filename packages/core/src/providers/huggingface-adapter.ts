@@ -202,6 +202,10 @@ export class HuggingFaceAdapter implements ProviderAdapter {
 
     try {
       while (true) {
+        if (opts.signal?.aborted) {
+          await reader.cancel();
+          break;
+        }
         const { done, value } = await reader.read();
         if (done) break;
 

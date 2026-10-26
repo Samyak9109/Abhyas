@@ -353,9 +353,7 @@ export class SessionRunner {
             parentQuestionId: lastTurn.questionId,
           };
           await this.dispatch({ type: "FOLLOW_UP", question: followUpQ });
-          if (plan.inputMode === "text") {
-            await this.dispatch({ type: "QUESTION_READY", question: followUpQ });
-          }
+          await this.dispatch({ type: "QUESTION_READY", question: followUpQ });
           return;
         }
       } catch {

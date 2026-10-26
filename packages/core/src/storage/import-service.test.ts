@@ -209,6 +209,38 @@ describe("M2.5: Import validation and execution (FR-020)", () => {
     const skillStats = await targetStorage.getAll("skillStats");
     expect(skillStats.length).toBeGreaterThan(0);
   });
+
+  it("preserves configured API key and encryptedKey when importing merge backup without keys (Finding 4)", async () => {
+    const storage = new MemoryStorageAdapter();
+    // Existing provider with configured encryptedKey
+    await storage.put("providers", {
+      id: "gemini",
+      name: "Google Gemini",
+      kind: "cloud",
+      status: "configured",
+      roles: { interviewer: "gemini-1.5-flash", evaluator: "gemini-1.5-flash" },
+      encryptedKey: "existing-encrypted-key-secret",
+      key: "existing-plain-key",
+    });
+
+    const exportSource = new MemoryStorageAdapter();
+    await exportSource.put("providers", {
+      id: "gemini",
+      name: "Google Gemini",
+      kind: "cloud",
+      status: "configured",
+      roles: { interviewer: "gemini-1.5-flash", evaluator: "gemini-1.5-flash" },
+      encryptedKey: "secret-to-be-stripped",
+    });
+
+    const backupFile = await buildExport(exportSource, { includeKeys: false });
+    await executeImport(storage, backupFile, { mode: "merge" });
+
+    const provider = await storage.get<any>("providers", "gemini");
+    expect(provider).toBeDefined();
+    expect(provider.encryptedKey).toBe("existing-encrypted-key-secret");
+    expect(provider.key).toBe("existing-plain-key");
+  });
 });
 
 describe("M2.5: Per-session delete and cascade cleanup (FR-019)", () => {

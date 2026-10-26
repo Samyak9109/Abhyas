@@ -8,7 +8,7 @@ import {
   parseExport,
 } from "./export-format.js";
 import { recomputeSkillStats } from "../skills/statistics.js";
-import type { ReviewQueueRow, SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
+import type { ProviderRow, ReviewQueueRow, SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
 
 export interface ImportValidationReport {
   valid: boolean;
@@ -165,6 +165,18 @@ export async function executeImport(
   for (const table of EXPORT_TABLES) {
     const rows = file.tables[table] || [];
     for (const record of rows) {
+      if (table === "providers" && options.mode !== "replace") {
+        const rec = record as ProviderRow;
+        const existing = await storage.get<ProviderRow>("providers", rec.id);
+        if (existing) {
+          if (!rec.encryptedKey && existing.encryptedKey) {
+            rec.encryptedKey = existing.encryptedKey;
+          }
+          if (!rec.key && existing.key) {
+            rec.key = existing.key;
+          }
+        }
+      }
       await storage.put(table, record);
       totalRecordsImported++;
     }

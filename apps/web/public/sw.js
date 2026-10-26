@@ -31,6 +31,8 @@ const PRECACHE_ASSETS = [
 const UNCACHED_HOSTS = [
   "generativelanguage.googleapis.com",
   "api.openai.com",
+  "api.anthropic.com",
+  "api-inference.huggingface.co",
   "localhost",
   "127.0.0.1",
 ];

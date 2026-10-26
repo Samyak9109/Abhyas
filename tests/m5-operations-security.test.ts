@@ -9,9 +9,9 @@ describe("M5.5: Operations Contract (FR-026, FR-029, arch 15.3)", () => {
 
   it("verifies admin rollback endpoint restores previous pack version", () => {
     const adminPy = fs.readFileSync(path.join(apiDir, "app", "routes", "admin.py"), "utf8");
-    expect(adminPy).toContain("@router.post(\"/rollback\"");
+    expect(adminPy).toContain('@router.post("/rollback"');
     expect(adminPy).toContain("active_version");
-    expect(adminPy).toContain("company.status = \"ready\"");
+    expect(adminPy).toContain('company.status = "ready"');
   });
 
   it("verifies budget alerts calculation logic at 50%, 80%, and 100% thresholds", () => {
@@ -26,20 +26,20 @@ describe("M5.5: Operations Contract (FR-026, FR-029, arch 15.3)", () => {
 
   it("verifies budget alerts drill route POST /v1/admin/alerts/drill", () => {
     const adminPy = fs.readFileSync(path.join(apiDir, "app", "routes", "admin.py"), "utf8");
-    expect(adminPy).toContain("@router.post(\"/alerts/drill\"");
+    expect(adminPy).toContain('@router.post("/alerts/drill"');
     expect(adminPy).toContain("drill_budget_alert");
   });
 
   it("verifies inaccuracy reports resolution POST /v1/admin/reports/{report_id}/resolve", () => {
     const adminPy = fs.readFileSync(path.join(apiDir, "app", "routes", "admin.py"), "utf8");
-    expect(adminPy).toContain("@router.post(\"/reports/{report_id}/resolve\"");
+    expect(adminPy).toContain('@router.post("/reports/{report_id}/resolve"');
     expect(adminPy).toContain("report.status = payload.resolution");
     expect(adminPy).toContain("report.resolved_at = datetime.now(UTC)");
   });
 
   it("verifies operations logs endpoint GET /v1/admin/logs", () => {
     const adminPy = fs.readFileSync(path.join(apiDir, "app", "routes", "admin.py"), "utf8");
-    expect(adminPy).toContain("@router.get(\"/logs\"");
+    expect(adminPy).toContain('@router.get("/logs"');
     expect(adminPy).toContain("tokens_used");
     expect(adminPy).toContain("cost_estimate_cents");
   });
@@ -66,26 +66,32 @@ describe("M5.6: Security and Legal Verification (FR-026, ADR-009, ADR-010)", () 
     expect(fetcherPy).toContain("metadata.google.internal");
 
     // Strict protocol whitelist
-    expect(fetcherPy).toContain("parsed.scheme not in (\"http\", \"https\")");
+    expect(fetcherPy).toContain('parsed.scheme not in ("http", "https")');
   });
 
   it("verifies prompt injection patterns and delimiter sanitization in pipeline validator", () => {
-    const validatorPy = fs.readFileSync(path.join(apiDir, "app", "pipeline", "validator.py"), "utf8");
+    const validatorPy = fs.readFileSync(
+      path.join(apiDir, "app", "pipeline", "validator.py"),
+      "utf8"
+    );
 
     expect(validatorPy).toContain("ignore\\s+(?:all\\s+)?previous\\s+instructions");
     expect(validatorPy).toContain("disregard\\s+(?:all\\s+)?prior\\s+prompts");
     expect(validatorPy).toContain("[REDACTED_UNTRUSTED_CONTENT]");
     // Markdown breakout neutralization
-    expect(validatorPy).toContain("cleaned.replace(\"```\", \"'''\")");
-    expect(validatorPy).toContain("cleaned.replace(\"---\", \"—\")");
+    expect(validatorPy).toContain('cleaned.replace("```", "\'\'\'")');
+    expect(validatorPy).toContain('cleaned.replace("---", "—")');
   });
 
   it("verifies abuse simulation and demand deduplication contract (ADR-010)", () => {
-    const companiesRoutePy = fs.readFileSync(path.join(apiDir, "app", "routes", "companies.py"), "utf8");
+    const companiesRoutePy = fs.readFileSync(
+      path.join(apiDir, "app", "routes", "companies.py"),
+      "utf8"
+    );
     const modelsPy = fs.readFileSync(path.join(apiDir, "app", "db", "models.py"), "utf8");
 
     // Unique constraint prevents ballot-box stuffing
-    expect(modelsPy).toContain("UniqueConstraint(\"company_slug\", \"day\", \"client_hash\"");
+    expect(modelsPy).toContain('UniqueConstraint("company_slug", "day", "client_hash"');
 
     // Daily salted hash
     expect(companiesRoutePy).toContain("abhyas-salt");

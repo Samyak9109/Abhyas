@@ -38,7 +38,9 @@ export function CompanyDirectoryScreen({
   const [isSelectedStale, setIsSelectedStale] = useState(false);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
-  const [allCompanies, setAllCompanies] = useState<CompanyDirectoryItem[]>(() => getCompanyDirectory());
+  const [allCompanies, setAllCompanies] = useState<CompanyDirectoryItem[]>(() =>
+    getCompanyDirectory()
+  );
 
   // Fetch live or mirror directory on mount / search
   useEffect(() => {
@@ -320,7 +322,9 @@ export function CompanyDirectoryScreen({
                 showPracticeAction={true}
                 onPracticeCompany={handlePractice}
               />
-            ) : selectedCompany && selectedCompany.status !== "ready" && selectedCompany.status !== "stale" ? (
+            ) : selectedCompany &&
+              selectedCompany.status !== "ready" &&
+              selectedCompany.status !== "stale" ? (
               <div
                 className="abh-company-status-detail-panel"
                 data-testid="company-status-detail-panel"
@@ -332,10 +336,10 @@ export function CompanyDirectoryScreen({
                     selectedCompany.status === "requested"
                       ? "Requested ✓"
                       : selectedCompany.status === "queued"
-                      ? "Queued for Research"
-                      : selectedCompany.status === "researching"
-                      ? "Currently Researching"
-                      : "Insufficient Documented Sources"
+                        ? "Queued for Research"
+                        : selectedCompany.status === "researching"
+                          ? "Currently Researching"
+                          : "Insufficient Documented Sources"
                   }
                 >
                   {selectedCompany.status === "requested" &&

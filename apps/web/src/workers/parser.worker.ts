@@ -1,8 +1,18 @@
 // FR-002, NFR-002: Off-main-thread Web Worker for parsing PDF, DOCX, and TXT resumes.
-import { parseDocxBuffer, parsePdfBuffer, parseTxtBuffer } from "../services/document-parser";
+import {
+  MAX_FILE_SIZE_BYTES,
+  parseDocxBuffer,
+  parsePdfBuffer,
+  parseTxtBuffer,
+} from "../services/document-parser";
 
 self.onmessage = async (e: MessageEvent) => {
   const { id, arrayBuffer, fileType } = e.data;
+
+  if (arrayBuffer && arrayBuffer.byteLength > MAX_FILE_SIZE_BYTES) {
+    self.postMessage({ id, ok: false, error: "File exceeds 5MB size limit" });
+    return;
+  }
 
   try {
     if (fileType === "pdf") {

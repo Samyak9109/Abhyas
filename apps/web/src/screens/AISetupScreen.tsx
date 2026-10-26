@@ -39,6 +39,7 @@ interface AISetupScreenProps {
   onComplete: () => void;
   onNavigateSettings?: () => void;
   onNavigateModelManager?: () => void;
+  onNavigateHome?: () => void;
   /** Optional custom fetch implementation for testing */
   fetchFn?: typeof fetch;
   /** Optional custom hardware runtime for capability testing (FR-024) */
@@ -65,6 +66,7 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
   onComplete,
   onNavigateSettings,
   onNavigateModelManager,
+  onNavigateHome,
   fetchFn,
   hardwareRuntime,
 }) => {
@@ -430,10 +432,20 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
     <div className="abh-setup-page">
       <header className="abh-setup-header">
         <div className="abh-setup-header-inner">
-          <div className="abh-brand-lockup">
+          <a
+            className="abh-brand-lockup"
+            href="/app/home"
+            aria-label="Abhyas Home"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigateHome?.();
+            }}
+          >
             <BrandMark size={24} />
-            <span className="abh-wordmark">Abhyas</span>
-          </div>
+            <span className="abh-wordmark" aria-hidden="true">
+              Abhyas
+            </span>
+          </a>
           <Stepper steps={SETUP_STEPS} currentStepIndex={0} />
           {onNavigateSettings && (
             <Button variant="ghost" onClick={onNavigateSettings}>

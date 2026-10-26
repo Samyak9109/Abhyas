@@ -8,6 +8,12 @@ from app.config import get_settings
 
 async def verify_challenge(token: str, remote_ip: str | None = None) -> bool:
     """Verify Turnstile token against Cloudflare API or test bypass."""
+    if not token or not token.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing anti-bot challenge token",
+        )
+
     settings = get_settings()
 
     # Development and test bypass

@@ -124,3 +124,18 @@ def test_get_client_ip_trusted_proxies(monkeypatch: pytest.MonkeyPatch) -> None:
     req.client.host = "198.51.100.2"
     assert get_client_ip(req) == "198.51.100.2"
 
+
+@pytest.mark.asyncio
+async def test_verify_challenge_rejects_empty() -> None:
+    """Verify empty or whitespace token raises 400 even in test environment."""
+    from fastapi import HTTPException
+    from app.security.challenge import verify_challenge
+
+    with pytest.raises(HTTPException) as exc_info:
+        await verify_challenge("")
+    assert exc_info.value.status_code == 400
+
+    with pytest.raises(HTTPException) as exc_info:
+        await verify_challenge("   ")
+    assert exc_info.value.status_code == 400
+

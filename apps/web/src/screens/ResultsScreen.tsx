@@ -26,11 +26,11 @@ import { recomputeAndStoreSkillStats } from "../services/skills-recompute";
 
 function createProviderFromRow(row: ProviderRow | null | undefined): ProviderAdapter | null {
   if (!row) return null;
-  if (row.kind === "gemini") {
-    return new GeminiAdapter({
-      apiKey: row.key ?? "",
-      ...(row.baseUrl ? { baseUrl: row.baseUrl } : {}),
-    });
+  if (row.kind === "webllm") {
+    return getLocalEngineAdapter();
+  }
+  if (row.kind === "mock") {
+    return new MockProviderAdapter();
   }
   if (row.kind === "ollama") {
     return new OllamaAdapter({
@@ -39,25 +39,29 @@ function createProviderFromRow(row: ProviderRow | null | undefined): ProviderAda
       model: row.modelRoles?.evaluator || row.modelRoles?.interviewer,
     });
   }
+  // Cloud providers require a valid in-memory API key
+  if (!row.key || row.key.trim().length === 0) {
+    return null;
+  }
+  if (row.kind === "gemini") {
+    return new GeminiAdapter({
+      apiKey: row.key,
+      ...(row.baseUrl ? { baseUrl: row.baseUrl } : {}),
+    });
+  }
   if (row.kind === "anthropic") {
     return new AnthropicAdapter({
-      apiKey: row.key ?? "",
+      apiKey: row.key,
       baseUrl: row.baseUrl || "https://api.anthropic.com/v1",
       model: row.modelRoles?.evaluator || row.modelRoles?.interviewer,
     });
   }
   if (row.kind === "huggingface") {
     return new HuggingFaceAdapter({
-      apiKey: row.key ?? "",
+      apiKey: row.key,
       baseUrl: row.baseUrl || "https://api-inference.huggingface.co/v1",
       model: row.modelRoles?.evaluator || row.modelRoles?.interviewer,
     });
-  }
-  if (row.kind === "webllm") {
-    return getLocalEngineAdapter();
-  }
-  if (row.kind === "mock") {
-    return new MockProviderAdapter();
   }
   const openAiId = row.id === "openai" ? "openai" : "openai-compatible";
   return new OpenAICompatibleAdapter({
@@ -95,7 +99,9 @@ export function ResultsScreen({
   const [turns, setTurns] = useState<TurnRow[]>([]);
   const [profile, setProfile] = useState<StructuredProfile | null>(null);
   const [scorecard, setScorecard] = useState<SessionScorecard | null>(null);
-  const [activeProvider, setActiveProvider] = useState<ProviderAdapter | null>(propProvider ?? null);
+  const [activeProvider, setActiveProvider] = useState<ProviderAdapter | null>(
+    propProvider ?? null
+  );
   const [rewrites, setRewrites] = useState<Record<string, GroundedRewrite>>({});
   const [loadingRewrites, setLoadingRewrites] = useState<Record<string, boolean>>({});
   const [selectedTab, setSelectedTab] = useState("scorecard");
@@ -106,13 +112,14 @@ export function ResultsScreen({
     void (async () => {
       try {
         setIsLoading(true);
-        const [loadedSession, allTurns, allProfiles, activeSetting, allProviders] = await Promise.all([
-          storage.get<SessionRow>("sessions", sessionId),
-          storage.getAll<TurnRow>("turns"),
-          storage.getAll<StructuredProfile>("structuredProfiles"),
-          storage.get<SettingRow>("settings", "activeProviderId"),
-          storage.getAll<ProviderRow>("providers"),
-        ]);
+        const [loadedSession, allTurns, allProfiles, activeSetting, allProviders] =
+          await Promise.all([
+            storage.get<SessionRow>("sessions", sessionId),
+            storage.getAll<TurnRow>("turns"),
+            storage.getAll<StructuredProfile>("structuredProfiles"),
+            storage.get<SettingRow>("settings", "activeProviderId"),
+            storage.getAll<ProviderRow>("providers"),
+          ]);
 
         if (!active) return;
 

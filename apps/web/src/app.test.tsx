@@ -75,6 +75,18 @@ describe("M1.1: App shell", () => {
     ).toBeTruthy();
   });
 
+  it("navigates to Home screen when clicking the logo in the navigation aside", async () => {
+    render(<App />);
+    await screen.findByText(/running in memory/i);
+
+    const logoLink = screen.getByRole("link", { name: /abhyas home/i });
+    fireEvent.click(logoLink);
+
+    expect(
+      await screen.findByRole("heading", { name: /welcome to your practice studio/i })
+    ).toBeTruthy();
+  });
+
   it("navigates to Skills Dashboard via aside navigation link", async () => {
     render(<App />);
     await screen.findByText(/running in memory/i);

@@ -56,20 +56,24 @@ function calculateSessionTimes(
   timeStr: string,
   durationMinutes: number
 ): { dtstart: string; dtend: string } {
-  const cleanDate = dateStr.replace(/-/g, "");
+  const [yStr, moStr, dStr] = dateStr.split("-");
   const [hStr, mStr] = timeStr.split(":");
+  const y = Number(yStr);
+  const mo = Number(moStr ?? "1") - 1;
+  const d = Number(dStr ?? "1");
   const h = Number(hStr ?? "18");
   const m = Number(mStr ?? "00");
 
+  const startDate = new Date(Date.UTC(y, mo, d, h, m, 0));
+  const endDate = new Date(startDate.getTime() + durationMinutes * 60_000);
+
   const pad = (n: number) => String(n).padStart(2, "0");
-  const dtstart = `${cleanDate}T${pad(h)}${pad(m)}00`;
+  const formatLocal = (date: Date) =>
+    `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}T${pad(
+      date.getUTCHours()
+    )}${pad(date.getUTCMinutes())}00`;
 
-  const totalEndMinutes = h * 60 + m + durationMinutes;
-  const endH = Math.floor(totalEndMinutes / 60) % 24;
-  const endM = totalEndMinutes % 60;
-  const dtend = `${cleanDate}T${pad(endH)}${pad(endM)}00`;
-
-  return { dtstart, dtend };
+  return { dtstart: formatLocal(startDate), dtend: formatLocal(endDate) };
 }
 
 /**

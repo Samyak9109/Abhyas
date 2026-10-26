@@ -8,7 +8,13 @@ import {
   parseExport,
 } from "./export-format.js";
 import { recomputeSkillStats } from "../skills/statistics.js";
-import type { ProviderRow, ReviewQueueRow, SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
+import type {
+  ModelRow,
+  ProviderRow,
+  ReviewQueueRow,
+  SessionRow,
+  TurnRow,
+} from "../schemas/storage-rows.schema.js";
 
 export interface ImportValidationReport {
   valid: boolean;
@@ -175,6 +181,13 @@ export async function executeImport(
           if (!rec.key && existing.key) {
             rec.key = existing.key;
           }
+        }
+      }
+      if (table === "models" && options.mode !== "replace") {
+        const rec = record as ModelRow;
+        const existing = await storage.get<ModelRow>("models", rec.id);
+        if (existing && !rec.gatedToken && existing.gatedToken) {
+          rec.gatedToken = existing.gatedToken;
         }
       }
       await storage.put(table, record);

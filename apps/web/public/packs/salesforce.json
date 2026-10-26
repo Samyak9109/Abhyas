@@ -3,11 +3,7 @@
   "slug": "salesforce",
   "name": "Salesforce",
   "domain": "salesforce.com",
-  "aliases": [
-    "Salesforce, Inc.",
-    "CRM",
-    "Salesforce.com"
-  ],
+  "aliases": ["Salesforce, Inc.", "CRM", "Salesforce.com"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",

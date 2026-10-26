@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { MemoryStorageAdapter } from "./memory-storage.js";
 import { buildExport } from "./export-format.js";
 import { deleteSession, executeImport, validateImport } from "./import-service.js";
-import type { SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
+import type { ProviderRow, SessionRow, TurnRow } from "../schemas/storage-rows.schema.js";
 
 const TEST_TIMESTAMP = "2026-10-17T12:00:00.000Z";
 
@@ -236,10 +236,10 @@ describe("M2.5: Import validation and execution (FR-020)", () => {
     const backupFile = await buildExport(exportSource, { includeKeys: false });
     await executeImport(storage, backupFile, { mode: "merge" });
 
-    const provider = await storage.get<any>("providers", "gemini");
+    const provider = await storage.get<ProviderRow>("providers", "gemini");
     expect(provider).toBeDefined();
-    expect(provider.encryptedKey).toBe("existing-encrypted-key-secret");
-    expect(provider.key).toBe("existing-plain-key");
+    expect(provider?.encryptedKey).toBe("existing-encrypted-key-secret");
+    expect(provider?.key).toBe("existing-plain-key");
   });
 });
 

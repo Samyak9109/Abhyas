@@ -171,6 +171,34 @@ describe("generateIcs serializer", () => {
     const eventMatches = ics.match(/BEGIN:VEVENT/g);
     expect(eventMatches?.length).toBe(plan.sessions.length);
   });
+
+  it("handles midnight date rollover accurately in DTEND", () => {
+    const basePlan = generatePrepPlan({
+      startDate: "2026-10-21",
+      interviewDate: "2026-11-01",
+      targetRole: "Backend Engineer",
+    });
+    const plan = {
+      ...basePlan,
+      sessions: [
+        {
+          id: "late-session",
+          date: "2026-10-26",
+          startTime: "23:45",
+          durationMinutes: 30,
+          title: "Late Mock",
+          stage: "skill_building" as const,
+          suggestedFormat: "drill" as const,
+          difficulty: "medium" as const,
+          focusSkills: ["algorithms"],
+          description: "Midnight crossing session",
+        },
+      ],
+    };
+    const ics = generateIcs(plan);
+    expect(ics).toContain("DTSTART:20261026T234500");
+    expect(ics).toContain("DTEND:20261027T001500");
+  });
 });
 
 describe("M6.3 Google Calendar integration (FR-027, ADR-012)", () => {

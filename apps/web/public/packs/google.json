@@ -3,11 +3,7 @@
   "slug": "google",
   "name": "Google",
   "domain": "google.com",
-  "aliases": [
-    "Google LLC",
-    "Alphabet",
-    "Google Cloud"
-  ],
+  "aliases": ["Google LLC", "Alphabet", "Google Cloud"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",

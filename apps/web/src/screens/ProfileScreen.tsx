@@ -12,7 +12,16 @@ import {
   type StructuredProfile,
   type StructuredProfileRow,
 } from "@abhyas/core";
-import { BrandMark, Button, Callout, Input, Progress, RadioCard, Stepper, Switch } from "../components";
+import {
+  BrandMark,
+  Button,
+  Callout,
+  Input,
+  Progress,
+  RadioCard,
+  Stepper,
+  Switch,
+} from "../components";
 import { parseDocument } from "../services/document-parser";
 
 interface ProfileScreenProps {
@@ -20,6 +29,7 @@ interface ProfileScreenProps {
   onComplete: () => void;
   onBack: () => void;
   onNavigateSettings?: () => void;
+  onNavigateHome?: () => void;
 }
 
 const SETUP_STEPS = [
@@ -73,6 +83,7 @@ export function ProfileScreen({
   onComplete,
   onBack,
   onNavigateSettings,
+  onNavigateHome,
 }: ProfileScreenProps) {
   // Form state
   const [level, setLevel] = useState<ExperienceLevel>("mid");
@@ -328,10 +339,20 @@ export function ProfileScreen({
     <div className="abh-setup-page">
       <header className="abh-setup-header">
         <div className="abh-setup-header-inner">
-          <div className="abh-brand-lockup">
+          <a
+            className="abh-brand-lockup"
+            href="/app/home"
+            aria-label="Abhyas Home"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigateHome?.();
+            }}
+          >
             <BrandMark size={24} />
-            <span className="abh-wordmark">Abhyas</span>
-          </div>
+            <span className="abh-wordmark" aria-hidden="true">
+              Abhyas
+            </span>
+          </a>
           <Stepper steps={SETUP_STEPS} currentStepIndex={1} />
           {onNavigateSettings && (
             <Button variant="ghost" onClick={onNavigateSettings}>

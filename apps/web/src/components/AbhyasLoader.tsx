@@ -18,12 +18,7 @@ export const AbhyasLoader: React.FC<AbhyasLoaderProps> = ({
       aria-label={label}
     >
       <div className="ap-stage">
-        <svg
-          className="ap-mark"
-          viewBox="0 0 70 70"
-          shapeRendering="crispEdges"
-          aria-hidden="true"
-        >
+        <svg className="ap-mark" viewBox="0 0 70 70" shapeRendering="crispEdges" aria-hidden="true">
           <rect
             className="ap-px"
             style={{ ["--i" as unknown as string]: 0 }}

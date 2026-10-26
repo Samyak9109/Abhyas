@@ -3,10 +3,7 @@
   "slug": "apple",
   "name": "Apple",
   "domain": "apple.com",
-  "aliases": [
-    "Apple Inc.",
-    "AAPL"
-  ],
+  "aliases": ["Apple Inc.", "AAPL"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",

@@ -6,10 +6,7 @@ import type { StorageAdapter } from "@abhyas/core";
 import { Dialog } from "./Dialog";
 import { Button } from "./Button";
 import { Callout } from "./Callout";
-import {
-  requestCompanyResearch,
-  submitCompanyReport,
-} from "../services/company-pack-service";
+import { requestCompanyResearch, submitCompanyReport } from "../services/company-pack-service";
 
 type CompanyReportDialogMode = "report" | "request";
 
@@ -487,8 +484,8 @@ export const CompanyReportDialog: React.FC<CompanyReportDialogProps> = ({
                   }}
                 >
                   🔒 <strong>Privacy Assurance:</strong> No user data, resume claims, or interview
-                  transcripts are transmitted. Only the selected company, field, and your explanation
-                  are submitted or prefilled on GitHub.
+                  transcripts are transmitted. Only the selected company, field, and your
+                  explanation are submitted or prefilled on GitHub.
                 </div>
 
                 {/* Actions */}
@@ -557,7 +554,11 @@ export const CompanyReportDialog: React.FC<CompanyReportDialogProps> = ({
                   personal data was transmitted.
                 </Callout>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-3)" }}>
-                  <Button variant="primary" onClick={onClose} data-testid="request-success-done-btn">
+                  <Button
+                    variant="primary"
+                    onClick={onClose}
+                    data-testid="request-success-done-btn"
+                  >
                     Done
                   </Button>
                 </div>

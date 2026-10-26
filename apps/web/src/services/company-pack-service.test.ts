@@ -94,7 +94,9 @@ describe("company-pack-service (FR-025, FR-026, FR-029, ADR-008, ADR-010)", () =
         overview: {
           value: "Remote engineering powerhouse.",
           confidence: "documented",
-          sources: [{ url: "https://remotecorp.com/about", title: "About", retrievedAt: "2026-10-18" }],
+          sources: [
+            { url: "https://remotecorp.com/about", title: "About", retrievedAt: "2026-10-18" },
+          ],
         },
       };
 
@@ -128,7 +130,9 @@ describe("company-pack-service (FR-025, FR-026, FR-029, ADR-008, ADR-010)", () =
         overview: {
           value: "Served from static CDN.",
           confidence: "documented",
-          sources: [{ url: "https://mirrorcorp.com/about", title: "About", retrievedAt: "2026-10-18" }],
+          sources: [
+            { url: "https://mirrorcorp.com/about", title: "About", retrievedAt: "2026-10-18" },
+          ],
         },
       };
 

@@ -15,6 +15,7 @@ describe("M1.3: ProfileScreen (PG-10)", () => {
 
     // Header & Stepper
     expect(screen.getByText("Abhyas")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /abhyas home/i })).toBeTruthy();
     expect(screen.getByText("Profile")).toBeTruthy();
 
     // Title

@@ -3,10 +3,7 @@
   "slug": "netflix",
   "name": "Netflix",
   "domain": "netflix.com",
-  "aliases": [
-    "Netflix, Inc.",
-    "NFLX"
-  ],
+  "aliases": ["Netflix, Inc.", "NFLX"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",
@@ -22,12 +19,7 @@
     ]
   },
   "products": {
-    "value": [
-      "Netflix Streaming Service",
-      "Netflix Studios",
-      "Open Connect CDN",
-      "Netflix Games"
-    ],
+    "value": ["Netflix Streaming Service", "Netflix Studios", "Open Connect CDN", "Netflix Games"],
     "confidence": "documented",
     "sources": [
       {

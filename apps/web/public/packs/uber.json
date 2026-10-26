@@ -3,11 +3,7 @@
   "slug": "uber",
   "name": "Uber",
   "domain": "uber.com",
-  "aliases": [
-    "Uber Technologies, Inc.",
-    "Uber Eats",
-    "Uber Freight"
-  ],
+  "aliases": ["Uber Technologies, Inc.", "Uber Eats", "Uber Freight"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",
@@ -23,13 +19,7 @@
     ]
   },
   "products": {
-    "value": [
-      "Uber Rides",
-      "Uber Eats",
-      "Uber Freight",
-      "Uber for Business",
-      "Uber Advertising"
-    ],
+    "value": ["Uber Rides", "Uber Eats", "Uber Freight", "Uber for Business", "Uber Advertising"],
     "confidence": "documented",
     "sources": [
       {

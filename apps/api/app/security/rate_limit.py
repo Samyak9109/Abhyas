@@ -21,7 +21,7 @@ class SlidingWindowRateLimiter:
         cutoff = now - window_seconds
 
         # Periodic cleanup of expired entries across all keys to prevent unbounded memory growth
-        if now - self._last_cleanup > 60 or len(self._history) > 1000:
+        if (now - self._last_cleanup > 60) or (len(self._history) > 1000 and now - self._last_cleanup > 5):
             self.prune()
 
         queue = self._history.get(key)

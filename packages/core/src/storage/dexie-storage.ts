@@ -64,8 +64,12 @@ export class DexieStorageAdapter implements StorageAdapter {
     if (parsed.success) return false;
 
     const key = rowKeyOf(record);
+    const uniqueId =
+      typeof globalThis.crypto?.randomUUID === "function"
+        ? `q_${globalThis.crypto.randomUUID()}`
+        : `q_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     await this.db.quarantine.put({
-      id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      id: uniqueId,
       table: tableName,
       raw: record,
       error: parsed.error.message,

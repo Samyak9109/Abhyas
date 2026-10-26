@@ -703,6 +703,11 @@
   gap: var(--space-3);
   text-decoration: none;
   color: var(--text);
+  transition: opacity var(--transition-fast);
+}
+
+.abh-brand-lockup:hover {
+  opacity: 0.85;
 }
 
 .abh-brand-mark {
@@ -739,4 +744,3 @@
 [data-theme="paper"] .abh-brand-mark-img--ink {
   display: none;
 }
-

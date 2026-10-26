@@ -101,7 +101,6 @@ export function LandingPage() {
                   </a>
                 </span>
               </div>
-
             </div>
 
             {/* Mascot Collage */}

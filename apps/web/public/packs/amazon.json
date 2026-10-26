@@ -3,11 +3,7 @@
   "slug": "amazon",
   "name": "Amazon",
   "domain": "amazon.com",
-  "aliases": [
-    "Amazon.com, Inc.",
-    "AWS",
-    "Amazon Web Services"
-  ],
+  "aliases": ["Amazon.com, Inc.", "AWS", "Amazon Web Services"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",

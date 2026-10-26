@@ -55,10 +55,10 @@ function createMockFetch(responseMap: {
 
     if (url.includes("huggingface.co")) {
       if (url.includes("/chat/completions")) {
-        return new Response(
-          JSON.stringify({ choices: [{ message: { content: "pong" } }] }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ choices: [{ message: { content: "pong" } }] }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       }
       const cfg = responseMap.huggingfaceModels || {
         status: 200,
@@ -135,6 +135,18 @@ describe("M1.2: AISetupScreen (PG-09)", () => {
 
     const testBtn = screen.getByRole("button", { name: /test connection/i });
     expect(testBtn).toHaveProperty("disabled", true);
+  });
+
+  it("calls onNavigateHome when clicking the logo link in the header", () => {
+    const storage = new MemoryStorageAdapter();
+    const onNavigateHome = vi.fn();
+    render(
+      <AISetupScreen storage={storage} onComplete={() => {}} onNavigateHome={onNavigateHome} />
+    );
+
+    const logoLink = screen.getByRole("link", { name: /abhyas home/i });
+    fireEvent.click(logoLink);
+    expect(onNavigateHome).toHaveBeenCalledTimes(1);
   });
 
   it("handles successful Gemini connection test, displays model picker, cost estimate, and enables Next", async () => {

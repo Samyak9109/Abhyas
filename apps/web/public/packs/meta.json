@@ -3,12 +3,7 @@
   "slug": "meta",
   "name": "Meta",
   "domain": "meta.com",
-  "aliases": [
-    "Meta Platforms, Inc.",
-    "Facebook",
-    "Instagram",
-    "WhatsApp"
-  ],
+  "aliases": ["Meta Platforms, Inc.", "Facebook", "Instagram", "WhatsApp"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",

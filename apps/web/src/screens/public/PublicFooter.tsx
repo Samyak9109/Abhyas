@@ -123,7 +123,6 @@ export function PublicFooter() {
             </a>
           </div>
 
-
           {/* Guides & Support */}
           <div className="abh-footer-col">
             <span className="abh-footer-col-title">&#123; Guides &#125;</span>
@@ -146,8 +145,8 @@ export function PublicFooter() {
         <div className="abh-footer-bottom">
           <div>
             <p style={{ margin: "0 0 6px 0" }}>
-              MIT Licensed. Copyright © 2026 Samyak Jain. Trademark policy: &quot;Abhyas&quot; and the pixel monitor-head
-              mascot are trademarks. Forks must rename.
+              MIT Licensed. Copyright © 2026 Samyak Jain. Trademark policy: &quot;Abhyas&quot; and
+              the pixel monitor-head mascot are trademarks. Forks must rename.
             </p>
 
             <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>

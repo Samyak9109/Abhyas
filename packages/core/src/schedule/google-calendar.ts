@@ -68,16 +68,20 @@ export function sessionToGoogleEvent(
 
   const [yearStr, monthStr, dayStr] = session.date.split("-");
   const y = Number(yearStr);
-  const mo = Number(monthStr);
-  const d = Number(dayStr);
+  const mo = Number(monthStr ?? "1") - 1;
+  const d = Number(dayStr ?? "1");
+
+  const startDate = new Date(Date.UTC(y, mo, d, h, m, 0));
+  const endDate = new Date(startDate.getTime() + session.durationMinutes * 60_000);
 
   const pad = (n: number) => String(n).padStart(2, "0");
-  const startIso = `${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(m)}:00`;
+  const formatIso = (date: Date) =>
+    `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}T${pad(
+      date.getUTCHours()
+    )}:${pad(date.getUTCMinutes())}:00`;
 
-  const totalEndMinutes = h * 60 + m + session.durationMinutes;
-  const endH = Math.floor(totalEndMinutes / 60) % 24;
-  const endM = totalEndMinutes % 60;
-  const endIso = `${y}-${pad(mo)}-${pad(d)}T${pad(endH)}:${pad(endM)}:00`;
+  const startIso = formatIso(startDate);
+  const endIso = formatIso(endDate);
 
   const description = [
     session.description,

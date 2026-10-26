@@ -3,11 +3,7 @@
   "slug": "spotify",
   "name": "Spotify",
   "domain": "spotify.com",
-  "aliases": [
-    "Spotify Technology S.A.",
-    "Spotify AB",
-    "SPOT"
-  ],
+  "aliases": ["Spotify Technology S.A.", "Spotify AB", "SPOT"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",

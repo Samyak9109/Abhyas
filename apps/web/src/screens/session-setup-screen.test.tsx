@@ -21,6 +21,7 @@ describe("M1.4: SessionSetupScreen (PG-11)", () => {
 
     // Header & Stepper
     expect(screen.getByText("Abhyas")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /abhyas home/i })).toBeTruthy();
     expect(screen.getByText("Step 3 of 3")).toBeTruthy();
     expect(await screen.findByText("Set Up Your Session")).toBeTruthy();
 

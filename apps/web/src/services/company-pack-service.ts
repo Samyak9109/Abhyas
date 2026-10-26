@@ -153,13 +153,19 @@ export async function loadCompanyPack(
     // Graceful fallback on storage read error
   }
 
-  const effectiveApiUrl = options?.apiUrl !== undefined ? options.apiUrl.replace(/\/+$/, "") : getApiUrl();
-  const effectiveStaticUrl = options?.staticPacksUrl !== undefined ? options.staticPacksUrl.replace(/\/+$/, "") : getStaticPacksUrl();
+  const effectiveApiUrl =
+    options?.apiUrl !== undefined ? options.apiUrl.replace(/\/+$/, "") : getApiUrl();
+  const effectiveStaticUrl =
+    options?.staticPacksUrl !== undefined
+      ? options.staticPacksUrl.replace(/\/+$/, "")
+      : getStaticPacksUrl();
 
   // 2. Fetch from backend research API if URL is configured
   if (effectiveApiUrl) {
     try {
-      const resp = await fetch(`${effectiveApiUrl}/v1/companies/${encodeURIComponent(normalizedSlug)}`);
+      const resp = await fetch(
+        `${effectiveApiUrl}/v1/companies/${encodeURIComponent(normalizedSlug)}`
+      );
       if (resp.ok) {
         const data = await resp.json();
         if (data && data.pack) {
@@ -193,7 +199,9 @@ export async function loadCompanyPack(
   // 3. Try static mirror endpoint
   if (effectiveStaticUrl) {
     try {
-      const mirrorResp = await fetch(`${effectiveStaticUrl}/${encodeURIComponent(normalizedSlug)}.json`);
+      const mirrorResp = await fetch(
+        `${effectiveStaticUrl}/${encodeURIComponent(normalizedSlug)}.json`
+      );
       if (mirrorResp.ok) {
         const mirrorData = await mirrorResp.json();
         const parsed = CompanyPackSchema.safeParse(mirrorData);
@@ -290,8 +298,12 @@ export async function fetchCompanyDirectory(options?: {
   query?: string | undefined;
 }): Promise<CompanyDirectoryItem[]> {
   const query = options?.query?.trim().toLowerCase() ?? "";
-  const effectiveApiUrl = options?.apiUrl !== undefined ? options.apiUrl.replace(/\/+$/, "") : getApiUrl();
-  const effectiveStaticUrl = options?.staticPacksUrl !== undefined ? options.staticPacksUrl.replace(/\/+$/, "") : getStaticPacksUrl();
+  const effectiveApiUrl =
+    options?.apiUrl !== undefined ? options.apiUrl.replace(/\/+$/, "") : getApiUrl();
+  const effectiveStaticUrl =
+    options?.staticPacksUrl !== undefined
+      ? options.staticPacksUrl.replace(/\/+$/, "")
+      : getStaticPacksUrl();
 
   // 1. Try remote API
   if (effectiveApiUrl) {
@@ -383,7 +395,8 @@ export async function requestCompanyResearch(
     storage?: StorageAdapter | undefined;
   }
 ): Promise<RequestCompanyResult> {
-  const effectiveApiUrl = options?.apiUrl !== undefined ? options.apiUrl.replace(/\/+$/, "") : getApiUrl();
+  const effectiveApiUrl =
+    options?.apiUrl !== undefined ? options.apiUrl.replace(/\/+$/, "") : getApiUrl();
   if (!effectiveApiUrl) {
     return {
       ok: false,
@@ -400,14 +413,21 @@ export async function requestCompanyResearch(
   };
 
   try {
-    const cleanSlug = slug.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    const resp = await fetch(`${effectiveApiUrl}/v1/companies/${encodeURIComponent(cleanSlug)}/request`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    const cleanSlug = slug
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const resp = await fetch(
+      `${effectiveApiUrl}/v1/companies/${encodeURIComponent(cleanSlug)}/request`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     const data = await resp.json().catch(() => null);
 
@@ -457,7 +477,8 @@ export async function submitCompanyReport(
     challengeToken?: string | undefined;
   }
 ): Promise<SubmitReportResult> {
-  const effectiveApiUrl = options?.apiUrl !== undefined ? options.apiUrl.replace(/\/+$/, "") : getApiUrl();
+  const effectiveApiUrl =
+    options?.apiUrl !== undefined ? options.apiUrl.replace(/\/+$/, "") : getApiUrl();
   if (!effectiveApiUrl) {
     return {
       ok: false,

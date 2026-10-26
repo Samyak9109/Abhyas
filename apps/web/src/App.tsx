@@ -158,7 +158,12 @@ function getInitialRoute(): AppRoute {
     if (path.includes("models") || window.location.hash.includes("models")) {
       return "/app/models";
     }
-    if (path.includes("home") || window.location.hash.includes("home")) {
+    if (
+      path === "/app" ||
+      path === "/app/" ||
+      path.includes("home") ||
+      window.location.hash.includes("home")
+    ) {
       return "/app/home";
     }
   }
@@ -414,15 +419,22 @@ export function App() {
 
   const screenLoading = <DelayedViewFallback />;
 
-
   const renderAppNav = (currentRoute: AppRoute) => (
     <aside className="abh-app-nav">
-      <div className="abh-brand-lockup">
+      <a
+        className="abh-brand-lockup"
+        href="/app/home"
+        aria-label="Abhyas Home"
+        onClick={(e) => {
+          e.preventDefault();
+          navigateTo("/app/home");
+        }}
+      >
         <BrandMark size={24} />
         <span className="abh-wordmark" aria-hidden="true">
           Abhyas
         </span>
-      </div>
+      </a>
       <nav aria-label="App">
         <ul className="abh-app-nav-list">
           <li>
@@ -597,6 +609,7 @@ export function App() {
             onComplete={() => navigateTo("/app/setup/profile")}
             onNavigateSettings={() => navigateTo("/app/settings")}
             onNavigateModelManager={() => navigateTo("/app/models")}
+            onNavigateHome={() => navigateTo("/app/home")}
           />
         </Suspense>
       </div>
@@ -613,6 +626,7 @@ export function App() {
             onComplete={() => navigateTo("/app/setup/session")}
             onBack={() => navigateTo("/app/setup/ai")}
             onNavigateSettings={() => navigateTo("/app/settings")}
+            onNavigateHome={() => navigateTo("/app/home")}
           />
         </Suspense>
       </div>
@@ -631,6 +645,7 @@ export function App() {
             onBack={() => navigateTo("/app/setup/profile")}
             onNavigateAISetup={() => navigateTo("/app/setup/ai")}
             onNavigateSettings={() => navigateTo("/app/settings")}
+            onNavigateHome={() => navigateTo("/app/home")}
           />
         </Suspense>
       </div>

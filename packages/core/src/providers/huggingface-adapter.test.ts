@@ -172,11 +172,10 @@ describe("HuggingFaceAdapter", () => {
     });
 
     const schema = z.object({ status: z.string(), score: z.number() });
-    const res = await adapter.generateObject(
-      [{ role: "user", content: "Test prompt" }],
-      schema,
-      { signal: new AbortController().signal, maxOutputTokens: 100 }
-    );
+    const res = await adapter.generateObject([{ role: "user", content: "Test prompt" }], schema, {
+      signal: new AbortController().signal,
+      maxOutputTokens: 100,
+    });
 
     expect(callCount).toBe(2);
     expect(res.ok).toBe(true);

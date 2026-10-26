@@ -3,10 +3,7 @@
   "slug": "airbnb",
   "name": "Airbnb",
   "domain": "airbnb.com",
-  "aliases": [
-    "Airbnb, Inc.",
-    "ABNB"
-  ],
+  "aliases": ["Airbnb, Inc.", "ABNB"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",
@@ -22,11 +19,7 @@
     ]
   },
   "products": {
-    "value": [
-      "Airbnb Stays",
-      "Airbnb Experiences",
-      "Airbnb Services & Host Tools"
-    ],
+    "value": ["Airbnb Stays", "Airbnb Experiences", "Airbnb Services & Host Tools"],
     "confidence": "documented",
     "sources": [
       {

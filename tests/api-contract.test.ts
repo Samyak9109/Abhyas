@@ -177,7 +177,7 @@ describe("M5.4: Client Integration and Mirror Contract (FR-026, ADR-009, arch 15
 
   it("verifies POST /v1/admin/export route is registered", () => {
     const adminPy = fs.readFileSync(path.join(apiDir, "app", "routes", "admin.py"), "utf8");
-    expect(adminPy).toContain("@router.post(\"/export\"");
+    expect(adminPy).toContain('@router.post("/export"');
     expect(adminPy).toContain("export_static_mirror");
   });
 

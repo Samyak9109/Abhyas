@@ -3,11 +3,7 @@
   "slug": "microsoft",
   "name": "Microsoft",
   "domain": "microsoft.com",
-  "aliases": [
-    "Microsoft Corporation",
-    "Azure",
-    "MSFT"
-  ],
+  "aliases": ["Microsoft Corporation", "Azure", "MSFT"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",

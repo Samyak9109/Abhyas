@@ -3,10 +3,7 @@
   "slug": "github",
   "name": "GitHub",
   "domain": "github.com",
-  "aliases": [
-    "GitHub, Inc.",
-    "Git Hub"
-  ],
+  "aliases": ["GitHub, Inc.", "Git Hub"],
   "retrievedAt": "2026-10-18T10:00:00.000Z",
   "ttlDays": 90,
   "coverage": "high",

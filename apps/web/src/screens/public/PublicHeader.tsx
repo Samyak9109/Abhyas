@@ -73,7 +73,6 @@ export function PublicHeader({
         <span className="abh-brand-name">ABHYAS</span>
       </a>
 
-
       {/* Desktop Navigation */}
       <nav className="abh-public-nav" aria-label="Public site navigation">
         <a
@@ -136,7 +135,6 @@ export function PublicHeader({
         </a>
       </nav>
 
-
       {/* Actions */}
       <div className="abh-header-actions">
         <button
@@ -147,7 +145,6 @@ export function PublicHeader({
         >
           {theme === "ink" ? "PAPER ☼" : "INK ☾"}
         </button>
-
 
         <a
           href={targetAppUrl}
@@ -216,7 +213,6 @@ export function PublicHeader({
             &#123; GitHub ↗ &#125;
           </a>
         </div>
-
       )}
     </header>
   );

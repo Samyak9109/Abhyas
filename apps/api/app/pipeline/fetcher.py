@@ -27,6 +27,23 @@ BLOCKED_TAGS: set[str] = {
     "embed",
 }
 
+VOID_TAGS: set[str] = {
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr",
+}
+
 
 class HTMLTextExtractor(HTMLParser):
     """Safely extracts readable text while stripping code, styles, and hidden elements."""
@@ -40,6 +57,9 @@ class HTMLTextExtractor(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag_lower = tag.lower()
+        if tag_lower in VOID_TAGS:
+            return
+
         if tag_lower in BLOCKED_TAGS:
             self._ignored_stack.append(tag_lower)
             return

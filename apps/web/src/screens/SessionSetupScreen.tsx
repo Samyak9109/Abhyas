@@ -38,6 +38,7 @@ interface SessionSetupScreenProps {
   onBack: () => void;
   onNavigateAISetup?: () => void;
   onNavigateSettings?: () => void;
+  onNavigateHome?: () => void;
   hardwareRuntime?: HardwareRuntime;
   initialCompanySlug?: string | null;
   apiUrl?: string;
@@ -154,6 +155,7 @@ export function SessionSetupScreen({
   onBack,
   onNavigateAISetup,
   onNavigateSettings,
+  onNavigateHome,
   hardwareRuntime,
   initialCompanySlug,
   apiUrl,
@@ -190,7 +192,9 @@ export function SessionSetupScreen({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isContextModalOpen, setIsContextModalOpen] = useState(false);
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
-  const [allCompanies, setAllCompanies] = useState<CompanyDirectoryItem[]>(() => getCompanyDirectory());
+  const [allCompanies, setAllCompanies] = useState<CompanyDirectoryItem[]>(() =>
+    getCompanyDirectory()
+  );
 
   // Fetch live or mirror directory on mount / search
   useEffect(() => {
@@ -334,10 +338,20 @@ export function SessionSetupScreen({
     <div className="abh-setup-page">
       <header className="abh-setup-header">
         <div className="abh-setup-header-inner">
-          <div className="abh-brand-lockup">
+          <a
+            className="abh-brand-lockup"
+            href="/app/home"
+            aria-label="Abhyas Home"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigateHome?.();
+            }}
+          >
             <BrandMark size={24} />
-            <span className="abh-wordmark">Abhyas</span>
-          </div>
+            <span className="abh-wordmark" aria-hidden="true">
+              Abhyas
+            </span>
+          </a>
           <Stepper steps={SETUP_STEPS} currentStepIndex={2} />
           {onNavigateSettings && (
             <Button variant="ghost" onClick={onNavigateSettings}>

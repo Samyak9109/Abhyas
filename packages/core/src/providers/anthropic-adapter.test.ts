@@ -27,12 +27,18 @@ function createMockFetch(responseMap: {
     if (url.includes("/v1/messages")) {
       const body = JSON.parse(String(init?.body || "{}")) as { stream?: boolean };
       if (body.stream) {
-        const cfg = responseMap.stream || { status: 200, chunks: ANTHROPIC_FIXTURES.streamSseChunks };
+        const cfg = responseMap.stream || {
+          status: 200,
+          chunks: ANTHROPIC_FIXTURES.streamSseChunks,
+        };
         if (cfg.status !== 200) {
-          return new Response(JSON.stringify({ error: { message: "Stream error", type: "api_error" } }), {
-            status: cfg.status,
-            headers: { "Content-Type": "application/json" },
-          });
+          return new Response(
+            JSON.stringify({ error: { message: "Stream error", type: "api_error" } }),
+            {
+              status: cfg.status,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
         }
 
         const stream = new ReadableStream<Uint8Array>({
@@ -170,11 +176,10 @@ describe("AnthropicAdapter", () => {
     });
 
     const schema = z.object({ status: z.string(), score: z.number() });
-    const res = await adapter.generateObject(
-      [{ role: "user", content: "Test prompt" }],
-      schema,
-      { signal: new AbortController().signal, maxOutputTokens: 100 }
-    );
+    const res = await adapter.generateObject([{ role: "user", content: "Test prompt" }], schema, {
+      signal: new AbortController().signal,
+      maxOutputTokens: 100,
+    });
 
     expect(callCount).toBe(2);
     expect(res.ok).toBe(true);

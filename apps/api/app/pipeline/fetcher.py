@@ -4,7 +4,7 @@ import ipaddress
 import re
 import socket
 from html.parser import HTMLParser
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from urllib.robotparser import RobotFileParser
 
 import httpx
@@ -168,8 +168,7 @@ class SafeFetcher:
             parser.feed(mock_response)
             return parser.get_title(), parser.get_text()
 
-        self.validate_url(url, expected_domain)
-
+        current_url = url
         headers = {
             "User-Agent": USER_AGENT,
             "Accept": "text/html,application/xhtml+xml",
@@ -177,12 +176,22 @@ class SafeFetcher:
 
         async with httpx.AsyncClient(
             timeout=self.timeout,
-            follow_redirects=True,
-            max_redirects=3,
+            follow_redirects=False,
         ) as client:
-            resp = await client.get(url, headers=headers)
-            if resp.status_code >= 400:
-                raise ValueError(f"HTTP fetch error {resp.status_code} for {url}")
+            resp = None
+            for _ in range(5):
+                self.validate_url(current_url, expected_domain)
+                resp = await client.get(current_url, headers=headers)
+                if resp.is_redirect and "location" in resp.headers:
+                    current_url = urljoin(current_url, resp.headers["location"])
+                    continue
+                break
+            else:
+                raise ValueError(f"Too many redirects for {url}")
+
+            if resp is None or resp.status_code >= 400:
+                code = resp.status_code if resp is not None else "unknown"
+                raise ValueError(f"HTTP fetch error {code} for {current_url}")
 
             # Re-verify final URL after redirects for SSRF
             final_url = str(resp.url)
@@ -190,7 +199,7 @@ class SafeFetcher:
 
             content_type = resp.headers.get("content-type", "").lower()
             if "text/html" not in content_type and "application/xhtml" not in content_type:
-                raise ValueError(f"Non-HTML content type '{content_type}' at {url}")
+                raise ValueError(f"Non-HTML content type '{content_type}' at {current_url}")
 
             content_bytes = resp.content[:MAX_PAGE_SIZE_BYTES]
             html_text = content_bytes.decode("utf-8", errors="replace")

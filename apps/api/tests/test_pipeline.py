@@ -165,6 +165,32 @@ async def test_safe_fetcher_ssrf_blocking() -> None:
 
 
 @pytest.mark.asyncio
+async def test_safe_fetcher_redirect_ssrf_blocking(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify in-flight HTTP redirect to private IP is caught by SafeFetcher (Finding 2)."""
+    fetcher = SafeFetcher()
+    import httpx
+    import socket
+
+    def mock_getaddrinfo(host, port, *args, **kwargs):
+        if host == "example.com":
+            return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 80))]
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (host, 80))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", mock_getaddrinfo)
+
+    async def mock_get(self, url, headers=None):
+        return httpx.Response(
+            status_code=302,
+            headers={"Location": "http://169.254.169.254/latest/meta-data"},
+            request=httpx.Request("GET", url),
+        )
+
+    monkeypatch.setattr(httpx.AsyncClient, "get", mock_get)
+    with pytest.raises(ValueError, match="SSRF blocked"):
+        await fetcher.fetch_page("https://example.com")
+
+
+@pytest.mark.asyncio
 async def test_pipeline_end_to_end_on_fixture(
     db_session: AsyncSession,
     sample_company_html_fixtures: dict[str, str],

@@ -16,7 +16,7 @@ function createMockFetch(responseMap: {
   ): Promise<Response> => {
     const url = input.toString();
 
-    if (url.includes("/v1beta/models?")) {
+    if (/\/v1beta\/models(?:\?|$)/.test(url)) {
       const cfg = responseMap.models || { status: 200, body: GEMINI_FIXTURES.modelsSuccess };
       return new Response(JSON.stringify(cfg.body), {
         status: cfg.status,

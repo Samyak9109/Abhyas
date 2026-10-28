@@ -40,7 +40,10 @@ describe("API Key Egress and Leak Protection (FR-005, NFR-005)", () => {
       const parsedUrl = new URL(req.url);
       // Origin MUST strictly match Gemini approved provider origin
       expect(parsedUrl.origin).toBe("https://generativelanguage.googleapis.com");
-      expect(req.url).toContain(SECRET_KEY);
+      // Key must be in x-goog-api-key header, never in URL
+      expect(req.url).not.toContain(SECRET_KEY);
+      const keyHeader = (req.headers as Record<string, string>)?.["x-goog-api-key"] || "";
+      expect(keyHeader).toBe(SECRET_KEY);
     }
   });
 

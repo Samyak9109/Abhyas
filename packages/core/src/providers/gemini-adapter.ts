@@ -98,10 +98,13 @@ export class GeminiAdapter implements ProviderAdapter {
   }
 
   async listModels(): Promise<Result<ModelInfo[]>> {
-    const url = `${this.baseUrl}/v1beta/models?key=${encodeURIComponent(this.apiKey)}`;
+    const url = `${this.baseUrl}/v1beta/models`;
     try {
       assertAllowedDestination(url);
-      const res = await this.fetchFn(url, { method: "GET" });
+      const res = await this.fetchFn(url, {
+        method: "GET",
+        headers: { "x-goog-api-key": this.apiKey },
+      });
       if (!res.ok) {
         const errJson = (await res.json().catch(() => ({}))) as GeminiListModelsResponse;
         return {
@@ -140,7 +143,7 @@ export class GeminiAdapter implements ProviderAdapter {
     }
 
     const model = this.defaultModel;
-    const url = `${this.baseUrl}/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${encodeURIComponent(this.apiKey)}`;
+    const url = `${this.baseUrl}/v1beta/models/${model}:streamGenerateContent?alt=sse`;
     assertAllowedDestination(url);
 
     const body = this.buildGeminiBody(messages, opts);
@@ -149,7 +152,10 @@ export class GeminiAdapter implements ProviderAdapter {
     try {
       res = await this.fetchFn(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": this.apiKey,
+        },
         body: JSON.stringify(body),
         signal: opts.signal,
       });
@@ -240,7 +246,7 @@ export class GeminiAdapter implements ProviderAdapter {
     }
 
     const model = this.defaultModel;
-    const url = `${this.baseUrl}/v1beta/models/${model}:generateContent?key=${encodeURIComponent(this.apiKey)}`;
+    const url = `${this.baseUrl}/v1beta/models/${model}:generateContent`;
 
     // Try once, and retry once on schema/json parsing failure (architecture.md section 7).
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -256,7 +262,10 @@ export class GeminiAdapter implements ProviderAdapter {
         const body = this.buildGeminiBody(messages, opts, true);
         const res = await this.fetchFn(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": this.apiKey,
+          },
           body: JSON.stringify(body),
           signal: opts.signal,
         });

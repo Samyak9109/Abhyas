@@ -478,6 +478,40 @@ export function LandingPage() {
             <div className="abh-faq-list">
               <details className="abh-faq-item">
                 <summary className="abh-faq-summary">
+                  <span>Why choose Abhyas over other interview prep platforms?</span>
+                  <span className="abh-faq-icon" aria-hidden="true">
+                    +
+                  </span>
+                </summary>
+                <div className="abh-faq-body">
+                  Most interview platforms charge costly subscriptions, store your personal resumes
+                  and speech recordings on their central servers, and provide generic &ldquo;good
+                  job&rdquo; praise. Abhyas is completely free, 100% open-source, and architected
+                  around client-side privacy: your data and audio never touch an intermediary server.
+                  Moreover, Abhyas provides rigorous, rubric-calibrated scoring with grounded rewrites
+                  that never invent facts absent from your profile.
+                </div>
+              </details>
+
+              <details className="abh-faq-item">
+                <summary className="abh-faq-summary">
+                  <span>How is Abhyas better than commercial AI interview competitors?</span>
+                  <span className="abh-faq-icon" aria-hidden="true">
+                    +
+                  </span>
+                </summary>
+                <div className="abh-faq-body">
+                  Commercial tools lock you into a single proprietary AI model, force account
+                  registration, and gate realistic mock sessions behind paywalls. Abhyas gives you
+                  sovereignty with Bring-Your-Own-Key (BYOK) support across Gemini, OpenAI, Claude,
+                  Hugging Face, and local offline engines (Ollama, WebLLM). You get honest level-calibrated
+                  difficulty, skill streak analytics without guilt resets, evidenced company packs,
+                  and calendar spaced repetition — all running locally in your browser.
+                </div>
+              </details>
+
+              <details className="abh-faq-item">
+                <summary className="abh-faq-summary">
                   <span>Is Abhyas free to use?</span>
                   <span className="abh-faq-icon" aria-hidden="true">
                     +
@@ -486,7 +520,7 @@ export function LandingPage() {
                 <div className="abh-faq-body">
                   Yes, Abhyas is completely free and open-source under the MIT license. You bring
                   your own API key (BYOK) from providers like Google Gemini (which offers a generous
-                  free tier) or OpenAI.
+                  free tier) or OpenAI, or run completely free offline models.
                 </div>
               </details>
 
@@ -513,8 +547,8 @@ export function LandingPage() {
                 </summary>
                 <div className="abh-faq-body">
                   Yes. Voice and text are equal first-class citizens. You can speak your answer
-                  using push-to-talk, edit the transcribed text before submitting, or switch
-                  entirely to typing at any point.
+                  using push-to-talk or on-device hands-free voice activity detection (VAD), edit
+                  the transcribed text before submitting, or switch entirely to typing at any point.
                 </div>
               </details>
 
@@ -527,8 +561,8 @@ export function LandingPage() {
                 </summary>
                 <div className="abh-faq-body">
                   Yes, once the static web assets are loaded, you can run drills with question banks
-                  offline. Furthermore, connecting to a local Ollama or OpenAI-compatible server on
-                  your machine allows complete interview sessions with zero internet connection.
+                  offline. Furthermore, connecting to WebGPU in-browser models or a local Ollama
+                  server on your machine allows complete interview sessions with zero internet connection.
                 </div>
               </details>
 

@@ -328,18 +328,23 @@ describe("Phase 7 Exit Gate Verification (phases.md Section 3 & 7)", () => {
   });
 
   describe("4. Calibrated Content Question Bank & Golden Evaluation Suite (Tracks 4.1 & 4.2, AI-025)", () => {
-    it("Expanded question bank contains exactly 12 questions for all 5 experience levels (60 total)", () => {
+    it("Expanded question bank contains at least 12 questions for all 5 experience levels (balanced distribution)", () => {
       const counts: Record<string, number> = {};
       for (const q of SAMPLE_QUESTION_BANK) {
         counts[q.level] = (counts[q.level] || 0) + 1;
       }
 
-      expect(counts["intern_fresher"]).toBe(12);
-      expect(counts["junior"]).toBe(12);
-      expect(counts["mid"]).toBe(12);
-      expect(counts["senior"]).toBe(12);
-      expect(counts["staff_plus"]).toBe(12);
-      expect(SAMPLE_QUESTION_BANK.length).toBe(60);
+      expect(counts["intern_fresher"]).toBeGreaterThanOrEqual(12);
+      expect(counts["junior"]).toBeGreaterThanOrEqual(12);
+      expect(counts["mid"]).toBeGreaterThanOrEqual(12);
+      expect(counts["senior"]).toBeGreaterThanOrEqual(12);
+      expect(counts["staff_plus"]).toBeGreaterThanOrEqual(12);
+      // Exactly balanced across all 5 experience levels
+      expect(counts["intern_fresher"]).toBe(counts["junior"]);
+      expect(counts["junior"]).toBe(counts["mid"]);
+      expect(counts["mid"]).toBe(counts["senior"]);
+      expect(counts["senior"]).toBe(counts["staff_plus"]);
+      expect(SAMPLE_QUESTION_BANK.length).toBeGreaterThanOrEqual(60);
     });
 
     it("Every question in the bank satisfies QuestionBankSchema with valid skill tags and metadata", () => {

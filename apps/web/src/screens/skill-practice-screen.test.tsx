@@ -211,9 +211,9 @@ describe("M2.4: SkillPracticeScreen (PG-16, FR-016)", () => {
 
       expect(await screen.findByRole("heading", { name: "Skill Practice_" })).toBeTruthy();
 
-      // Find a skill that has 0 bank questions at intern_fresher level, e.g. "cloud_devops"
-      const devopsButton = screen.getByRole("radio", { name: /Cloud & DevOps/i });
-      fireEvent.click(devopsButton);
+      // Find a skill that has 0 bank questions at intern_fresher level, e.g. "leadership"
+      const leadershipButton = screen.getByRole("radio", { name: /Leadership/i });
+      fireEvent.click(leadershipButton);
 
       // Shows warning callout for missing questions
       expect(await screen.findByText(/No bank questions at/i)).toBeTruthy();

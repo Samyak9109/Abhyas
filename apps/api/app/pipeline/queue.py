@@ -1,6 +1,6 @@
 """Research queue prioritizer and job dispatcher (M5.3, ADR-010, architecture 15.3)."""
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import func, select
@@ -30,7 +30,8 @@ class QueueManager:
         limit: int = 50,
     ) -> list[dict[str, Any]]:
         """Return queued companies ordered by distinct demand (DESC), then age (ASC)."""
-        window_start = date.today() - timedelta(days=self.settings.demand_window_days)
+        utc_today = datetime.now(UTC).date()
+        window_start = utc_today - timedelta(days=self.settings.demand_window_days)
 
         # 1. Fetch companies with status='queued'
         stmt = select(Company).where(Company.status == "queued")
@@ -44,14 +45,14 @@ class QueueManager:
         for company in queued_companies:
             req_stmt = select(
                 func.count(func.distinct(ResearchRequest.client_hash)).label("distinct_count"),
-                func.coalesce(func.min(ResearchRequest.day), date.today()).label("oldest_day"),
+                func.coalesce(func.min(ResearchRequest.day), utc_today).label("oldest_day"),
             ).where(
                 ResearchRequest.company_slug == company.slug,
                 ResearchRequest.day >= window_start,
             )
             res = (await session.execute(req_stmt)).one()
             distinct_count = res.distinct_count or 0
-            oldest_day = res.oldest_day or date.today()
+            oldest_day = res.oldest_day or utc_today
 
             queue_items.append(
                 {

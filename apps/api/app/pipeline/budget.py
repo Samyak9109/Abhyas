@@ -1,6 +1,6 @@
 """Budget guard, spending tracker, and kill-switch manager (M5.3, ADR-010, architecture 15.3)."""
 
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -38,7 +38,8 @@ class BudgetManager:
 
     async def get_daily_spend_cents(self, session: AsyncSession) -> float:
         """Sum cost_estimate for all jobs started since UTC midnight."""
-        today_start = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=UTC)
+        utc_today = datetime.now(UTC).date()
+        today_start = datetime.combine(utc_today, datetime.min.time(), tzinfo=UTC)
         stmt = select(func.coalesce(func.sum(ResearchJob.cost_estimate), 0.0)).where(
             ResearchJob.started_at >= today_start
         )
@@ -46,8 +47,8 @@ class BudgetManager:
 
     async def get_monthly_spend_cents(self, session: AsyncSession) -> float:
         """Sum cost_estimate for all jobs started since start of current UTC month."""
-        today = date.today()
-        month_start = datetime(today.year, today.month, 1, tzinfo=UTC)
+        utc_today = datetime.now(UTC).date()
+        month_start = datetime(utc_today.year, utc_today.month, 1, tzinfo=UTC)
         stmt = select(func.coalesce(func.sum(ResearchJob.cost_estimate), 0.0)).where(
             ResearchJob.started_at >= month_start
         )

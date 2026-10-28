@@ -1,7 +1,7 @@
 """Public company pack retrieval and demand registration routes (FR-026, ADR-009, ADR-010)."""
 
 import hashlib
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy import func, select
@@ -212,7 +212,7 @@ async def register_company_demand(
             )
 
     # 3. Create deduplicated request record (hashed IP + daily salt + client token)
-    today = date.today()
+    today = datetime.now(UTC).date()
     salt = f"abhyas-salt-{today.isoformat()}"
     client_raw = f"{client_ip}:{payload.client_token or ''}:{salt}"
     client_hash = hashlib.sha256(client_raw.encode("utf-8")).hexdigest()

@@ -16,6 +16,7 @@ import {
   OpenSourcePage,
   KeyGuidePage,
   LocalModelsGuidePage,
+  RoadmapPage,
   TroubleshootingPage,
   NotFoundPage,
 } from "./index";
@@ -264,6 +265,45 @@ describe("M1.9: Public Static Pages & Docs (FR-033, ADR-019)", () => {
 
       document.documentElement.setAttribute("data-theme", "paper");
       rerender(<NotFoundPage mode="not-found" />);
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe("PG-07: Roadmap and Changelog (Could)", () => {
+    it("renders phases in plain words, current verified status, and release notes without promised dates", () => {
+      render(<RoadmapPage />);
+
+      // Hero heading & title
+      expect(
+        screen.getByRole("heading", { name: /roadmap & release notes/i })
+      ).toBeTruthy();
+
+      // Phases rendered
+      expect(screen.getByRole("heading", { name: /1\. roadmap by phase/i })).toBeTruthy();
+      expect(screen.getByText(/foundations & safe architecture/i)).toBeTruthy();
+      expect(screen.getByText(/core interview loop & public launch/i)).toBeTruthy();
+      expect(screen.getByText(/skills dashboard & habit engine/i)).toBeTruthy();
+      expect(screen.getByText(/in-browser & local models/i)).toBeTruthy();
+      expect(screen.getByText(/curated company context packs/i)).toBeTruthy();
+      expect(screen.getByText(/demand-gated research service/i)).toBeTruthy();
+      expect(screen.getByText(/preparation schedule & spaced review/i)).toBeTruthy();
+      expect(screen.getByText(/advanced providers & on-device speech/i)).toBeTruthy();
+
+      // Changelog section
+      expect(
+        screen.getByRole("heading", { name: /2\. changelog & release history/i })
+      ).toBeTruthy();
+      expect(screen.getByText(/v0\.9\.3/i)).toBeTruthy();
+      expect(screen.getByText(/v0\.3\.8/i)).toBeTruthy();
+    });
+
+    it("has zero axe accessibility violations under Ink and Paper themes", async () => {
+      document.documentElement.setAttribute("data-theme", "ink");
+      const { container, rerender } = render(<RoadmapPage />);
+      expect(await axe(container)).toHaveNoViolations();
+
+      document.documentElement.setAttribute("data-theme", "paper");
+      rerender(<RoadmapPage />);
       expect(await axe(container)).toHaveNoViolations();
     });
   });

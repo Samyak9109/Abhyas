@@ -132,6 +132,9 @@ export function PublicFooter() {
             <a href="/guide/local-models" className="abh-footer-link">
               Local models guide
             </a>
+            <a href="/roadmap" className="abh-footer-link">
+              Roadmap &amp; changelog
+            </a>
             <a href="/help" className="abh-footer-link">
               Troubleshooting &amp; support
             </a>

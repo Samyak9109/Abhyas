@@ -6,6 +6,7 @@ import { OpenSourcePage } from "./OpenSourcePage";
 import { KeyGuidePage } from "./KeyGuidePage";
 import { TroubleshootingPage } from "./TroubleshootingPage";
 import { LocalModelsGuidePage } from "./LocalModelsGuidePage";
+import { RoadmapPage } from "./RoadmapPage";
 import { NotFoundPage } from "./NotFoundPage";
 
 export interface PageMetadata {
@@ -21,6 +22,7 @@ export const PUBLIC_ROUTES = [
   "/open-source",
   "/guide/keys",
   "/guide/local-models",
+  "/roadmap",
   "/help",
   "/404",
 ] as const;
@@ -66,6 +68,14 @@ export function renderPage(route: string): PageMetadata {
         description:
           "Run interview practice 100% offline or with zero cloud egress using in-browser WebGPU models or local servers (Ollama, LM Studio) with CORS setup instructions.",
         html: renderToStaticMarkup(<LocalModelsGuidePage />),
+      };
+    case "/roadmap":
+      return {
+        route,
+        title: "Roadmap & Release Notes — Abhyas",
+        description:
+          "Development phases in plain words, current verified status, and release notes. No dates promised.",
+        html: renderToStaticMarkup(<RoadmapPage />),
       };
     case "/help":
       return {

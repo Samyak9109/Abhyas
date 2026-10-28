@@ -31,6 +31,8 @@ import {
   PrivacyPage,
   OpenSourcePage,
   KeyGuidePage,
+  LocalModelsGuidePage,
+  RoadmapPage,
   TroubleshootingPage,
   NotFoundPage,
 } from "./screens/public";
@@ -81,6 +83,8 @@ type AppRoute =
   | "/privacy"
   | "/open-source"
   | "/guide/keys"
+  | "/guide/local-models"
+  | "/roadmap"
   | "/help"
   | "/404"
   | "/app/home"
@@ -104,6 +108,8 @@ function isPublicRoute(r: AppRoute): boolean {
     r === "/privacy" ||
     r === "/open-source" ||
     r === "/guide/keys" ||
+    r === "/guide/local-models" ||
+    r === "/roadmap" ||
     r === "/help" ||
     r === "/404"
   );
@@ -115,6 +121,8 @@ function getInitialRoute(): AppRoute {
     if (path === "/privacy") return "/privacy";
     if (path === "/open-source") return "/open-source";
     if (path === "/guide/keys") return "/guide/keys";
+    if (path === "/guide/local-models") return "/guide/local-models";
+    if (path === "/roadmap") return "/roadmap";
     if (path === "/help") return "/help";
     if (path === "/404") return "/404";
     if (path === "/") return "/";
@@ -319,6 +327,10 @@ export function App() {
         return <OpenSourcePage />;
       case "/guide/keys":
         return <KeyGuidePage />;
+      case "/guide/local-models":
+        return <LocalModelsGuidePage />;
+      case "/roadmap":
+        return <RoadmapPage />;
       case "/help":
         return <TroubleshootingPage />;
       case "/404":

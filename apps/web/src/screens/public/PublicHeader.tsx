@@ -111,6 +111,13 @@ export function PublicHeader({
           &#123; Local Models &#125;
         </a>
         <a
+          href="/roadmap"
+          className="abh-nav-link"
+          aria-current={currentPath === "/roadmap" ? "page" : undefined}
+        >
+          &#123; Roadmap &#125;
+        </a>
+        <a
           href="/help"
           className="abh-nav-link"
           aria-current={currentPath === "/help" ? "page" : undefined}
@@ -196,6 +203,9 @@ export function PublicHeader({
             onClick={() => setMobileMenuOpen(false)}
           >
             &#123; Local Models &#125;
+          </a>
+          <a href="/roadmap" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
+            &#123; Roadmap &#125;
           </a>
           <a href="/help" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
             &#123; Help &#125;

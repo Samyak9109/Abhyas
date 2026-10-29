@@ -519,5 +519,35 @@ describe("M1.7: ResultsScreen (PG-13)", () => {
       const results = await axe(container);
       expect(results.violations).toEqual([]);
     });
+
+    it("triggers onRetryQuestion callback with question ID when Retry button is clicked", async () => {
+      const storage = new MemoryStorageAdapter();
+      const { session, turns } = createSeedData("text");
+      await storage.put("sessions", session);
+      for (const turn of turns) {
+        await storage.put("turns", turn);
+      }
+      await storage.put("structuredProfiles", mockProfile);
+
+      const onRetryMock = vi.fn();
+
+      render(
+        <ResultsScreen
+          storage={storage}
+          sessionId={session.id}
+          onRetryQuestion={onRetryMock}
+          onFinish={vi.fn()}
+          onNavigateHome={vi.fn()}
+        />
+      );
+
+      await screen.findByRole("heading", { name: /interview scorecard/i });
+
+      // Click "Retry Weakest Question"
+      const retryBtn = screen.getByRole("button", { name: /retry weakest question/i });
+      fireEvent.click(retryBtn);
+
+      expect(onRetryMock).toHaveBeenCalledWith(turns[0]!.questionId);
+    });
   });
 });

@@ -1,11 +1,14 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import {
   selectQuestions,
+  SessionPlanSchema,
+  type ProfileRow,
   type StructuredProfile,
   type SelectedQuestion,
   type SessionPlan,
   type StorageAdapter,
   type CompanyPack,
+  type TurnRow,
 } from "@abhyas/core";
 import { AbhyasLoader, Banner, BrandMark, Button, Callout, Skeleton } from "./components";
 import { HomeScreen } from "./screens/HomeScreen";
@@ -194,6 +197,7 @@ export function App() {
   const [init, setInit] = useState<InitState>({ status: "loading" });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [retryError, setRetryError] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<{
     plan: SessionPlan;
     questions: SelectedQuestion[];
@@ -306,6 +310,86 @@ export function App() {
     [storage, navigateTo]
   );
 
+  // Dedicated single-question retry handler (FR-016 / PG-12 / PG-13)
+  const handleRetryQuestion = useCallback(
+    async (qid: string) => {
+      if (init.status !== "ready") return;
+      const currentStorage = init.storage;
+
+      let foundQuestion: SelectedQuestion | null = null;
+      const bankItem = DEFAULT_QUESTION_BANK.find((q) => q.id === qid);
+      if (bankItem) {
+        foundQuestion = {
+          id: bankItem.id,
+          bankId: bankItem.id,
+          text: bankItem.text,
+          originalText: bankItem.text,
+          skillTags:
+            bankItem.skillTags && bankItem.skillTags.length > 0
+              ? bankItem.skillTags
+              : ["general"],
+          difficulty: (bankItem.difficulty ?? 3) / 5,
+          isUnverified: false,
+          rationale: "Retrying previous interview question",
+        };
+      } else {
+        try {
+          const allTurns = await currentStorage.getAll<TurnRow>("turns");
+          const matchingTurn = allTurns.find((t) => t.questionId === qid);
+          if (matchingTurn) {
+            foundQuestion = {
+              id: matchingTurn.questionId || qid,
+              bankId: matchingTurn.questionId || qid,
+              text: matchingTurn.questionText,
+              originalText: matchingTurn.questionText,
+              skillTags:
+                matchingTurn.skillTags && matchingTurn.skillTags.length > 0
+                  ? matchingTurn.skillTags
+                  : ["general"],
+              difficulty: matchingTurn.difficulty ?? 0.5,
+              isUnverified: matchingTurn.isUnverifiedQuestion ?? false,
+              rationale: "Retrying previous interview question",
+            };
+          }
+        } catch {
+          // Handled by validation check below
+        }
+      }
+
+      if (!foundQuestion) {
+        setRetryError(`Question "${qid}" could not be found to retry.`);
+        return;
+      }
+
+      try {
+        const profiles = await currentStorage.getAll<ProfileRow>("profile");
+        const profile = profiles[0] ?? null;
+
+        const retryPlan: SessionPlan = SessionPlanSchema.parse({
+          sessionId: crypto.randomUUID(),
+          type: "mixed",
+          length: 1,
+          style: "standard",
+          inputMode: "text",
+          level: profile?.level ?? "mid",
+          targetRole: profile?.targetRole ?? "Software Engineer",
+          createdAt: new Date().toISOString(),
+          isDrill: true,
+          targetSkillId: foundQuestion.skillTags[0],
+        });
+
+        setRetryError(null);
+        setActiveSession({ plan: retryPlan, questions: [foundQuestion] });
+        navigateTo("/app/interview");
+      } catch (err) {
+        setRetryError(
+          err instanceof Error ? err.message : "Failed to start retry session for question."
+        );
+      }
+    },
+    [init, navigateTo]
+  );
+
   // After delete-all the settings table is empty; reset the applied theme and
   // the pre-paint mirror to the default instead of leaving a stale preference.
   const handleDataDeleted = useCallback(() => {
@@ -406,6 +490,17 @@ export function App() {
 
   const renderTopBanners = () => (
     <>
+      {retryError && (
+        <Banner
+          variant="danger"
+          message={retryError}
+          action={
+            <Button variant="ghost" onClick={() => setRetryError(null)}>
+              Dismiss
+            </Button>
+          }
+        />
+      )}
       {renderPwaUpdateBanner()}
       {renderOfflineBanner()}
     </>
@@ -721,7 +816,7 @@ export function App() {
             <ResultsScreen
               storage={init.storage}
               sessionId={resultsSessionId ?? ""}
-              onRetryQuestion={() => navigateTo("/app/setup/session")}
+              onRetryQuestion={(qid) => void handleRetryQuestion(qid)}
               onPracticeSkill={() => navigateTo("/app/practice")}
               onNavigateSkills={() => navigateTo("/app/skills")}
               onFinish={() => {
@@ -801,9 +896,7 @@ export function App() {
                 setPracticeSkillId(skillId);
                 navigateTo("/app/practice");
               }}
-              onRetryQuestion={(_qid) => {
-                navigateTo("/app/setup/session");
-              }}
+              onRetryQuestion={(qid) => void handleRetryQuestion(qid)}
             />
           </Suspense>
         </main>

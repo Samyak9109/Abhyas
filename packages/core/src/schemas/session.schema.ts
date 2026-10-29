@@ -13,7 +13,13 @@ export type InterviewerStyle = z.infer<typeof InterviewerStyleSchema>;
 export const InputModeSchema = z.enum(["text", "voice"]);
 export type InputMode = z.infer<typeof InputModeSchema>;
 
-export const SessionLengthSchema = z.union([z.literal(5), z.literal(10), z.literal(15)]);
+// Session length in questions. 1 is supported for single-question retry/drill sessions.
+export const SessionLengthSchema = z.union([
+  z.literal(1),
+  z.literal(5),
+  z.literal(10),
+  z.literal(15),
+]);
 export type SessionLength = z.infer<typeof SessionLengthSchema>;
 
 // "mixed" means a proportional blend across all question types.

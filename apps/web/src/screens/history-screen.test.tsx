@@ -87,6 +87,7 @@ async function createFilledStorage() {
   const turn2: TurnRow = {
     id: "t_2",
     sessionId: "s_2",
+    questionId: "q_2",
     index: 0,
     isUnverifiedQuestion: false,
     skillTags: ["dsa"],
@@ -450,6 +451,34 @@ describe("M2.5: HistoryScreen (PG-17, FR-019)", () => {
         expect(screen.getByText("Basic Feedback Mode")).toBeTruthy();
         expect(screen.getByText("Basic Feedback")).toBeTruthy();
       });
+    });
+
+    it("triggers onRetryQuestion callback with question ID from session detail", async () => {
+      const storage = await createFilledStorage();
+      const onRetryMock = vi.fn();
+
+      render(
+        <HistoryScreen
+          storage={storage}
+          initialSessionId="s_2"
+          onRetryQuestion={onRetryMock}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Session Score & Calibration")).toBeTruthy();
+      });
+
+      // Expand the question disclosure in Questions, Answers & Feedback section
+      const questionToggle = screen.getByText(
+        "What is the time complexity of searching in a balanced BST?"
+      );
+      fireEvent.click(questionToggle);
+
+      const retryBtn = await screen.findByRole("button", { name: /practice this question/i });
+      fireEvent.click(retryBtn);
+
+      expect(onRetryMock).toHaveBeenCalledWith("q_2");
     });
   });
 });

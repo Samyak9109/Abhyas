@@ -145,6 +145,14 @@ describe("M1.1: App shell", () => {
     expect(await screen.findByText(/session not found/i)).toBeTruthy();
   });
 
+  it("handles history navigation cleanly", async () => {
+    window.history.pushState({}, "", "/app/history");
+    render(<App />);
+
+    // Initial history view without sessions
+    expect(await screen.findByRole("heading", { name: "History & Transcripts" })).toBeTruthy();
+  });
+
   it("has no axe violations once loaded", async () => {
     const { container } = render(<App />);
     await screen.findByText(/running in memory/i);

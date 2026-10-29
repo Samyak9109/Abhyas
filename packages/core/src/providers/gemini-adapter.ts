@@ -12,6 +12,10 @@ import type {
   Result,
   StreamChunk,
 } from "./types";
+import {
+  classifyHttpError as sharedClassifyHttpError,
+  classifyException as sharedClassifyException,
+} from "./error-classifier";
 
 export interface GeminiAdapterConfig {
   apiKey: string;
@@ -378,59 +382,30 @@ export class GeminiAdapter implements ProviderAdapter {
   }
 
   private classifyHttpError(status: number, message?: string, errStatus?: string): ProviderError {
-    const msg = message || `HTTP error ${status}`;
-    if (
-      status === 400 &&
-      (errStatus === "INVALID_ARGUMENT" ||
-        msg.includes("API_KEY_INVALID") ||
-        msg.includes("key not valid"))
-    ) {
-      return { kind: "auth", message: "Invalid Gemini API key", retryable: false };
-    }
-    if (status === 401 || status === 403) {
-      return {
-        kind: "auth",
-        message: "Gemini API authentication failed (check key permissions)",
-        retryable: false,
-      };
-    }
-    if (status === 429 || errStatus === "RESOURCE_EXHAUSTED" || msg.includes("quota")) {
-      return { kind: "quota", message: "Gemini API rate limit or quota exceeded", retryable: true };
-    }
-    if (status === 404) {
-      return {
-        kind: "model_not_found",
-        message: "Requested Gemini model was not found",
-        retryable: false,
-      };
-    }
-    if (status >= 500) {
-      return {
-        kind: "network",
-        message: "Gemini service temporarily unavailable (server error)",
-        retryable: true,
-      };
-    }
-    return { kind: "unknown", message: msg, retryable: false };
+    return sharedClassifyHttpError(status, message, errStatus, {
+      providerName: "Gemini",
+      authMessage: "Gemini API authentication failed (check key permissions)",
+      quotaMessage: "Gemini API rate limit or quota exceeded",
+      modelNotFoundMessage: "Requested Gemini model was not found",
+      serverErrorMessage: "Gemini service temporarily unavailable (server error)",
+      classifyCustom: (st, msg, errSt) => {
+        if (
+          st === 400 &&
+          (errSt === "INVALID_ARGUMENT" ||
+            msg.includes("API_KEY_INVALID") ||
+            msg.includes("key not valid"))
+        ) {
+          return { kind: "auth", message: "Invalid Gemini API key", retryable: false };
+        }
+        if (st === 429 || errSt === "RESOURCE_EXHAUSTED" || msg.includes("quota")) {
+          return { kind: "quota", message: "Gemini API rate limit or quota exceeded", retryable: true };
+        }
+        return undefined;
+      },
+    });
   }
 
   private classifyException(err: unknown): ProviderError {
-    if (err instanceof Error) {
-      if (err.name === "AbortError" || err.message.toLowerCase().includes("aborted")) {
-        return { kind: "aborted", message: "Request cancelled by user", retryable: false };
-      }
-      if (
-        err.name === "TypeError" &&
-        (err.message.includes("fetch") || err.message.includes("NetworkError"))
-      ) {
-        return {
-          kind: "network",
-          message: "Network connection failure or CORS restriction",
-          retryable: true,
-        };
-      }
-      return { kind: "unknown", message: err.message, retryable: false };
-    }
-    return { kind: "unknown", message: "Unexpected provider error", retryable: false };
+    return sharedClassifyException(err, { providerName: "Gemini" });
   }
 }

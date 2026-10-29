@@ -13,6 +13,10 @@ import type {
   Result,
   StreamChunk,
 } from "./types";
+import {
+  classifyHttpError as sharedClassifyHttpError,
+  classifyException as sharedClassifyException,
+} from "./error-classifier";
 
 export interface OpenAIAdapterConfig {
   id?: "openai" | "openai-compatible" | undefined;
@@ -353,44 +357,34 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   }
 
   private classifyHttpError(status: number, message?: string, code?: string): ProviderError {
-    const msg = message || `HTTP error ${status}`;
-    if (status === 401 || code === "invalid_api_key") {
-      return { kind: "auth", message: "Invalid API key or unauthorized", retryable: false };
-    }
-    if (
-      status === 429 ||
-      code === "insufficient_quota" ||
-      code === "rate_limit_exceeded" ||
-      msg.toLowerCase().includes("quota")
-    ) {
-      return { kind: "quota", message: "API rate limit or quota exceeded", retryable: true };
-    }
-    if (status === 404 || code === "model_not_found") {
-      return {
-        kind: "model_not_found",
-        message: "Requested model was not found",
-        retryable: false,
-      };
-    }
-    if (status >= 500) {
-      return {
-        kind: "network",
-        message: "Service temporarily unavailable (server error)",
-        retryable: true,
-      };
-    }
-    return { kind: "unknown", message: msg, retryable: false };
+    return sharedClassifyHttpError(status, message, code, {
+      providerName: "OpenAI-compatible",
+      authMessage: "Invalid API key or unauthorized",
+      quotaMessage: "API rate limit or quota exceeded",
+      modelNotFoundMessage: "Requested model was not found",
+      serverErrorMessage: "Service temporarily unavailable (server error)",
+      classifyCustom: (_st, msg, cd) => {
+        if (cd === "invalid_api_key") {
+          return { kind: "auth", message: "Invalid API key or unauthorized", retryable: false };
+        }
+        if (
+          cd === "insufficient_quota" ||
+          cd === "rate_limit_exceeded" ||
+          msg.toLowerCase().includes("quota")
+        ) {
+          return { kind: "quota", message: "API rate limit or quota exceeded", retryable: true };
+        }
+        if (cd === "model_not_found") {
+          return { kind: "model_not_found", message: "Requested model was not found", retryable: false };
+        }
+        return undefined;
+      },
+    });
   }
 
   private classifyException(err: unknown): ProviderError {
-    if (err instanceof Error) {
-      if (err.name === "AbortError" || err.message.toLowerCase().includes("aborted")) {
-        return { kind: "aborted", message: "Request cancelled by user", retryable: false };
-      }
-      if (
-        err.name === "TypeError" &&
-        (err.message.includes("fetch") || err.message.includes("NetworkError"))
-      ) {
+    return sharedClassifyException(err, {
+      onNetworkOrFetchError: () => {
         const isLocal =
           this.baseUrl.includes("localhost") ||
           this.baseUrl.includes("127.0.0.1") ||
@@ -407,9 +401,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
           message: "Network connection failure or CORS restriction",
           retryable: true,
         };
-      }
-      return { kind: "unknown", message: err.message, retryable: false };
-    }
-    return { kind: "unknown", message: "Unexpected provider error", retryable: false };
+      },
+    });
   }
 }

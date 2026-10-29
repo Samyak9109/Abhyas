@@ -20,6 +20,7 @@ export * from "./providers/openai-compatible-adapter";
 export * from "./providers/ollama-adapter";
 export * from "./providers/anthropic-adapter";
 export * from "./providers/huggingface-adapter";
+export * from "./providers/error-classifier";
 export * from "./providers/encryption";
 export * from "./providers/cost-estimator";
 export * from "./schemas";

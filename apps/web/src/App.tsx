@@ -705,11 +705,18 @@ export function App() {
     </aside>
   );
 
-  if (route === "/app/setup/ai") {
-    return (
-      <div className="abh-app abh-app--standalone">
-        {renderTopBanners()}
-        <Suspense fallback={screenLoading}>
+  // Design intent (PG-01 to PG-20): Single layout wrapper unifying navigation, top system banners,
+  // and route-level suspense boundaries across standalone and sidebar-backed views.
+  const isStandalone =
+    route === "/app/setup/ai" ||
+    route === "/app/setup/profile" ||
+    route === "/app/setup/session" ||
+    route === "/app/interview";
+
+  const renderCurrentScreen = () => {
+    switch (route) {
+      case "/app/setup/ai":
+        return (
           <AISetupScreen
             storage={init.storage}
             onComplete={() => navigateTo("/app/setup/profile")}
@@ -717,16 +724,10 @@ export function App() {
             onNavigateModelManager={() => navigateTo("/app/models")}
             onNavigateHome={() => navigateTo("/app/home")}
           />
-        </Suspense>
-      </div>
-    );
-  }
+        );
 
-  if (route === "/app/setup/profile") {
-    return (
-      <div className="abh-app abh-app--standalone">
-        {renderTopBanners()}
-        <Suspense fallback={screenLoading}>
+      case "/app/setup/profile":
+        return (
           <ProfileScreen
             storage={init.storage}
             onComplete={() => navigateTo("/app/setup/session")}
@@ -734,16 +735,10 @@ export function App() {
             onNavigateSettings={() => navigateTo("/app/settings")}
             onNavigateHome={() => navigateTo("/app/home")}
           />
-        </Suspense>
-      </div>
-    );
-  }
+        );
 
-  if (route === "/app/setup/session") {
-    return (
-      <div className="abh-app abh-app--standalone">
-        {renderTopBanners()}
-        <Suspense fallback={screenLoading}>
+      case "/app/setup/session":
+        return (
           <SessionSetupScreen
             storage={init.storage}
             initialCompanySlug={selectedCompanySlugForSession}
@@ -753,33 +748,24 @@ export function App() {
             onNavigateSettings={() => navigateTo("/app/settings")}
             onNavigateHome={() => navigateTo("/app/home")}
           />
-        </Suspense>
-      </div>
-    );
-  }
+        );
 
-  if (route === "/app/interview") {
-    if (!activeSession) {
-      return (
-        <div className="abh-app abh-app--standalone">
-          <main className="abh-app-main" style={{ padding: "var(--space-6)" }}>
-            <Callout variant="info" title="No active interview session">
-              Please configure your interview settings to begin a session.
-            </Callout>
-            <div style={{ marginTop: "var(--space-4)" }}>
-              <Button variant="primary" onClick={() => navigateTo("/app/setup/session")}>
-                Go to Session Setup
-              </Button>
-            </div>
-          </main>
-        </div>
-      );
-    }
-
-    return (
-      <div className="abh-app abh-app--standalone">
-        {renderTopBanners()}
-        <Suspense fallback={screenLoading}>
+      case "/app/interview":
+        if (!activeSession) {
+          return (
+            <main className="abh-app-main" style={{ padding: "var(--space-6)" }}>
+              <Callout variant="info" title="No active interview session">
+                Please configure your interview settings to begin a session.
+              </Callout>
+              <div style={{ marginTop: "var(--space-4)" }}>
+                <Button variant="primary" onClick={() => navigateTo("/app/setup/session")}>
+                  Go to Session Setup
+                </Button>
+              </div>
+            </main>
+          );
+        }
+        return (
           <LiveInterviewScreen
             storage={init.storage}
             plan={activeSession.plan}
@@ -800,115 +786,72 @@ export function App() {
               navigateTo("/app/setup/session");
             }}
           />
-        </Suspense>
-      </div>
-    );
-  }
+        );
 
-  if (route === "/app/results") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
-          <Suspense fallback={screenLoading}>
-            <ResultsScreen
-              storage={init.storage}
-              sessionId={resultsSessionId ?? ""}
-              onRetryQuestion={(qid) => void handleRetryQuestion(qid)}
-              onPracticeSkill={() => navigateTo("/app/practice")}
-              onNavigateSkills={() => navigateTo("/app/skills")}
-              onFinish={() => {
-                setResultsSessionId(null);
-                navigateTo("/app/home");
-              }}
-              onNavigateHome={() => {
-                setResultsSessionId(null);
-                navigateTo("/app/home");
-              }}
-            />
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
+      case "/app/results":
+        return (
+          <ResultsScreen
+            storage={init.storage}
+            sessionId={resultsSessionId ?? ""}
+            onRetryQuestion={(qid) => void handleRetryQuestion(qid)}
+            onPracticeSkill={() => navigateTo("/app/practice")}
+            onNavigateSkills={() => navigateTo("/app/skills")}
+            onFinish={() => {
+              setResultsSessionId(null);
+              navigateTo("/app/home");
+            }}
+            onNavigateHome={() => {
+              setResultsSessionId(null);
+              navigateTo("/app/home");
+            }}
+          />
+        );
 
-  if (route === "/app/skills") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
-          <Suspense fallback={screenLoading}>
-            <SkillsDashboardScreen
-              storage={init.storage}
-              onPracticeSkill={(skillId) => {
-                setPracticeSkillId(skillId);
-                navigateTo("/app/practice");
-              }}
-              onStartSession={() => navigateTo("/app/setup/session")}
-              onNavigateHome={() => navigateTo("/app/home")}
-            />
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
+      case "/app/skills":
+        return (
+          <SkillsDashboardScreen
+            storage={init.storage}
+            onPracticeSkill={(skillId) => {
+              setPracticeSkillId(skillId);
+              navigateTo("/app/practice");
+            }}
+            onStartSession={() => navigateTo("/app/setup/session")}
+            onNavigateHome={() => navigateTo("/app/home")}
+          />
+        );
 
-  if (route === "/app/practice") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
-          <Suspense fallback={screenLoading}>
-            <SkillPracticeScreen
-              storage={init.storage}
-              initialSkillId={practiceSkillId}
-              onStartDrill={(plan, questions) => {
-                setActiveSession({ plan, questions });
-                navigateTo("/app/interview");
-              }}
-              onStartSession={() => navigateTo("/app/setup/session")}
-              onNavigateSkills={() => navigateTo("/app/skills")}
-              onNavigateHome={() => navigateTo("/app/home")}
-            />
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
+      case "/app/practice":
+        return (
+          <SkillPracticeScreen
+            storage={init.storage}
+            initialSkillId={practiceSkillId}
+            onStartDrill={(plan, questions) => {
+              setActiveSession({ plan, questions });
+              navigateTo("/app/interview");
+            }}
+            onStartSession={() => navigateTo("/app/setup/session")}
+            onNavigateSkills={() => navigateTo("/app/skills")}
+            onNavigateHome={() => navigateTo("/app/home")}
+          />
+        );
 
-  if (route === "/app/history") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
-          <Suspense fallback={screenLoading}>
-            <HistoryScreen
-              storage={init.storage}
-              initialSessionId={historySessionId}
-              onSelectSession={(sid) => setHistorySessionId(sid)}
-              onStartSession={() => navigateTo("/app/setup/session")}
-              onPracticeSkill={(skillId) => {
-                setPracticeSkillId(skillId);
-                navigateTo("/app/practice");
-              }}
-              onRetryQuestion={(qid) => void handleRetryQuestion(qid)}
-            />
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
+      case "/app/history":
+        return (
+          <HistoryScreen
+            storage={init.storage}
+            initialSessionId={historySessionId}
+            onSelectSession={(sid) => setHistorySessionId(sid)}
+            onStartSession={() => navigateTo("/app/setup/session")}
+            onPracticeSkill={(skillId) => {
+              setPracticeSkillId(skillId);
+              navigateTo("/app/practice");
+            }}
+            onRetryQuestion={(qid) => void handleRetryQuestion(qid)}
+          />
+        );
 
-  if (route === "/app/home") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
+      case "/app/home":
+        return (
           <HomeScreen
             storage={init.storage}
             onStartSession={() => navigateTo("/app/setup/session")}
@@ -926,98 +869,56 @@ export function App() {
             onNavigateSkills={() => navigateTo("/app/skills")}
             onNavigateSchedule={() => navigateTo("/app/schedule")}
           />
-        </main>
-      </div>
-    );
-  }
+        );
 
-  if (route === "/app/companies") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
-          <Suspense fallback={screenLoading}>
-            <CompanyDirectoryScreen
-              storage={init.storage}
-              initialCompanySlug={selectedCompanySlugForSession}
-              onSelectCompanyForSession={(slug) => {
-                setSelectedCompanySlugForSession(slug);
-              }}
-              onNavigateSessionSetup={() => {
-                navigateTo("/app/setup/session");
-              }}
-            />
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
+      case "/app/companies":
+        return (
+          <CompanyDirectoryScreen
+            storage={init.storage}
+            initialCompanySlug={selectedCompanySlugForSession}
+            onSelectCompanyForSession={(slug) => {
+              setSelectedCompanySlugForSession(slug);
+            }}
+            onNavigateSessionSetup={() => {
+              navigateTo("/app/setup/session");
+            }}
+          />
+        );
 
-  if (route === "/app/schedule") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
-          <Suspense fallback={screenLoading}>
-            <ScheduleScreen
-              storage={init.storage}
-              onNavigatePractice={() => navigateTo("/app/practice")}
-              onNavigateHome={() => navigateTo("/app/home")}
-            />
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
+      case "/app/schedule":
+        return (
+          <ScheduleScreen
+            storage={init.storage}
+            onNavigatePractice={() => navigateTo("/app/practice")}
+            onNavigateHome={() => navigateTo("/app/home")}
+          />
+        );
 
-  if (route === "/app/review") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
-          <Suspense fallback={screenLoading}>
-            <ReviewQueueScreen
-              storage={init.storage}
-              onStartReviewDrill={(plan, questions) => {
-                setActiveSession({ plan, questions });
-                navigateTo("/app/interview");
-              }}
-              onNavigatePractice={() => navigateTo("/app/practice")}
-              onNavigateHome={() => navigateTo("/app/home")}
-            />
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
+      case "/app/review":
+        return (
+          <ReviewQueueScreen
+            storage={init.storage}
+            onStartReviewDrill={(plan, questions) => {
+              setActiveSession({ plan, questions });
+              navigateTo("/app/interview");
+            }}
+            onNavigatePractice={() => navigateTo("/app/practice")}
+            onNavigateHome={() => navigateTo("/app/home")}
+          />
+        );
 
-  if (route === "/app/models") {
-    return (
-      <div className="abh-app">
-        {renderTopBanners()}
-        {renderAppNav(route)}
-        <main className="abh-app-main">
-          <Suspense fallback={screenLoading}>
-            <ModelManagerScreen
-              storage={init.storage}
-              onNavigateBack={() => navigateTo("/app/settings")}
-              onNavigateAISetup={() => navigateTo("/app/setup/ai")}
-            />
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
+      case "/app/models":
+        return (
+          <ModelManagerScreen
+            storage={init.storage}
+            onNavigateBack={() => navigateTo("/app/settings")}
+            onNavigateAISetup={() => navigateTo("/app/setup/ai")}
+          />
+        );
 
-  return (
-    <div className="abh-app">
-      {renderTopBanners()}
-      {renderAppNav(route)}
-      <main className="abh-app-main">
-        <Suspense fallback={screenLoading}>
+      case "/app/settings":
+      default:
+        return (
           <SettingsScreen
             storage={init.storage}
             mode={init.mode}
@@ -1028,7 +929,25 @@ export function App() {
             onDataDeleted={handleDataDeleted}
             onNavigateAISetup={() => navigateTo("/app/setup/ai")}
           />
-        </Suspense>
+        );
+    }
+  };
+
+  if (isStandalone) {
+    return (
+      <div className="abh-app abh-app--standalone">
+        {route === "/app/interview" && !activeSession ? null : renderTopBanners()}
+        <Suspense fallback={screenLoading}>{renderCurrentScreen()}</Suspense>
+      </div>
+    );
+  }
+
+  return (
+    <div className="abh-app">
+      {renderTopBanners()}
+      {renderAppNav(route)}
+      <main className="abh-app-main">
+        <Suspense fallback={screenLoading}>{renderCurrentScreen()}</Suspense>
       </main>
     </div>
   );

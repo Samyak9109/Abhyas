@@ -7,9 +7,7 @@ import {
   formatBytes,
   runHardwareBenchmark,
   validateCustomModel,
-  OllamaAdapter,
   type BenchmarkResult,
-  type CustomModelEngine,
   type HardwareCapabilityReport,
   type HardwareRuntime,
   type ModelFormatValidation,
@@ -27,7 +25,6 @@ import {
   removeModelRecord,
   requestPersistentStorage,
   runSanityTestOnLoadedModel,
-  runSanityTestOnModel,
 } from "../services/local-engine";
 
 interface ModelManagerScreenProps {
@@ -60,10 +57,8 @@ export function ModelManagerScreen({
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   // Custom model pre-flight state (FR-023, ADR-017)
-  const [customEngine, setCustomEngine] = useState<CustomModelEngine>("webllm");
   const [customIdentifier, setCustomIdentifier] = useState("");
   const [customGatedToken, setCustomGatedToken] = useState("");
-  const [customEndpointUrl, setCustomEndpointUrl] = useState("http://localhost:11434");
   const [customPreflight, setCustomPreflight] = useState<ModelFormatValidation | null>(null);
 
   // Dialog & notifications
@@ -241,52 +236,31 @@ export function ModelManagerScreen({
     }
   };
 
-  const handleCustomEngineChange = (engine: CustomModelEngine) => {
-    setCustomEngine(engine);
-    if (customIdentifier.trim()) {
-      setCustomPreflight(validateCustomModel(customIdentifier, engine));
-    } else {
-      setCustomPreflight(null);
-    }
-  };
-
   const handleCustomIdentifierChange = (value: string) => {
     setCustomIdentifier(value);
     if (!value.trim()) {
       setCustomPreflight(null);
       return;
     }
-    const validation = validateCustomModel(value, customEngine);
+    const validation = validateCustomModel(value, "webllm");
     setCustomPreflight(validation);
   };
 
   const handleAddCustomModel = async () => {
     if (!customPreflight?.valid) return;
     const cleanId = customIdentifier.trim();
-    if (customEngine === "ollama") {
-      await recordModelStatus(storage, cleanId, "ready", 2_000_000_000, {
-        engine: "ollama",
+    await handleDownloadModel(
+      { id: cleanId, sizeBytes: 1_500_000_000 },
+      {
+        engine: "webllm",
         isCustom: true,
-        format: "gguf",
-      });
-      const updatedInstalled = await getInstalledModels(storage);
-      setInstalledModels(updatedInstalled);
-      setCustomIdentifier("");
-      setCustomPreflight(null);
-    } else {
-      await handleDownloadModel(
-        { id: cleanId, sizeBytes: 1_500_000_000 },
-        {
-          engine: "webllm",
-          isCustom: true,
-          format: customPreflight.format ?? undefined,
-          gatedToken: customGatedToken.trim() || undefined,
-        }
-      );
-      setCustomIdentifier("");
-      setCustomPreflight(null);
-      setCustomGatedToken("");
-    }
+        format: customPreflight.format ?? undefined,
+        gatedToken: customGatedToken.trim() || undefined,
+      }
+    );
+    setCustomIdentifier("");
+    setCustomPreflight(null);
+    setCustomGatedToken("");
   };
 
   const handleRunSanityTest = async (modelId: string) => {
@@ -295,56 +269,26 @@ export function ModelManagerScreen({
       setSanityStep("Starting sanity checks...");
       setErrorMessage(null);
 
-      const targetRecord = installedModels.find((m) => m.id === modelId);
-      const isOllama = targetRecord?.engine === "ollama";
-
-      if (isOllama) {
-        const ollama = new OllamaAdapter({
-          baseUrl: customEndpointUrl || "http://localhost:11434",
-          model: modelId,
-        });
-        await runSanityTestOnModel(ollama, modelId, storage, {
-          deviceLabel: "Ollama Local Daemon",
-          onStepChange: (step, status) => {
-            if (step === "speed") {
-              setSanityStep(
-                status === "running" ? "Measuring inference speed..." : `Speed check ${status}`
-              );
-            } else if (step === "instructionFollowing") {
-              setSanityStep(
-                status === "running"
-                  ? "Testing instruction adherence..."
-                  : `Instruction check ${status}`
-              );
-            } else if (step === "jsonValidity") {
-              setSanityStep(
-                status === "running" ? "Verifying JSON schema format..." : `JSON check ${status}`
-              );
-            }
-          },
-        });
-      } else {
-        await runSanityTestOnLoadedModel(engineAdapter, modelId, storage, {
-          deviceLabel: hardwareReport?.adapterInfo?.description || "In-browser WebGPU Device",
-          onStepChange: (step, status) => {
-            if (step === "speed") {
-              setSanityStep(
-                status === "running" ? "Measuring inference speed..." : `Speed check ${status}`
-              );
-            } else if (step === "instructionFollowing") {
-              setSanityStep(
-                status === "running"
-                  ? "Testing instruction adherence..."
-                  : `Instruction check ${status}`
-              );
-            } else if (step === "jsonValidity") {
-              setSanityStep(
-                status === "running" ? "Verifying JSON schema format..." : `JSON check ${status}`
-              );
-            }
-          },
-        });
-      }
+      await runSanityTestOnLoadedModel(engineAdapter, modelId, storage, {
+        deviceLabel: hardwareReport?.adapterInfo?.description || "In-browser WebGPU Device",
+        onStepChange: (step, status) => {
+          if (step === "speed") {
+            setSanityStep(
+              status === "running" ? "Measuring inference speed..." : `Speed check ${status}`
+            );
+          } else if (step === "instructionFollowing") {
+            setSanityStep(
+              status === "running"
+                ? "Testing instruction adherence..."
+                : `Instruction check ${status}`
+            );
+          } else if (step === "jsonValidity") {
+            setSanityStep(
+              status === "running" ? "Verifying JSON schema format..." : `JSON check ${status}`
+            );
+          }
+        },
+      });
 
       const updated = await getInstalledModels(storage);
       setInstalledModels(updated);
@@ -364,10 +308,9 @@ export function ModelManagerScreen({
 
   const customModels = installedModels.filter((m) => !CURATED_MODELS.some((c) => c.id === m.id));
 
-  const fitEstimate =
-    customPreflight?.valid && customEngine === "webllm"
-      ? estimateHardwareFit(1_500_000_000, hardwareReport?.deviceMemoryGb)
-      : null;
+  const fitEstimate = customPreflight?.valid
+    ? estimateHardwareFit(1_500_000_000, hardwareReport?.deviceMemoryGb)
+    : null;
 
   return (
     <div className="abh-model-manager-screen" data-testid="model-manager-screen">
@@ -1013,96 +956,25 @@ export function ModelManagerScreen({
                 </p>
 
                 <div className="abh-mm-custom-form">
-                  <fieldset
-                    className="abh-form-fieldset"
-                    style={{ border: "none", padding: 0, margin: "0 0 1rem 0" }}
-                  >
-                    <legend className="abh-label" style={{ marginBottom: "0.5rem" }}>
-                      Target Engine
-                    </legend>
-                    <div style={{ display: "flex", gap: "1rem" }}>
-                      <label
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="customEngine"
-                          value="webllm"
-                          checked={customEngine === "webllm"}
-                          onChange={() => handleCustomEngineChange("webllm")}
-                        />
-                        <span>In-Browser WebGPU (WebLLM)</span>
-                      </label>
-                      <label
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="customEngine"
-                          value="ollama"
-                          checked={customEngine === "ollama"}
-                          onChange={() => handleCustomEngineChange("ollama")}
-                        />
-                        <span>Local Daemon (Ollama)</span>
-                      </label>
-                    </div>
-                  </fieldset>
-
                   <div className="abh-form-field">
                     <Input
-                      label={
-                        customEngine === "ollama"
-                          ? "Ollama Model Tag"
-                          : "Model Repository Identifier or File Path"
-                      }
+                      label="Model Repository Identifier or File Path"
                       value={customIdentifier}
                       onChange={(e) => handleCustomIdentifierChange(e.target.value)}
-                      placeholder={
-                        customEngine === "ollama"
-                          ? "e.g. llama3.2:1b or mistral:latest"
-                          : "e.g. org/repo-safetensors or local-model.gguf"
-                      }
-                      helperText={
-                        customEngine === "ollama"
-                          ? "Model tag registered in your local Ollama daemon."
-                          : "Must specify a safe format: .safetensors, .gguf, or .onnx."
-                      }
+                      placeholder="e.g. org/repo-safetensors or local-model.gguf"
+                      helperText="Must specify a safe format: .safetensors, .gguf, or .onnx."
                     />
                   </div>
 
-                  {customEngine === "ollama" && (
-                    <div className="abh-form-field">
-                      <Input
-                        label="Ollama Server Endpoint"
-                        value={customEndpointUrl}
-                        onChange={(e) => setCustomEndpointUrl(e.target.value)}
-                        placeholder="http://localhost:11434"
-                        helperText="Base URL of your running Ollama instance."
-                      />
-                    </div>
-                  )}
-
-                  {customEngine === "webllm" && (
-                    <div className="abh-form-field">
-                      <SecretInput
-                        label="Hugging Face Access Token (Optional)"
-                        value={customGatedToken}
-                        onChange={(e) => setCustomGatedToken(e.target.value)}
-                        placeholder="hf_..."
-                        helperText="Required only for private or gated Hugging Face repositories."
-                      />
-                    </div>
-                  )}
+                  <div className="abh-form-field">
+                    <SecretInput
+                      label="Hugging Face Access Token (Optional)"
+                      value={customGatedToken}
+                      onChange={(e) => setCustomGatedToken(e.target.value)}
+                      placeholder="hf_..."
+                      helperText="Required only for private or gated Hugging Face repositories."
+                    />
+                  </div>
 
                   {customPreflight && (
                     <div className="abh-mm-preflight-status">
@@ -1143,11 +1015,38 @@ export function ModelManagerScreen({
                       onClick={() => void handleAddCustomModel()}
                       disabled={!customPreflight?.valid || Boolean(downloadingId)}
                     >
-                      {customEngine === "ollama"
-                        ? "Register & Verify Ollama Model"
-                        : "Pre-flight & Download Custom Model"}
+                      Pre-flight & Download Custom Model
                     </Button>
                   </div>
+
+                  {onNavigateAISetup && (
+                    <p
+                      className="abh-mm-custom-note"
+                      style={{
+                        fontSize: "var(--font-size-sm)",
+                        color: "var(--ink-secondary)",
+                        marginTop: "var(--space-2)",
+                      }}
+                    >
+                      To connect to Ollama or an external local server daemon, configure it in{" "}
+                      <button
+                        type="button"
+                        onClick={onNavigateAISetup}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "var(--accent-text)",
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                          padding: 0,
+                          font: "inherit",
+                        }}
+                      >
+                        AI Setup
+                      </button>
+                      .
+                    </p>
+                  )}
                 </div>
               </div>
             </section>

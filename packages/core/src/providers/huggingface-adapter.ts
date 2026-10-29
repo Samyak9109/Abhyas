@@ -14,6 +14,10 @@ import type {
   Result,
   StreamChunk,
 } from "./types";
+import {
+  classifyHttpError as sharedClassifyHttpError,
+  classifyException as sharedClassifyException,
+} from "./error-classifier";
 
 export interface HuggingFaceAdapterConfig {
   apiKey?: string | undefined;
@@ -361,61 +365,40 @@ export class HuggingFaceAdapter implements ProviderAdapter {
   }
 
   private classifyHttpError(status: number, message?: string): ProviderError {
-    const msg = message || `HTTP error ${status}`;
-    if (
-      status === 401 ||
-      status === 403 ||
-      msg.toLowerCase().includes("invalid username") ||
-      msg.toLowerCase().includes("unauthorized")
-    ) {
-      return {
-        kind: "auth",
-        message: "Invalid Hugging Face token or unauthorized",
-        retryable: false,
-      };
-    }
-    if (
-      status === 429 ||
-      msg.toLowerCase().includes("rate limit") ||
-      msg.toLowerCase().includes("quota")
-    ) {
-      return { kind: "quota", message: "Hugging Face rate limit exceeded", retryable: true };
-    }
-    if (status === 404 || msg.toLowerCase().includes("does not exist")) {
-      return {
-        kind: "model_not_found",
-        message: "Requested Hugging Face model not found or unavailable on serverless inference",
-        retryable: false,
-      };
-    }
-    if (status >= 500) {
-      return {
-        kind: "network",
-        message: "Hugging Face service temporarily unavailable (server error)",
-        retryable: true,
-      };
-    }
-    return { kind: "unknown", message: msg, retryable: false };
+    return sharedClassifyHttpError(status, message, undefined, {
+      providerName: "Hugging Face",
+      authMessage: "Invalid Hugging Face token or unauthorized",
+      quotaMessage: "Hugging Face rate limit exceeded",
+      modelNotFoundMessage: "Requested Hugging Face model not found or unavailable on serverless inference",
+      serverErrorMessage: "Hugging Face service temporarily unavailable (server error)",
+      classifyCustom: (_st, msg) => {
+        if (msg.toLowerCase().includes("invalid username") || msg.toLowerCase().includes("unauthorized")) {
+          return { kind: "auth", message: "Invalid Hugging Face token or unauthorized", retryable: false };
+        }
+        if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("quota")) {
+          return { kind: "quota", message: "Hugging Face rate limit exceeded", retryable: true };
+        }
+        if (msg.toLowerCase().includes("does not exist")) {
+          return {
+            kind: "model_not_found",
+            message: "Requested Hugging Face model not found or unavailable on serverless inference",
+            retryable: false,
+          };
+        }
+        return undefined;
+      },
+    });
   }
 
   private classifyException(err: unknown): ProviderError {
-    if (err instanceof Error) {
-      if (err.name === "AbortError" || err.message.includes("aborted")) {
-        return { kind: "aborted", message: "Request cancelled by user", retryable: false };
-      }
-      if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-        return {
-          kind: "cors",
-          message: "Network or CORS error connecting to Hugging Face. Ensure your token is valid.",
-          retryable: true,
-        };
-      }
-      return { kind: "network", message: err.message, retryable: true };
-    }
-    return {
-      kind: "unknown",
-      message: "Unknown error communicating with Hugging Face",
-      retryable: false,
-    };
+    return sharedClassifyException(err, {
+      providerName: "Hugging Face",
+      defaultNetworkFallback: true,
+      onNetworkOrFetchError: () => ({
+        kind: "cors",
+        message: "Network or CORS error connecting to Hugging Face. Ensure your token is valid.",
+        retryable: true,
+      }),
+    });
   }
 }

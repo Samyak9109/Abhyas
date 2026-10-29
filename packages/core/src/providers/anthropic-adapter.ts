@@ -14,6 +14,10 @@ import type {
   Result,
   StreamChunk,
 } from "./types";
+import {
+  classifyHttpError as sharedClassifyHttpError,
+  classifyException as sharedClassifyException,
+} from "./error-classifier";
 
 export interface AnthropicAdapterConfig {
   apiKey?: string | undefined;
@@ -393,58 +397,41 @@ export class AnthropicAdapter implements ProviderAdapter {
   }
 
   private classifyHttpError(status: number, message?: string, errType?: string): ProviderError {
-    const msg = message || `HTTP error ${status}`;
-    if (status === 401 || errType === "authentication_error") {
-      return {
-        kind: "auth",
-        message: "Invalid Anthropic API key or unauthorized",
-        retryable: false,
-      };
-    }
-    if (
-      status === 429 ||
-      errType === "rate_limit_error" ||
-      msg.toLowerCase().includes("rate limit") ||
-      msg.toLowerCase().includes("quota")
-    ) {
-      return { kind: "quota", message: "Anthropic rate limit exceeded", retryable: true };
-    }
-    if (status === 404 || errType === "not_found_error") {
-      return {
-        kind: "model_not_found",
-        message: "Requested Claude model was not found",
-        retryable: false,
-      };
-    }
-    if (status >= 500) {
-      return {
-        kind: "network",
-        message: "Anthropic service temporarily unavailable (server error)",
-        retryable: true,
-      };
-    }
-    return { kind: "unknown", message: msg, retryable: false };
+    return sharedClassifyHttpError(status, message, errType, {
+      providerName: "Anthropic",
+      authMessage: "Invalid Anthropic API key or unauthorized",
+      quotaMessage: "Anthropic rate limit exceeded",
+      modelNotFoundMessage: "Requested Claude model was not found",
+      serverErrorMessage: "Anthropic service temporarily unavailable (server error)",
+      classifyCustom: (_st, msg, errT) => {
+        if (errT === "authentication_error") {
+          return { kind: "auth", message: "Invalid Anthropic API key or unauthorized", retryable: false };
+        }
+        if (
+          errT === "rate_limit_error" ||
+          msg.toLowerCase().includes("rate limit") ||
+          msg.toLowerCase().includes("quota")
+        ) {
+          return { kind: "quota", message: "Anthropic rate limit exceeded", retryable: true };
+        }
+        if (errT === "not_found_error") {
+          return { kind: "model_not_found", message: "Requested Claude model was not found", retryable: false };
+        }
+        return undefined;
+      },
+    });
   }
 
   private classifyException(err: unknown): ProviderError {
-    if (err instanceof Error) {
-      if (err.name === "AbortError" || err.message.includes("aborted")) {
-        return { kind: "aborted", message: "Request cancelled by user", retryable: false };
-      }
-      if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-        return {
-          kind: "cors",
-          message:
-            "Network or CORS error connecting to Anthropic. Ensure your key is valid and direct browser requests are permitted.",
-          retryable: true,
-        };
-      }
-      return { kind: "network", message: err.message, retryable: true };
-    }
-    return {
-      kind: "unknown",
-      message: "Unknown error communicating with Anthropic",
-      retryable: false,
-    };
+    return sharedClassifyException(err, {
+      providerName: "Anthropic",
+      defaultNetworkFallback: true,
+      onNetworkOrFetchError: () => ({
+        kind: "cors",
+        message:
+          "Network or CORS error connecting to Anthropic. Ensure your key is valid and direct browser requests are permitted.",
+        retryable: true,
+      }),
+    });
   }
 }

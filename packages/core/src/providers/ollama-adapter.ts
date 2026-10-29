@@ -13,6 +13,10 @@ import type {
   Result,
   StreamChunk,
 } from "./types";
+import {
+  classifyHttpError as sharedClassifyHttpError,
+  classifyException as sharedClassifyException,
+} from "./error-classifier";
 
 export interface OllamaAdapterConfig {
   baseUrl?: string | undefined;
@@ -352,47 +356,32 @@ export class OllamaAdapter implements ProviderAdapter {
   }
 
   private classifyHttpError(status: number, message?: string): ProviderError {
-    const msg = message || `HTTP error ${status}`;
-    if (status === 404 || msg.toLowerCase().includes("not found")) {
-      return {
-        kind: "model_not_found",
-        message: `Model '${this.defaultModel}' not found in Ollama. Pull it with: 'ollama pull ${this.defaultModel}'`,
-        retryable: false,
-      };
-    }
-    if (status === 401 || status === 403) {
-      return { kind: "auth", message: "Unauthorized or authentication required", retryable: false };
-    }
-    if (status === 429) {
-      return { kind: "quota", message: "Ollama server rate limit or queue full", retryable: true };
-    }
-    if (status >= 500) {
-      return {
-        kind: "network",
-        message: `Ollama server error (${status}): ${msg}`,
-        retryable: true,
-      };
-    }
-    return { kind: "unknown", message: msg, retryable: false };
+    return sharedClassifyHttpError(status, message, undefined, {
+      providerName: "Ollama",
+      authMessage: "Unauthorized or authentication required",
+      quotaMessage: "Ollama server rate limit or queue full",
+      serverErrorMessage: (st, msg) => `Ollama server error (${st}): ${msg}`,
+      classifyCustom: (st, msg) => {
+        if (st === 404 || msg.toLowerCase().includes("not found")) {
+          return {
+            kind: "model_not_found",
+            message: `Model '${this.defaultModel}' not found in Ollama. Pull it with: 'ollama pull ${this.defaultModel}'`,
+            retryable: false,
+          };
+        }
+        return undefined;
+      },
+    });
   }
 
   private classifyException(err: unknown): ProviderError {
-    if (err instanceof Error) {
-      if (err.name === "AbortError" || err.message.toLowerCase().includes("aborted")) {
-        return { kind: "aborted", message: "Request cancelled by user", retryable: false };
-      }
-      if (
-        err.name === "TypeError" &&
-        (err.message.includes("fetch") || err.message.includes("NetworkError"))
-      ) {
-        return {
-          kind: "cors",
-          message: `Could not connect to Ollama at ${this.baseUrl}. If Ollama is running, CORS may be blocking browser requests. Start Ollama with OLLAMA_ORIGINS="*" (e.g. 'set OLLAMA_ORIGINS=* && ollama serve' on Windows or 'OLLAMA_ORIGINS="*" ollama serve' on macOS/Linux). See /guide/local-models.`,
-          retryable: true,
-        };
-      }
-      return { kind: "unknown", message: err.message, retryable: false };
-    }
-    return { kind: "unknown", message: "Unexpected Ollama provider error", retryable: false };
+    return sharedClassifyException(err, {
+      providerName: "Ollama",
+      onNetworkOrFetchError: () => ({
+        kind: "cors",
+        message: `Could not connect to Ollama at ${this.baseUrl}. If Ollama is running, CORS may be blocking browser requests. Start Ollama with OLLAMA_ORIGINS="*" (e.g. 'set OLLAMA_ORIGINS=* && ollama serve' on Windows or 'OLLAMA_ORIGINS="*" ollama serve' on macOS/Linux). See /guide/local-models.`,
+        retryable: true,
+      }),
+    });
   }
 }

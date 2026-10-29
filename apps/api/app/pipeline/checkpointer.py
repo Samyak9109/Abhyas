@@ -1,5 +1,6 @@
 """Job state checkpointing for resumable research graph execution (ADR-011)."""
 
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -38,6 +39,6 @@ class Checkpointer:
         if job and job.checkpoint_data:
             try:
                 return ResearchState.model_validate(job.checkpoint_data)
-            except Exception:
+            except ValidationError:
                 return None
         return None

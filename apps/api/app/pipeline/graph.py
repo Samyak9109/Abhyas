@@ -3,6 +3,7 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import httpx
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -166,8 +167,8 @@ class ResearchPipeline:
                             cleaned_text=cleaned_text,
                         )
                     )
-                except Exception:
-                    # Non-fatal fetch failure per-node policy
+                except (httpx.HTTPError, ValueError):
+                    # Non-fatal fetch failure per-node policy (network or validation)
                     continue
 
             state.completed_steps.append("fetch_and_clean")

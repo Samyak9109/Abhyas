@@ -8,6 +8,7 @@ import {
   REQUIRED_EXPERIENCE_LEVELS,
 } from "./validator.js";
 import { validateContentDirectory } from "./validate-directory.js";
+import { SAMPLE_QUESTION_BANK } from "./sample-bank.js";
 
 const CONTENT_DIR = path.resolve(__dirname, "..");
 
@@ -79,6 +80,13 @@ describe("M0.4: Content Scaffolding & Validation Engine", () => {
         expect(q.source.length).toBeGreaterThan(0);
         expect(q.license.length).toBeGreaterThan(0);
       }
+    });
+
+    it("verifies sample-bank.json and SAMPLE_QUESTION_BANK in sample-bank.ts remain in exact sync (FR-014)", () => {
+      const questionsPath = path.join(CONTENT_DIR, "questions", "sample-bank.json");
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const questionsRaw = require(questionsPath);
+      expect(SAMPLE_QUESTION_BANK).toEqual(questionsRaw);
     });
   });
 

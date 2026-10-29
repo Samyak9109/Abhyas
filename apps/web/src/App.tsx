@@ -25,7 +25,6 @@ import { useTheme } from "./services/use-theme";
 import { registerPwa } from "./services/pwa";
 import { getLocalEngineAdapter } from "./services/local-engine";
 import "./styles/tokens.css";
-import "./styles/preloader.css";
 import "./styles/components.css";
 import "./styles/app.css";
 import "./styles/public.css";

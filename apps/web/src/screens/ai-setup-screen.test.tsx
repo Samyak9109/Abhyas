@@ -4,12 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
 import {
   decryptApiKey,
-  GEMINI_FIXTURES,
   MemoryStorageAdapter,
-  ANTHROPIC_FIXTURES,
-  HUGGINGFACE_FIXTURES,
   type ProviderRow,
 } from "@abhyas/core";
+import {
+  GEMINI_FIXTURES,
+  ANTHROPIC_FIXTURES,
+  HUGGINGFACE_FIXTURES,
+} from "@abhyas/core/testing";
 import { AISetupScreen } from "./AISetupScreen";
 
 const MOCK_GEMINI_MODELS = {

@@ -22,12 +22,12 @@ import {
   evaluateAnswer,
   generateGroundedRewrite,
   validateGrounding,
-  ANTHROPIC_FIXTURES,
   type StructuredProfile,
   type ExperienceLevel,
   type ProviderAdapter,
   QuestionBankSchema,
 } from "@abhyas/core";
+import { ANTHROPIC_FIXTURES } from "@abhyas/core/testing";
 import { SAMPLE_QUESTION_BANK, CANONICAL_SKILL_IDS, CANONICAL_RUBRICS } from "@abhyas/content";
 
 describe("Phase 7 Exit Gate Verification (phases.md Section 3 & 7)", () => {

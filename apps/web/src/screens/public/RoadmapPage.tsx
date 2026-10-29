@@ -272,94 +272,22 @@ export function RoadmapPage() {
               rigorous client-side privacy architecture.
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "24px",
-                marginTop: "24px",
-              }}
-            >
+            <div className="abh-roadmap-list">
               {PHASES.map((phase) => (
-                <article
-                  key={phase.id}
-                  style={{
-                    backgroundColor: "var(--bg-surface)",
-                    border: "1px solid var(--border-subtle)",
-                    borderRadius: "8px",
-                    padding: "24px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      flexWrap: "wrap",
-                      gap: "12px",
-                      marginBottom: "12px",
-                    }}
-                  >
+                <article key={phase.id} className="abh-roadmap-card">
+                  <div className="abh-roadmap-card-header">
                     <div>
-                      <span
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: "12px",
-                          color: "var(--text-muted)",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                        }}
-                      >
-                        {phase.id}
-                      </span>
-                      <h3
-                        style={{
-                          margin: "4px 0 0",
-                          fontSize: "18px",
-                          fontWeight: 700,
-                          color: "var(--text-normal)",
-                        }}
-                      >
-                        {phase.name}
-                      </h3>
+                      <span className="abh-roadmap-phase-id">{phase.id}</span>
+                      <h3 className="abh-roadmap-phase-name">{phase.name}</h3>
                     </div>
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        backgroundColor:
-                          phase.status === "Completed"
-                            ? "var(--badge-success-bg, rgba(34, 197, 94, 0.15))"
-                            : "var(--badge-neutral-bg, rgba(255, 255, 255, 0.1))",
-                        color:
-                          phase.status === "Completed"
-                            ? "var(--badge-success-text, #4ade80)"
-                            : "var(--text-normal)",
-                        border: "1px solid var(--border-subtle)",
-                      }}
-                    >
-                      ✓ {phase.status}
-                    </span>
+                    <span className="abh-roadmap-badge">✓ {phase.status}</span>
                   </div>
 
                   <p className="abh-prose" style={{ margin: "0 0 16px" }}>
                     {phase.summary}
                   </p>
 
-                  <ul
-                    style={{
-                      margin: 0,
-                      paddingLeft: "20px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                      color: "var(--text-muted)",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <ul className="abh-roadmap-list-items">
                     {phase.highlights.map((item, idx) => (
                       <li key={idx}>{item}</li>
                     ))}
@@ -382,49 +310,12 @@ export function RoadmapPage() {
               All architectural and user-facing changes recorded in progression order.
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "24px",
-                marginTop: "24px",
-              }}
-            >
+            <div className="abh-roadmap-list">
               {RELEASES.map((rel) => (
-                <article
-                  key={rel.version}
-                  style={{
-                    backgroundColor: "var(--bg-surface)",
-                    border: "1px solid var(--border-subtle)",
-                    borderRadius: "8px",
-                    padding: "24px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                      flexWrap: "wrap",
-                      gap: "12px",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        margin: 0,
-                        fontSize: "18px",
-                        fontWeight: 700,
-                        color: "var(--text-normal)",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          color: "var(--accent-text)",
-                          marginRight: "8px",
-                        }}
-                      >
+                <article key={rel.version} className="abh-roadmap-card">
+                  <div className="abh-roadmap-card-header">
+                    <h3 className="abh-roadmap-phase-name" style={{ margin: 0 }}>
+                      <span style={{ fontFamily: "var(--font-mono)", color: "var(--accent-text)", marginRight: "8px" }}>
                         {rel.version}
                       </span>
                       — {rel.title}
@@ -435,17 +326,7 @@ export function RoadmapPage() {
                     {rel.summary}
                   </p>
 
-                  <ul
-                    style={{
-                      margin: 0,
-                      paddingLeft: "20px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                      color: "var(--text-muted)",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <ul className="abh-roadmap-list-items">
                     {rel.changes.map((change, cIdx) => (
                       <li key={cIdx}>{change}</li>
                     ))}

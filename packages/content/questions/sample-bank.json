@@ -1876,7 +1876,7 @@
     "rubricHints": [
       "Standard design tokens as single source of truth across platforms and frameworks",
       "Module federation with shared dependencies (single react runtime instance) vs decoupled web components",
-      "Automated automated axe/Lighthouse CI gates blocking breaking regressions before edge deployment"
+      "Automated axe/Lighthouse CI gates blocking breaking regressions before edge deployment"
     ],
     "source": "Abhyas Core Bank",
     "license": "MIT"

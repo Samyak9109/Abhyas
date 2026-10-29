@@ -1426,7 +1426,7 @@ export const SAMPLE_QUESTION_BANK: QuestionBank = QuestionBankSchema.parse([
     level: "staff_plus",
     difficulty: 5,
     followUps: [ "What are the trade-offs between Module Federation, Web Components, and build-time monorepo package distribution?", "How do you enforce WCAG 2.2 AA accessibility and zero regression testing automatically across decentralized deployments?" ],
-    rubricHints: [ "Standard design tokens as single source of truth across platforms and frameworks", "Module federation with shared dependencies (single react runtime instance) vs decoupled web components", "Automated automated axe/Lighthouse CI gates blocking breaking regressions before edge deployment" ],
+    rubricHints: [ "Standard design tokens as single source of truth across platforms and frameworks", "Module federation with shared dependencies (single react runtime instance) vs decoupled web components", "Automated axe/Lighthouse CI gates blocking breaking regressions before edge deployment" ],
     source: "Abhyas Core Bank",
     license: "MIT",
   },

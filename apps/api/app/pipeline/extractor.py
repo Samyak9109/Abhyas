@@ -164,10 +164,11 @@ class ResearchExtractor:
                             cost = round(tokens * 0.0001, 4)
                             return json.loads(content), tokens, cost
                     else:
-                        # Default: Google Gemini
-                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+                        # Default: Google Gemini (pass API key via header to avoid query param leakage in proxy/access logs)
+                        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
                         resp = await client.post(
                             url,
+                            headers={"x-goog-api-key": api_key},
                             json={
                                 "contents": [{"role": "user", "parts": [{"text": prompt}]}],
                                 "generationConfig": {"responseMimeType": "application/json"},

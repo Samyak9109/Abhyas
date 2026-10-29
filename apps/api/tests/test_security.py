@@ -139,3 +139,44 @@ async def test_verify_challenge_rejects_empty() -> None:
         await verify_challenge("   ")
     assert exc_info.value.status_code == 400
 
+
+def test_admin_secret_validation_in_production_and_staging() -> None:
+    """Verify ADMIN_SECRET fails fast on startup in prod/staging if empty or old default."""
+    from app.config import INSECURE_DEV_SECRET, Settings
+
+    # 1. Empty secret in production raises ValueError
+    with pytest.raises(ValueError, match="ADMIN_SECRET must be explicitly set"):
+        Settings(ENVIRONMENT="production", ADMIN_SECRET="")
+
+    # 2. Insecure default secret in production raises ValueError
+    with pytest.raises(ValueError, match="ADMIN_SECRET must be explicitly set"):
+        Settings(ENVIRONMENT="production", ADMIN_SECRET=INSECURE_DEV_SECRET)
+
+    # 3. Empty secret in staging raises ValueError
+    with pytest.raises(ValueError, match="ADMIN_SECRET must be explicitly set"):
+        Settings(ENVIRONMENT="staging", ADMIN_SECRET="")
+
+    # 4. Insecure default secret in staging raises ValueError
+    with pytest.raises(ValueError, match="ADMIN_SECRET must be explicitly set"):
+        Settings(ENVIRONMENT="staging", ADMIN_SECRET=INSECURE_DEV_SECRET)
+
+    # 5. Valid secret in production succeeds
+    prod_settings = Settings(ENVIRONMENT="production", ADMIN_SECRET="strong-prod-secret-99481")
+    assert prod_settings.admin_secret == "strong-prod-secret-99481"
+
+
+def test_admin_secret_fallback_in_development(caplog: pytest.LogCaptureFixture) -> None:
+    """Verify development allows fallback with a logged warning."""
+    import logging
+    from app.config import INSECURE_DEV_SECRET, Settings
+
+    with caplog.at_level(logging.WARNING):
+        dev_settings = Settings(ENVIRONMENT="development", ADMIN_SECRET="")
+        assert dev_settings.admin_secret == INSECURE_DEV_SECRET
+        assert any("fallback secret" in record.message for record in caplog.records)
+
+    # Custom dev secret is preserved without fallback
+    custom_dev = Settings(ENVIRONMENT="development", ADMIN_SECRET="my-custom-dev-token")
+    assert custom_dev.admin_secret == "my-custom-dev-token"
+
+

@@ -493,6 +493,9 @@ async def test_extractor_llm_invocation_and_fallback(monkeypatch: pytest.MonkeyP
 
     # 1. Success case: LLM responds 200
     async def mock_post_success(self, url, json=None, headers=None):
+        # Verify key is passed strictly via header and never in URL query string
+        assert "key=" not in str(url)
+        assert headers is not None and headers.get("x-goog-api-key") == "test-llm-key"
         return httpx.Response(
             status_code=200,
             json={

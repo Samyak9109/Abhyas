@@ -1,9 +1,14 @@
 """Configuration and environment settings for the research service."""
 
+import logging
 from functools import lru_cache
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
+
+INSECURE_DEV_SECRET = "dev-admin-secret-change-me"
 
 
 class Settings(BaseSettings):
@@ -36,8 +41,8 @@ class Settings(BaseSettings):
     # Search API
     search_api_key: str = Field(default="", alias="SEARCH_API_KEY")
 
-    # Admin Authentication Secret
-    admin_secret: str = Field(default="dev-admin-secret-change-me", alias="ADMIN_SECRET")
+    # Admin Authentication Secret (fail-fast in prod/staging; dev fallback only)
+    admin_secret: str = Field(default="", alias="ADMIN_SECRET")
 
     # Cost Control & Budget Caps (in cents)
     daily_budget_cents: int = Field(default=500, alias="DAILY_BUDGET_CENTS")
@@ -89,6 +94,27 @@ class Settings(BaseSettings):
         if value.startswith("sqlite://") and not value.startswith("sqlite+aiosqlite://"):
             return value.replace("sqlite://", "sqlite+aiosqlite://", 1)
         return value
+
+    @model_validator(mode="after")
+    def validate_admin_secret(self) -> "Settings":
+        # Security: fail-fast on startup in production or staging if ADMIN_SECRET is unset or insecure default
+        env = (self.environment or "development").strip().lower()
+        secret = (self.admin_secret or "").strip()
+
+        if env in ("production", "staging"):
+            if not secret or secret == INSECURE_DEV_SECRET:
+                raise ValueError(
+                    f"ADMIN_SECRET must be explicitly set to a strong secret in {env} environment. "
+                    "Insecure default or empty secret is forbidden."
+                )
+        elif env == "development":
+            if not secret:
+                logger.warning(
+                    "ADMIN_SECRET is not configured; using development fallback secret. "
+                    "Do NOT use this in staging or production environments."
+                )
+                self.admin_secret = INSECURE_DEV_SECRET
+        return self
 
 
 @lru_cache

@@ -338,5 +338,15 @@ describe("M0.2: Base Component Suite", () => {
       fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
       expect(document.activeElement).toBe(confirmBtn);
     });
+
+    it("defines high contrast tokens for prefers-contrast: more (P3-04)", () => {
+      const tokensCss = fs.readFileSync(
+        path.resolve("apps/web/src/styles/tokens.css"),
+        "utf8"
+      );
+      expect(tokensCss).toContain("@media (prefers-contrast: more)");
+      expect(tokensCss).toMatch(/\[data-theme="ink"\][\s\S]*?--text-muted:/);
+      expect(tokensCss).toMatch(/\[data-theme="paper"\][\s\S]*?--text-muted:/);
+    });
   });
 });

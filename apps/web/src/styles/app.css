@@ -763,6 +763,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   width: 16px;
   height: 16px;
   border: none;
@@ -772,6 +773,19 @@
   border-radius: 50%;
   font-size: 14px;
   line-height: 1;
+}
+
+/* P1-03: WCAG 2.5.5 minimum 44x44px touch target via expanded hit area */
+.abh-skill-remove-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
 }
 
 .abh-skill-remove-btn:hover {

@@ -50,6 +50,7 @@
   /* Compatibility aliases for design tokens */
   --primary: var(--accent);
   --accent-primary: var(--accent);
+  --accent-hover: #ff7e47;
   --accent-bg: rgba(255, 106, 43, 0.12);
   --accent-subtle: rgba(255, 106, 43, 0.08);
   --surface-1: var(--surface);
@@ -84,6 +85,7 @@
   --text: #efe9dc;
   --text-muted: #a9a296;
   --accent: #ff6a2b;
+  --accent-hover: #ff7e47;
   --accent-text: #ff6a2b;
   --on-accent: #121110;
   --focus: #ff6a2b;
@@ -113,6 +115,7 @@
   --text: #121110;
   --text-muted: #5a5348;
   --accent: #ff6a2b;
+  --accent-hover: #ff7e47;
   --accent-text: #a83409;
   --on-accent: #121110;
   --focus: #a83409;

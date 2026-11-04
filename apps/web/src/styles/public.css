@@ -383,7 +383,7 @@
 }
 
 .abh-hero-cta-btn:hover {
-  background-color: #ff7e47;
+  background-color: var(--accent-hover);
 }
 
 .abh-hand-note {

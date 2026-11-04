@@ -152,3 +152,30 @@ body {
   outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
+
+/* High Contrast Mode (P3-04) */
+@media (prefers-contrast: more) {
+  :root,
+  [data-theme="ink"] {
+    --text-muted: #ded8cb;
+    --line: #7d7468;
+    --line-strong: #cfc8b8;
+    --border-subtle: #7d7468;
+    --shadow-hard: 4px 4px 0 #ffffff;
+    --paper-band-muted: #26231f;
+  }
+
+  [data-theme="paper"] {
+    --text-muted: #26231f;
+    --line: #7a7266;
+    --line-strong: #26231f;
+    --border-subtle: #7a7266;
+    --shadow-hard: 4px 4px 0 #000000;
+    --paper-band-muted: #121110;
+  }
+
+  :focus-visible {
+    outline-width: 3px;
+    outline-offset: 4px;
+  }
+}

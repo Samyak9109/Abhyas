@@ -180,12 +180,11 @@ export function PublicHeader({
         </button>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (P1-05: role="navigation" landmark) */}
       {mobileMenuOpen && (
-        <div
+        <nav
           id="abh-mobile-menu"
           className="abh-mobile-drawer"
-          role="region"
           aria-label="Mobile Navigation"
         >
           <a
@@ -232,7 +231,7 @@ export function PublicHeader({
           >
             &#123; GitHub ↗ &#125;
           </a>
-        </div>
+        </nav>
       )}
     </header>
   );

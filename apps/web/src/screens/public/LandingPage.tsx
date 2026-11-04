@@ -61,41 +61,22 @@ export function LandingPage() {
                 </span>
               </div>
 
-              <div
-                className="abh-hero-meta"
-                style={{
-                  marginTop: "var(--space-6)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--space-4)",
-                  flexWrap: "wrap",
-                  fontSize: "13px",
-                  fontFamily: "var(--font-mono)",
-                }}
-              >
+              <div className="abh-hero-meta">
                 <a
                   href="https://github.com/Samyak9109/Abhyas"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="abh-boxed-link"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "6px 14px",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                  }}
+                  className="abh-hero-github-link"
                 >
                   <span>★</span> GitHub (Samyak9109/Abhyas) ↗
                 </a>
-                <span style={{ color: "var(--text-muted)" }}>
+                <span className="abh-hero-author">
                   Created by{" "}
                   <a
                     href="https://github.com/Samyak9109"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: "var(--text)", fontWeight: 600, textDecoration: "none" }}
+                    className="abh-hero-author-link"
                   >
                     Samyak Jain
                   </a>
@@ -284,7 +265,7 @@ export function LandingPage() {
                         size="card"
                         face="speaking"
                         ariaHidden={true}
-                        style={{ width: "64px", height: "54px" }}
+                        className="abh-mockup-avatar-svg"
                       />
                       <div>
                         <span className="abh-mockup-badge">
@@ -296,24 +277,11 @@ export function LandingPage() {
                         </div>
                       </div>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "10px",
-                        alignItems: "center",
-                        paddingTop: "8px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          fontFamily: "var(--font-mono)",
-                          color: "var(--accent-text)",
-                        }}
-                      >
+                    <div className="abh-mockup-footer">
+                      <span className="abh-mockup-ptt-badge">
                         [PUSH TO TALK]
                       </span>
-                      <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                      <span className="abh-mockup-ptt-label">
                         Live microphone speech recognition active...
                       </span>
                     </div>

@@ -396,6 +396,49 @@
   user-select: none;
 }
 
+.abh-hero-meta {
+  margin-top: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+
+.abh-hero-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border: 1px solid var(--line-strong);
+  background-color: var(--surface);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color var(--dur-fast);
+}
+
+.abh-hero-github-link:hover {
+  border-color: var(--accent);
+}
+
+.abh-hero-author {
+  color: var(--text-muted);
+}
+
+.abh-hero-author-link {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.abh-hero-author-link:hover {
+  text-decoration: underline;
+}
+
 /* Mascot Collage */
 .abh-mascot-collage {
   position: relative;
@@ -648,6 +691,12 @@
   padding-bottom: 12px;
 }
 
+.abh-mockup-avatar-svg {
+  width: 64px;
+  height: 54px;
+  flex-shrink: 0;
+}
+
 .abh-mockup-badge {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -658,6 +707,24 @@
 .abh-mockup-question {
   font-size: 14px;
   font-weight: 500;
+}
+
+.abh-mockup-footer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-top: var(--space-2);
+}
+
+.abh-mockup-ptt-badge {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--accent-text);
+}
+
+.abh-mockup-ptt-label {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .abh-floating-tag {
@@ -999,6 +1066,66 @@
   border: 1px solid var(--line);
   background-color: var(--surface);
   border-radius: var(--radius-square);
+}
+
+.abh-footer-brand-desc {
+  font-size: 14px;
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+}
+
+.abh-footer-dev-section {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+
+.abh-footer-dev-name {
+  color: var(--accent-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.abh-footer-dev-name:hover {
+  text-decoration: underline;
+}
+
+.abh-footer-dev-links {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.abh-footer-dev-link {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.abh-footer-dev-link:hover {
+  color: var(--text);
+}
+
+.abh-footer-coffee-link {
+  color: var(--accent-text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.abh-footer-coffee-link:hover {
+  text-decoration: underline;
+}
+
+.abh-footer-copyright {
+  margin: 0 0 6px 0;
+}
+
+.abh-footer-disclaimer {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 /* Content Pages (Privacy, Open Source, Key Guide, Troubleshooting, 404) */

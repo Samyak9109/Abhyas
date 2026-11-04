@@ -72,7 +72,8 @@ form-action 'self';
 
 ### Directive Justification
 - `default-src 'self'`: Prevents loading arbitrary external resources by default.
-- `script-src 'self'`: Disallows loading remote JavaScript or untrusted external scripts.
+- `script-src 'self'`: Disallows loading remote JavaScript or untrusted external scripts. Strictly prohibits `'unsafe-inline'` and `'unsafe-eval'`.
+- `style-src 'self' 'unsafe-inline'`: Retains `'unsafe-inline'` solely for dynamic runtime style attributes (e.g., 60 FPS real-time audio volume level meters in `LiveInterviewScreen`, silence countdown percentages, dynamic progress indicators, and preloader staggered CSS variables). Cross-site scripting (XSS) is strictly prevented because `script-src` disallows script inlining/eval, and all model and candidate text is rendered strictly as plain text (no `dangerouslySetInnerHTML`). (P2-04)
 - `font-src 'self'`: Enforces `ADR-020` self-hosted font architecture (blocking font CDNs).
 - `connect-src 'self' <allowed-provider-origins>`: Restricts fetch/XHR endpoints strictly to approved AI providers and local development servers.
 - `frame-ancestors 'none'`: Prevents clickjacking and framing attacks.

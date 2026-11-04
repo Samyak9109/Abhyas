@@ -1,4 +1,13 @@
-"""In-memory sliding window rate limiter without external cache dependencies (architecture 15.3)."""
+"""In-memory sliding window rate limiter without external cache dependencies (architecture 15.3).
+
+Architectural Note (P2-05):
+This sliding-window implementation operates strictly in-process memory. It is designed for
+the single-process self-hosted deployment of the Abhyas backend (default configuration).
+If the backend is ever scaled horizontally to multiple worker processes (e.g. Uvicorn/Gunicorn
+with --workers > 1) or distributed across container replicas, each worker will maintain an
+independent sliding window. For multi-process deployments, back this limiter with a shared
+persisted counter (e.g., Redis via redis-py or a local SQLite transactional table).
+"""
 
 import os
 import time

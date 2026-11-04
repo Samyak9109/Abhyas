@@ -13,45 +13,29 @@ export function PublicFooter() {
               <span className="abh-brand-name">ABHYAS</span>
             </a>
 
-            <p
-              className="abh-prose"
-              style={{ fontSize: "14px", marginTop: "12px", color: "var(--text-muted)" }}
-            >
+            <p className="abh-prose abh-footer-brand-desc">
               Private, realistic AI voice interview practice that runs entirely on your device. Zero
               telemetry, no accounts, and honest feedback.
             </p>
 
-            <div
-              style={{
-                marginTop: "16px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px",
-                fontSize: "13px",
-                fontFamily: "var(--font-mono)",
-              }}
-            >
+            <div className="abh-footer-dev-section">
               <div>
                 Developer:{" "}
                 <a
                   href="https://github.com/Samyak9109"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    color: "var(--accent-text)",
-                    fontWeight: 700,
-                    textDecoration: "none",
-                  }}
+                  className="abh-footer-dev-name"
                 >
                   Samyak Jain
                 </a>
               </div>
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <div className="abh-footer-dev-links">
                 <a
                   href="https://github.com/Samyak9109"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "var(--text-muted)", textDecoration: "none" }}
+                  className="abh-footer-dev-link"
                 >
                   GitHub: @Samyak9109 ↗
                 </a>
@@ -59,11 +43,7 @@ export function PublicFooter() {
                   href="https://buymeacoffee.com/samyak9109"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    color: "var(--accent-text)",
-                    textDecoration: "none",
-                    fontWeight: 600,
-                  }}
+                  className="abh-footer-coffee-link"
                 >
                   ☕ Buy me a coffee ↗
                 </a>
@@ -150,12 +130,12 @@ export function PublicFooter() {
         {/* Bottom Bar */}
         <div className="abh-footer-bottom">
           <div>
-            <p style={{ margin: "0 0 6px 0" }}>
+            <p className="abh-footer-copyright">
               MIT Licensed. Copyright © 2026 Samyak Jain. Trademark policy: &quot;Abhyas&quot; and
               the pixel monitor-head mascot are trademarks. Forks must rename.
             </p>
 
-            <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>
+            <p className="abh-footer-disclaimer">
               Abhyas is an independent open-source project. Not affiliated with Google, OpenAI, or
               any third-party AI provider.
             </p>

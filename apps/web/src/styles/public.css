@@ -237,9 +237,13 @@
   border: 1px solid var(--line-strong);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 14px;
-  padding: 6px 10px;
+  font-size: 16px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 14px;
   cursor: pointer;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 900px) {
@@ -250,7 +254,7 @@
     display: none;
   }
   .abh-mobile-menu-btn {
-    display: block;
+    display: inline-flex;
   }
   .abh-mobile-drawer {
     width: 100%;

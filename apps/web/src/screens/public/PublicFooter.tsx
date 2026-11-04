@@ -94,6 +94,9 @@ export function PublicFooter() {
             <a href="/privacy" className="abh-footer-link">
               Privacy architecture
             </a>
+            <a href="/terms" className="abh-footer-link">
+              Terms of use
+            </a>
             <a href="/open-source" className="abh-footer-link">
               Open source &amp; license
             </a>

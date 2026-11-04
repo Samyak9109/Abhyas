@@ -17,3 +17,24 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
     dispatchEvent: () => true,
   })) as typeof window.matchMedia;
 }
+
+// In Node 22/26 environments, jsdom window.localStorage may be disabled without --localstorage-file
+if (typeof window !== "undefined" && !window.localStorage) {
+  const store = new Map<string, string>();
+  window.localStorage = {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      store.set(key, String(value));
+    },
+    removeItem: (key: string) => {
+      store.delete(key);
+    },
+    clear: () => {
+      store.clear();
+    },
+    key: (index: number) => Array.from(store.keys())[index] ?? null,
+    get length() {
+      return store.size;
+    },
+  } as Storage;
+}

@@ -31,6 +31,7 @@ import "./styles/public.css";
 import {
   LandingPage,
   PrivacyPage,
+  TermsPage,
   OpenSourcePage,
   KeyGuidePage,
   LocalModelsGuidePage,
@@ -83,6 +84,7 @@ const ReviewQueueScreen = lazy(() =>
 type AppRoute =
   | "/"
   | "/privacy"
+  | "/terms"
   | "/open-source"
   | "/guide/keys"
   | "/guide/local-models"
@@ -108,6 +110,7 @@ function isPublicRoute(r: AppRoute): boolean {
   return (
     r === "/" ||
     r === "/privacy" ||
+    r === "/terms" ||
     r === "/open-source" ||
     r === "/guide/keys" ||
     r === "/guide/local-models" ||
@@ -121,6 +124,7 @@ function getInitialRoute(): AppRoute {
   if (typeof window !== "undefined") {
     const path = window.location.pathname;
     if (path === "/privacy") return "/privacy";
+    if (path === "/terms") return "/terms";
     if (path === "/open-source") return "/open-source";
     if (path === "/guide/keys") return "/guide/keys";
     if (path === "/guide/local-models") return "/guide/local-models";
@@ -406,6 +410,8 @@ export function App() {
         return <LandingPage />;
       case "/privacy":
         return <PrivacyPage />;
+      case "/terms":
+        return <TermsPage />;
       case "/open-source":
         return <OpenSourcePage />;
       case "/guide/keys":

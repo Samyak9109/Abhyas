@@ -2,6 +2,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { LandingPage } from "./LandingPage";
 import { PrivacyPage } from "./PrivacyPage";
+import { TermsPage } from "./TermsPage";
 import { OpenSourcePage } from "./OpenSourcePage";
 import { KeyGuidePage } from "./KeyGuidePage";
 import { TroubleshootingPage } from "./TroubleshootingPage";
@@ -19,6 +20,7 @@ export interface PageMetadata {
 export const PUBLIC_ROUTES = [
   "/",
   "/privacy",
+  "/terms",
   "/open-source",
   "/guide/keys",
   "/guide/local-models",
@@ -44,6 +46,14 @@ export function renderPage(route: string): PageMetadata {
         description:
           "Verifiable privacy guarantees, data classification inventory, and strict network allowlist for Abhyas.",
         html: renderToStaticMarkup(<PrivacyPage />),
+      };
+    case "/terms":
+      return {
+        route,
+        title: "Terms & Conditions — Abhyas",
+        description:
+          "Acceptable use, liability limitations, MIT license terms, and guidelines for using the Abhyas practice platform.",
+        html: renderToStaticMarkup(<TermsPage />),
       };
     case "/open-source":
       return {

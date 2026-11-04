@@ -97,6 +97,13 @@ export function PublicHeader({
           &#123; Privacy &#125;
         </a>
         <a
+          href="/terms"
+          className="abh-nav-link"
+          aria-current={currentPath === "/terms" ? "page" : undefined}
+        >
+          &#123; Terms &#125;
+        </a>
+        <a
           href="/guide/keys"
           className="abh-nav-link"
           aria-current={currentPath === "/guide/keys" ? "page" : undefined}
@@ -193,6 +200,9 @@ export function PublicHeader({
           </a>
           <a href="/privacy" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
             &#123; Privacy &#125;
+          </a>
+          <a href="/terms" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
+            &#123; Terms &#125;
           </a>
           <a href="/guide/keys" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
             &#123; Key Guide &#125;

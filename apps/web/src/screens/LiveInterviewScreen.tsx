@@ -829,9 +829,9 @@ export function LiveInterviewScreen({
                         className="abh-badge"
                         style={{
                           fontSize: "var(--text-xs)",
-                          backgroundColor: "var(--green-surface, rgba(46, 125, 50, 0.15))",
-                          color: "var(--green-text, #2e7d32)",
-                          border: "1px solid var(--green-border, #4caf50)",
+                          backgroundColor: "var(--green-surface)",
+                          color: "var(--green-text)",
+                          border: "1px solid var(--green-border)",
                         }}
                       >
                         Private On-Device
@@ -888,7 +888,7 @@ export function LiveInterviewScreen({
                       style={{
                         width: "140px",
                         height: "6px",
-                        backgroundColor: "var(--border-subtle, #e0e0e0)",
+                        backgroundColor: "var(--border-subtle)",
                         borderRadius: "3px",
                         overflow: "hidden",
                       }}
@@ -903,8 +903,8 @@ export function LiveInterviewScreen({
                           width: `${Math.round(audioLevel * 100)}%`,
                           height: "100%",
                           backgroundColor: isSpeaking
-                            ? "var(--accent-primary, #1976d2)"
-                            : "var(--text-muted, #9e9e9e)",
+                            ? "var(--accent-primary)"
+                            : "var(--text-muted)",
                           transition: "width 80ms ease",
                         }}
                       />
@@ -915,7 +915,7 @@ export function LiveInterviewScreen({
                         className="abh-vad-countdown-hint"
                         style={{
                           fontSize: "var(--text-xs)",
-                          color: "var(--amber-text, #ea9900)",
+                          color: "var(--amber-text)",
                           fontWeight: 500,
                         }}
                       >

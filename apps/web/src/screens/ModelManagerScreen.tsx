@@ -696,10 +696,9 @@ export function ModelManagerScreen({
                                   <span
                                     className="abh-badge"
                                     style={{
-                                      backgroundColor:
-                                        "var(--amber-surface, rgba(234, 153, 0, 0.15))",
-                                      color: "var(--amber-text, #ea9900)",
-                                      border: "1px solid var(--amber-border, #ea9900)",
+                                      backgroundColor: "var(--amber-surface)",
+                                      color: "var(--amber-text)",
+                                      border: "1px solid var(--amber-border)",
                                     }}
                                   >
                                     UNVERIFIED
@@ -882,10 +881,9 @@ export function ModelManagerScreen({
                                   className="abh-badge"
                                   style={{
                                     marginLeft: "var(--space-2)",
-                                    backgroundColor:
-                                      "var(--amber-surface, rgba(234, 153, 0, 0.15))",
-                                    color: "var(--amber-text, #ea9900)",
-                                    border: "1px solid var(--amber-border, #ea9900)",
+                                    backgroundColor: "var(--amber-surface)",
+                                    color: "var(--amber-text)",
+                                    border: "1px solid var(--amber-border)",
                                   }}
                                 >
                                   UNVERIFIED

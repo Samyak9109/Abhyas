@@ -62,6 +62,15 @@
   --cat-behav: var(--cat-behavioral);
   --transition-fast: var(--dur-fast) var(--ease-standard);
   --text-xs: 11px;
+
+  /* State surface, text & border tokens (P1-06) */
+  --green-surface: rgba(123, 216, 143, 0.15);
+  --green-text: var(--success);
+  --green-border: rgba(123, 216, 143, 0.35);
+  --amber-surface: rgba(242, 179, 61, 0.15);
+  --amber-text: var(--warning);
+  --amber-border: rgba(242, 179, 61, 0.35);
+  --border-subtle: var(--line);
 }
 
 /* Default Theme: Dark "Ink" */
@@ -85,6 +94,13 @@
   --cat-technical: #ff6a2b;
   --cat-behavioral: #5ec8b6;
   --cat-delivery: #f5d547;
+  --green-surface: rgba(123, 216, 143, 0.15);
+  --green-text: #7bd88f;
+  --green-border: rgba(123, 216, 143, 0.35);
+  --amber-surface: rgba(242, 179, 61, 0.15);
+  --amber-text: #f2b33d;
+  --amber-border: rgba(242, 179, 61, 0.35);
+  --border-subtle: #26231f;
 }
 
 /* Light "Paper" Theme */
@@ -107,6 +123,13 @@
   --cat-technical: #a83409;
   --cat-behavioral: #0f6b5c;
   --cat-delivery: #7a5a00;
+  --green-surface: rgba(31, 107, 51, 0.12);
+  --green-text: #1f6b33;
+  --green-border: rgba(31, 107, 51, 0.35);
+  --amber-surface: rgba(138, 83, 0, 0.12);
+  --amber-text: #8a5300;
+  --amber-border: rgba(138, 83, 0, 0.35);
+  --border-subtle: #cfc6b4;
 }
 
 /* Base resets & focus outlines */

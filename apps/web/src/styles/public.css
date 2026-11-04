@@ -621,18 +621,19 @@
   position: relative;
 }
 
+/* P2-01: Product demo laptop mockup — uses semantic tokens under data-theme="ink" */
 .abh-device-laptop {
-  background-color: #121110;
-  border: 2px solid #3a352f;
+  background-color: var(--bg);
+  border: 2px solid var(--line);
   border-radius: 14px;
   padding: 16px;
   box-shadow: var(--shadow-device);
-  color: #efe9dc;
+  color: var(--text);
 }
 
 .abh-laptop-screen {
-  background-color: #1c1a17;
-  border: 1px solid #3a352f;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -643,14 +644,14 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid #3a352f;
+  border-bottom: 1px solid var(--line);
   padding-bottom: 12px;
 }
 
 .abh-mockup-badge {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: #ff6a2b;
+  color: var(--accent);
   text-transform: uppercase;
 }
 

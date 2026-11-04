@@ -272,8 +272,10 @@ export function LandingPage() {
                 <div className="abh-floating-tag">
                   Works offline once a local model is downloaded
                 </div>
+                {/* P2-01: Product demo laptop interface explicitly runs in Ink theme */}
                 <div
                   className="abh-device-laptop"
+                  data-theme="ink"
                   aria-label="Interactive interview interface mockup"
                 >
                   <div className="abh-laptop-screen">

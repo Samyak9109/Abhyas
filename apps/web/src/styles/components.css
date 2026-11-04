@@ -780,3 +780,26 @@
   white-space: nowrap;
   border-width: 0;
 }
+
+/* Skip to main content link (P3-02, WCAG 2.4.1 Bypass Blocks) */
+.abh-skip-link {
+  position: absolute;
+  top: -999px;
+  left: var(--space-4);
+  z-index: 10000;
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: var(--radius-square);
+}
+
+.abh-skip-link:focus,
+.abh-skip-link:focus-visible {
+  top: var(--space-4);
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}

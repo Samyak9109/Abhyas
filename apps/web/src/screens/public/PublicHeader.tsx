@@ -68,6 +68,9 @@ export function PublicHeader({
 
   return (
     <header className="abh-public-header" role="banner">
+      <a href="#main-content" className="abh-skip-link">
+        Skip to main content
+      </a>
       <a href="/" className="abh-brand-lockup" aria-label="Abhyas Home">
         <BrandMark size={32} />
         <span className="abh-brand-name">ABHYAS</span>

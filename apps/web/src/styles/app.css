@@ -508,6 +508,10 @@
   background-color: var(--warning);
 }
 
+.abh-status-indicator--error {
+  background-color: var(--danger);
+}
+
 .abh-footer-status-text {
   font-family: var(--font-mono);
   font-size: 12px;

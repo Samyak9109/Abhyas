@@ -744,3 +744,39 @@
 [data-theme="paper"] .abh-brand-mark-img--ink {
   display: none;
 }
+
+/* Status indicator dot (P1-04, WCAG 1.4.1) */
+.abh-status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-square);
+  background-color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.abh-status-indicator--success {
+  background-color: var(--success);
+}
+
+.abh-status-indicator--loading {
+  background-color: var(--warning);
+}
+
+.abh-status-indicator--error {
+  background-color: var(--danger);
+}
+
+/* Visually hidden utility for accessible screen reader text (WCAG 1.4.1, 4.1.2) */
+.abh-visually-hidden,
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

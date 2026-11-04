@@ -897,6 +897,11 @@ export function LiveInterviewScreen({
                       aria-valuenow={Math.round(audioLevel * 100)}
                       aria-valuemin={0}
                       aria-valuemax={100}
+                      aria-valuetext={
+                        isSpeaking
+                          ? `Speaking (${Math.round(audioLevel * 100)}%)`
+                          : `Quiet (${Math.round(audioLevel * 100)}%)`
+                      }
                     >
                       <div
                         style={{

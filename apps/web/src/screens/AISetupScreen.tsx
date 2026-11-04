@@ -936,23 +936,28 @@ export const AISetupScreen: React.FC<AISetupScreenProps> = ({
 
       <footer className="abh-setup-footer">
         <div className="abh-setup-footer-inner">
-          <div className="abh-footer-status">
+          <div className="abh-footer-status" role="status" aria-live="polite">
             <span
               className={`abh-status-indicator ${
                 testSuccess
                   ? "abh-status-indicator--success"
                   : testing
                     ? "abh-status-indicator--loading"
-                    : ""
+                    : testError
+                      ? "abh-status-indicator--error"
+                      : ""
               }`}
               aria-hidden="true"
             />
             <span className="abh-footer-status-text">
+              <span className="abh-visually-hidden">Status: </span>
               {testing
                 ? "Testing connection..."
                 : testSuccess
                   ? `Connected: ${selectedModel}`
-                  : "Not connected"}
+                  : testError
+                    ? "Connection failed"
+                    : "Not connected"}
             </span>
           </div>
 

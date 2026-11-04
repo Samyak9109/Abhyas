@@ -304,7 +304,7 @@ describe("M0.2: Base Component Suite", () => {
 
     it("traps Tab key focus inside the dialog in a loop (P1-02)", () => {
       const handleClose = vi.fn();
-      const { getByRole, getByText } = render(
+      const { getByRole } = render(
         <Dialog
           isOpen={true}
           onClose={handleClose}

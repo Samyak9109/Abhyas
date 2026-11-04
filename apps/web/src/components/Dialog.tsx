@@ -40,6 +40,34 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
           onCloseRef.current();
+          return;
+        }
+
+        // P1-02: Complete Tab focus trap loop (WCAG 2.1 AA SC 2.1.2)
+        if (e.key === "Tab") {
+          const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (!focusable || focusable.length === 0) {
+            e.preventDefault();
+            dialogRef.current?.focus();
+            return;
+          }
+
+          const firstElement = focusable[0];
+          const lastElement = focusable[focusable.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
+              e.preventDefault();
+              lastElement?.focus();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement?.focus();
+            }
+          }
         }
       };
 

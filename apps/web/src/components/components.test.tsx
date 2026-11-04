@@ -1,8 +1,8 @@
 // FR-N/A, NFR-011, ADR-020, ADR-021: Comprehensive M0.2 test suite covering rendering, themes, and axe checks.
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import fs from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
 import {
   AbhyasLoader,
@@ -300,6 +300,43 @@ describe("M0.2: Base Component Suite", () => {
         expect(content.match(hexColorRegex)).toBeNull();
         expect(content.match(rgbColorRegex)).toBeNull();
       }
+    });
+
+    it("traps Tab key focus inside the dialog in a loop (P1-02)", () => {
+      const handleClose = vi.fn();
+      const { getByRole, getByText } = render(
+        <Dialog
+          isOpen={true}
+          onClose={handleClose}
+          title="Test Dialog"
+          actions={
+            <>
+              <Button variant="secondary">Cancel</Button>
+              <Button variant="danger">Confirm</Button>
+            </>
+          }
+        >
+          <input type="text" placeholder="Type here" />
+        </Dialog>
+      );
+
+      const closeBtn = getByRole("button", { name: "Close dialog" });
+      const input = getByRole("textbox");
+      const confirmBtn = getByRole("button", { name: "Confirm" });
+
+      // Initially input should be focused
+      expect(document.activeElement).toBe(input);
+
+      // Focus last element (confirm button) and press Tab -> should cycle to first focusable element (closeBtn)
+      confirmBtn.focus();
+      expect(document.activeElement).toBe(confirmBtn);
+
+      fireEvent.keyDown(document, { key: "Tab" });
+      expect(document.activeElement).toBe(closeBtn);
+
+      // Press Shift+Tab on first element -> should cycle back to last element (confirmBtn)
+      fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+      expect(document.activeElement).toBe(confirmBtn);
     });
   });
 });

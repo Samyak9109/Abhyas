@@ -103,7 +103,12 @@ graphify-out/
 # Local logs & documentation (do not push to git)
 decision.md
 flow.md
+audit.md
+
 
 # Archify artifacts
 .archify/
 
+
+# Worktree directories
+.worktrees/

@@ -119,6 +119,11 @@ async function main() {
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://abhyas.app/terms</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://abhyas.app/open-source</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

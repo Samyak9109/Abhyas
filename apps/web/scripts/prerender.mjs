@@ -10,7 +10,7 @@ const distDir = path.resolve(webDir, "dist");
 
 // Canonical origin for sitemap, robots and social tags. Set SITE_URL on the host so
 // prerendered URLs match the deployed domain (NFR-012).
-const siteUrl = (process.env.SITE_URL || "https://abhyas.app").replace(/\/+$/, "");
+const siteUrl = (process.env.SITE_URL || "https://abhyas.runs-on.dev").replace(/\/+$/, "");
 const googleSiteVerification = (process.env.GOOGLE_SITE_VERIFICATION || "").trim();
 
 async function main() {
@@ -63,7 +63,7 @@ async function main() {
 
     for (const route of PUBLIC_ROUTES) {
       const page = renderPage(route);
-      const url = `${siteUrl}${route === "/" ? "" : route}`;
+      const url = `${siteUrl}${route === "/" ? "/" : route}`;
       const isNotFound = route === "/404";
 
       const fullHtml = `<!doctype html>
@@ -118,10 +118,12 @@ async function main() {
         await fs.writeFile(path.resolve(distDir, "404.html"), fullHtml, "utf-8");
         console.log("  Prerendered: /404 -> dist/404.html");
       } else {
-        const routeSubdir = path.resolve(distDir, route.replace(/^\//, ""));
-        await fs.mkdir(routeSubdir, { recursive: true });
-        await fs.writeFile(path.resolve(routeSubdir, "index.html"), fullHtml, "utf-8");
-        console.log(`  Prerendered: ${route} -> dist${route}/index.html`);
+        // Emit route.html rather than route/index.html: Pages serves it at /route with no
+        // trailing-slash redirect, so the canonical and sitemap URLs are the 200 URL (NFR-012).
+        const outPath = path.resolve(distDir, `${route.replace(/^\//, "")}.html`);
+        await fs.mkdir(path.dirname(outPath), { recursive: true });
+        await fs.writeFile(outPath, fullHtml, "utf-8");
+        console.log(`  Prerendered: ${route} -> dist${route}.html`);
       }
     }
 

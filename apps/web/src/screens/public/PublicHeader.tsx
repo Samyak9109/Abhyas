@@ -93,55 +93,6 @@ export function PublicHeader({
           &#123; Experience &#125;
         </a>
         <a
-          href="/privacy"
-          className="abh-nav-link"
-          aria-current={currentPath === "/privacy" ? "page" : undefined}
-        >
-          &#123; Privacy &#125;
-        </a>
-        <a
-          href="/terms"
-          className="abh-nav-link"
-          aria-current={currentPath === "/terms" ? "page" : undefined}
-        >
-          &#123; Terms &#125;
-        </a>
-        <a
-          href="/guide/keys"
-          className="abh-nav-link"
-          aria-current={currentPath === "/guide/keys" ? "page" : undefined}
-        >
-          &#123; Key Guide &#125;
-        </a>
-        <a
-          href="/guide/local-models"
-          className="abh-nav-link"
-          aria-current={currentPath === "/guide/local-models" ? "page" : undefined}
-        >
-          &#123; Local Models &#125;
-        </a>
-        <a
-          href="/roadmap"
-          className="abh-nav-link"
-          aria-current={currentPath === "/roadmap" ? "page" : undefined}
-        >
-          &#123; Roadmap &#125;
-        </a>
-        <a
-          href="/help"
-          className="abh-nav-link"
-          aria-current={currentPath === "/help" ? "page" : undefined}
-        >
-          &#123; Help &#125;
-        </a>
-        <a
-          href="/open-source"
-          className="abh-nav-link"
-          aria-current={currentPath === "/open-source" ? "page" : undefined}
-        >
-          &#123; Open Source &#125;
-        </a>
-        <a
           href="https://github.com/Samyak9109/Abhyas"
           target="_blank"
           rel="noopener noreferrer"
@@ -199,31 +150,6 @@ export function PublicHeader({
           </a>
           <a href="/#experience" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
             &#123; Experience &#125;
-          </a>
-          <a href="/privacy" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
-            &#123; Privacy &#125;
-          </a>
-          <a href="/terms" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
-            &#123; Terms &#125;
-          </a>
-          <a href="/guide/keys" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
-            &#123; Key Guide &#125;
-          </a>
-          <a
-            href="/guide/local-models"
-            className="abh-nav-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            &#123; Local Models &#125;
-          </a>
-          <a href="/roadmap" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
-            &#123; Roadmap &#125;
-          </a>
-          <a href="/help" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
-            &#123; Help &#125;
-          </a>
-          <a href="/open-source" className="abh-nav-link" onClick={() => setMobileMenuOpen(false)}>
-            &#123; Open Source &#125;
           </a>
           <a
             href="https://github.com/Samyak9109/Abhyas"

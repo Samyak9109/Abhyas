@@ -8,6 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const webDir = path.resolve(__dirname, "..");
 const distDir = path.resolve(webDir, "dist");
 
+// Canonical origin for sitemap, robots and social tags. Set SITE_URL on the host so
+// prerendered URLs match the deployed domain (NFR-012).
+const siteUrl = (process.env.SITE_URL || "https://abhyas.app").replace(/\/+$/, "");
+const googleSiteVerification = (process.env.GOOGLE_SITE_VERIFICATION || "").trim();
+
 async function main() {
   console.log("Starting static HTML prerendering (ADR-019, NFR-012)...");
 
@@ -23,10 +28,18 @@ async function main() {
   const templatePath = path.resolve(distDir, "index.html");
   const templateHtml = await fs.readFile(templatePath, "utf-8");
 
-  // Save a copy as dist/app/index.html for client-side /app/* routes
+  // Save a copy as dist/app/index.html for client-side /app/* routes.
+  // The app shell is never indexed; public pages are prerendered separately (NFR-012).
   const appDir = path.resolve(distDir, "app");
   await fs.mkdir(appDir, { recursive: true });
-  await fs.writeFile(path.resolve(appDir, "index.html"), templateHtml, "utf-8");
+  await fs.writeFile(
+    path.resolve(appDir, "index.html"),
+    templateHtml.replace(
+      "<head>",
+      '<head>\n    <meta name="robots" content="noindex, nofollow" />'
+    ),
+    "utf-8"
+  );
 
   // Extract head links (CSS, scripts) from template
   const cssMatches = templateHtml.match(/<link rel="stylesheet"[^>]*>/g) || [];
@@ -50,7 +63,8 @@ async function main() {
 
     for (const route of PUBLIC_ROUTES) {
       const page = renderPage(route);
-      const url = `https://abhyas.app${route === "/" ? "" : route}`;
+      const url = `${siteUrl}${route === "/" ? "" : route}`;
+      const isNotFound = route === "/404";
 
       const fullHtml = `<!doctype html>
 <html lang="en">
@@ -66,12 +80,15 @@ async function main() {
     />
     <title>${page.title}</title>
     <meta name="description" content="${page.description}" />
+    <link rel="canonical" href="${url}" />
+    <meta name="robots" content="${isNotFound ? "noindex, follow" : "index, follow"}" />
+    ${googleSiteVerification ? `<meta name="google-site-verification" content="${googleSiteVerification}" />` : ""}
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#121110" />
-    <meta property="og:image" content="/abhyas-og-1200x630.png" />
+    <meta property="og:image" content="${siteUrl}/abhyas-og-1200x630.png" />
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${url}" />
@@ -108,41 +125,46 @@ async function main() {
       }
     }
 
-    // Generate sitemap.xml (NFR-012)
+    // Generate sitemap.xml (NFR-012). /404 is intentionally excluded; app routes are robots-excluded.
     const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://abhyas.app/</loc>
+    <loc>${siteUrl}/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://abhyas.app/privacy</loc>
+    <loc>${siteUrl}/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://abhyas.app/terms</loc>
+    <loc>${siteUrl}/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://abhyas.app/open-source</loc>
+    <loc>${siteUrl}/open-source</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://abhyas.app/guide/keys</loc>
+    <loc>${siteUrl}/guide/keys</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://abhyas.app/guide/local-models</loc>
+    <loc>${siteUrl}/guide/local-models</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://abhyas.app/help</loc>
+    <loc>${siteUrl}/roadmap</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>${siteUrl}/help</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -151,12 +173,12 @@ async function main() {
     await fs.writeFile(path.resolve(distDir, "sitemap.xml"), sitemapContent, "utf-8");
     console.log("  Generated: dist/sitemap.xml");
 
-    // Generate robots.txt
+    // Generate robots.txt. The application shell is private/local-first and never indexed.
     const robotsContent = `User-agent: *
 Allow: /
-Disallow: /app/
+Disallow: /app
 
-Sitemap: https://abhyas.app/sitemap.xml
+Sitemap: ${siteUrl}/sitemap.xml
 `;
     await fs.writeFile(path.resolve(distDir, "robots.txt"), robotsContent, "utf-8");
     console.log("  Generated: dist/robots.txt");

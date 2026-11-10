@@ -112,3 +112,6 @@ audit.md
 
 # Worktree directories
 .worktrees/
+
+# Wrangler local state (pages dev)
+.wrangler/

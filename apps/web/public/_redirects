@@ -1,2 +1,0 @@
-# Client-side /app routes resolve to the app shell; public pages stay prerendered (ADR-019).
-/app/*  /app/index.html  200

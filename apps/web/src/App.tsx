@@ -10,7 +10,15 @@ import {
   type CompanyPack,
   type TurnRow,
 } from "@abhyas/core";
-import { AbhyasLoader, Banner, BrandMark, Button, Callout, Skeleton } from "./components";
+import {
+  AbhyasLoader,
+  Banner,
+  BrandMark,
+  Button,
+  Callout,
+  Skeleton,
+  WorkInProgressDialog,
+} from "./components";
 import { HomeScreen } from "./screens/HomeScreen";
 import { DEFAULT_QUESTION_BANK } from "./services/question-bank";
 import { loadCompanyPack } from "./services/company-pack-service";
@@ -893,24 +901,36 @@ export function App() {
 
       case "/app/schedule":
         return (
-          <ScheduleScreen
-            storage={init.storage}
-            onNavigatePractice={() => navigateTo("/app/practice")}
-            onNavigateHome={() => navigateTo("/app/home")}
-          />
+          <>
+            <WorkInProgressDialog
+              featureName="Interview scheduling"
+              onClose={() => navigateTo("/app/home")}
+            />
+            <ScheduleScreen
+              storage={init.storage}
+              onNavigatePractice={() => navigateTo("/app/practice")}
+              onNavigateHome={() => navigateTo("/app/home")}
+            />
+          </>
         );
 
       case "/app/review":
         return (
-          <ReviewQueueScreen
-            storage={init.storage}
-            onStartReviewDrill={(plan, questions) => {
-              setActiveSession({ plan, questions });
-              navigateTo("/app/interview");
-            }}
-            onNavigatePractice={() => navigateTo("/app/practice")}
-            onNavigateHome={() => navigateTo("/app/home")}
-          />
+          <>
+            <WorkInProgressDialog
+              featureName="The review queue"
+              onClose={() => navigateTo("/app/home")}
+            />
+            <ReviewQueueScreen
+              storage={init.storage}
+              onStartReviewDrill={(plan, questions) => {
+                setActiveSession({ plan, questions });
+                navigateTo("/app/interview");
+              }}
+              onNavigatePractice={() => navigateTo("/app/practice")}
+              onNavigateHome={() => navigateTo("/app/home")}
+            />
+          </>
         );
 
       case "/app/models":

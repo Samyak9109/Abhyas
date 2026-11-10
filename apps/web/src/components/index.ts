@@ -18,3 +18,4 @@ export * from "./Mascot";
 export * from "./HardwareBenchmarkCard";
 export * from "./AbhyasLoader";
 export * from "./BrandMark";
+export * from "./WorkInProgressDialog";
